@@ -1,0 +1,325 @@
+{
+ "upd": "2026-11-09 17:25 WIB",
+ "baru": 13,
+ "sumber": [
+  "IDX Channel: 10",
+  "Antara: 20",
+  "StockWatch: 12",
+  "Katadata: 25",
+  "CNBC Indonesia: 100",
+  "Kontan: 25",
+  "Bisnis: gagal (HTTP Error 403: Forbidden)",
+  "Google Berita: 9",
+  "Google Berita: 9",
+  "Google Berita: 21",
+  "Google Berita: 30",
+  "BEI: gagal (HTTP Error 403: Forbidden)"
+ ],
+ "aturan": "Hanya ganti pengendali / tender offer dan backdoor / inbreng / akuisisi. Judul media, perlu verifikasi.",
+ "items": [
+  {
+   "t": "Garuda (GIAA) Rights Issue 248,7 Miliar Saham, Ambil Alih GMFI Lagi?",
+   "link": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQZjMxMDk5M2VmRlZMZXJiWnFwUVRaQU01WGZ1NXVrN054M3VCWTFVYTNJdGdFSGtkX2RVQXQ2RGtVWUw4a1RJVEVMWmV0ZWtrY3BLcG5GdEVLNDRKRDZqQ1A1aE1NUk1vT1A5T24yQm1iYnBZTWVjNlJ5M0RjZjgwaHRNUUh0YzBtR0lxQVZUTjVPd014T0E?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794218460,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "GIAA",
+    "GMFI"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Low Tuck Kwong Buka Alasan Haji Isam Dipilih untuk Akuisisi Saham BYAN Rp26,1 Triliun - Suara Merdeka Pekalongan",
+   "link": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPOVUzcWJEOVhIMEV3NmlGaWJTUHAwQmlBYXhNX1RBNlZEUDNOa2JxYURMV3Mwd3Vfa3lmWktYUWdSU0FXUW5PUVFsZ2l4S1lNT2trTEljelU1TndCTTMtZlRSOWNoQjhLUG5pUXFIczBXM0hodkJpU0hmRUFRcDNPb3A4b1BYVVl2cXQ4aERMcGtHdGlUbURsd25qMlNGOGgtQzFmYjVvUHRtVnFheW5mRHQ2bTZNcjc0dzFxampRYXNSWWwyT3hHMkhka3Qtc05lVmV4RUlsa9IB3AFBVV95cUxObHZVUDFUZ2lHR19vMC01MndBUllwT0lHVGZUQlNjeWo0aFkzR2IySjYtTmNFVElvQWt6aFFyN3ZTbHVFZVNpR0d1TEZ1SWMwYWluQW1RcmphdjFFU3JrYnFwZ0FCZFhJZ1Q5Zk9UckNlRzF6bzRxajI0ektLVFFydWxZTF9sc2JqWnR5dGVlZkxrb2N5eVVyVTd1WDhfWGtPOVhKVk5Zdl9qcGlKcl9EVFFmN1ZIZDJqYkY0QTZsZk42ME9iT1E2TjFadjNWeGpscDdVbUNRRTNHWGpE?oc=5",
+   "src": "Suara Merdeka Pekalongan",
+   "ts": 1794214717,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "BYAN"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Saham Hochtief turun setelah ACS mengesampingkan penawaran tender",
+   "link": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPWkJaTFZIb21SdjRPRk9LNHczandxME01N1p2V212OW8yZGxVQ0JNSjhxdXFZaE9hQjgwbHlWUlQ0M2hncVZpMFZfLU9HRlY4dHVKdldXRVY5alVrcWs5dlBwOWk0bndWMXhvYTRPNkIyZkRfeUV4TndKZmU2NFg0SXd6bUZBdlI4aWt6ZzJNZU1tbFZHclhEZENNQUlCMEpQV194Qm85elNqdUwwZDdHRnl6WnZPQXdfZjljZzl4blNOWTI0?oc=5",
+   "src": "Investing.com Indonesia",
+   "ts": 1794212892,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "AKRA Ambil Alih Seluruh Saham SPBU BP-AKR, Begini Jejak Bisnis BP di Indonesia",
+   "link": "https://www.idxchannel.com/market-news/akra-ambil-alih-seluruh-saham-spbu-bp-akr-begini-jejak-bisnis-bp-di-indonesia",
+   "src": "IDX Channel",
+   "ts": 1794211920,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "AKRA"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Komisaris ULTJ Resign di Tengah Proses Akuisisi Frisian Flag",
+   "link": "https://www.cnbcindonesia.com/market/20261109113221-17-783487/komisaris-ultj-resign-di-tengah-proses-akuisisi-frisian-flag",
+   "src": "CNBC Indonesia",
+   "ts": 1794204653,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "ULTJ"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "BP Cabut dari Bisnis SPBU di RI, Sahamnya Dicaplok AKR (AKRA)",
+   "link": "https://www.cnbcindonesia.com/market/20261109094257-17-783433/bp-cabut-dari-bisnis-spbu-di-ri-sahamnya-dicaplok-akr--akra-",
+   "src": "CNBC Indonesia",
+   "ts": 1794195347,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "AKRA"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Entitas Rukun Raharja (RAJA) Caplok 90% Saham Perusahaan Kapal LNG",
+   "link": "https://www.cnbcindonesia.com/market/20261109085118-17-783413/entitas-rukun-raharja--raja--caplok-90-saham-perusahaan-kapal-lng",
+   "src": "CNBC Indonesia",
+   "ts": 1794193538,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "RAJA"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "OJK Tegaskan Saham Boleh Jadi Agunan Akuisisi",
+   "link": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE5ldUlpYjJ4TDlvVGZINm5DQWxfbk1vMzhtS1RlbVFxZWhnSHN0UVhPc1Y3dnZyQUFnelB1dTQyZ21WMFVWZU5KRjFIREc2RUotTktQQnp3LWk?oc=5",
+   "src": "cwibc.co.id",
+   "ts": 1794191698,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Emiten Hapsoro Caplok 90 Persen Saham Kapalindo, Simak Tujuannya",
+   "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNR3EwOG45d3BwLTJOY0ZiWmROcHZLNk9rbWVmQlFDZHdCVjBSWDJnb19RN210WFdlQ21NNkxwRWc0cktJemRSYndTT2Z3Nm1xdE53ZzV1WTdEYlYtNnJvQU1TcGdVRDRyUWxHN0tuRExYcU5FNThPVmhqN2ZtSTg4SEVJRG9rRXhpQVNOMGVaWkx6NDhucW1HbUpqbw?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794180600,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Akuisisi Terbaru Emiten Hapsoro",
+   "link": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5oUl9EbXV2dUIxWEp2QlFpOXhRMXh1TDB5Nm1wM1dwNHhyc1o4U0JOMHpkZkx0bHBkb182bHVhZVFTVlRlQUtJdGVhTjZoSGFMVFB1SWFmbkllckdfY2hxcVlCaFlkZ0NHVGJxV1J2c0g0bms?oc=5",
+   "src": "investor.id",
+   "ts": 1794178653,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Youyi Group Akuisisi 51% Saham EKAD, Saham Langsung ARA",
+   "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxON1NOR0hsblBWNUZGblNRckk4Qm5UX0xldERUaElqVXhfcnA4UWltelJMa3VfQlpfWnhhZko0anI0VU1XVDU0dkN3UV8yaGFTR3k2OE9YUWN0cnZvVVhsaE5CdUJBd1Zka0FqOENRdDhGWjF2akhCRldVazQ4RENsZ2JzNWhtOGVDc3VEN0hyU2hmM0x0R0EwdDM5YzNxbjA0djNRTDBR?oc=5",
+   "src": "https://cetro.or.id/",
+   "ts": 1794131670,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "EKAD"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Pengendali Baru TGUK Gelar Tender Wajib Rp56 Per Lembar, Cek Jadwalnya",
+   "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOWV9LMUJlZV9Oc014VVVZcEpRWGc1dzZFdjF2R0Z0SW8wSVlnSHp6dkRrNWF3MHM5S1FUZ3dYLTJ5QnZkbEVrTjRraGJSYkhLS1M5c0NEOXBwYWdsTGQ1YVVLQXhBaW5LUUZfMEN4TVBfUWhqa0p6ejNLSm5LUDBmZGxTbHRFR2RSdldsN0ZmMklWdjhxVlVtblVoX0VpaXV5azk5R2JrVGlOaXJf?oc=5",
+   "src": "Industry.co.id",
+   "ts": 1794130500,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "TGUK"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Investor Tawarkan Pengambilalihan 51,52 Persen Saham SBAT",
+   "link": "https://news.google.com/rss/articles/CBMia0FVX3lxTE4xMzh3ZERpQVJMRDY4OFFBRWZnbDhtSWk1V0pEQ3F6NlBDaFVhbHlya1IzclkxX0daOS1scE1ucmtWdlJ4b2Vyb2tPQ3U2NWpEMi1xNUxJbFRqZE1jNjFpM0l0YW9kUVo0NXBn?oc=5",
+   "src": "Limapagi",
+   "ts": 1794114502,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "SBAT"
+   ],
+   "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Visionary Capital Gelar Tender Wajib Saham TGUK Rp56 per Saham, Simak Jadwalnya",
+   "link": "https://stockwatch.id/visionary-capital-gelar-tender-wajib-saham-tguk-rp56-per-saham-simak-jadwalnya/",
+   "src": "StockWatch",
+   "ts": 1793955699,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "TGUK"
+   ],
+   "found": "2026-11-06 17:36"
+  },
+  {
+   "t": "Pemegang Saham Pengendali Tempo (TMPO) Kurangi Kepemilikan 128,48 Juta Saham",
+   "link": "https://investasi.kontan.co.id/news/pemegang-saham-pengendali-tempo-tmpo-kurangi-kepemilikan-12848-juta-saham",
+   "src": "Kontan",
+   "ts": 1793954077,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "TMPO"
+   ],
+   "found": "2026-11-06 17:36"
+  },
+  {
+   "t": "DOOH Caplok INET, Nilai Transaksi Capai Rp2 Triliun",
+   "link": "https://www.cnbcindonesia.com/market/20261106130335-17-782965/dooh-caplok-inet-nilai-transaksi-capai-rp2-triliun",
+   "src": "CNBC Indonesia",
+   "ts": 1793951735,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "DOOH",
+    "INET"
+   ],
+   "found": "2026-11-06 17:36"
+  },
+  {
+   "t": "Leyand International (LAPD) Gelar Rights Issue, Inbreng 87,5% Saham Jasa Tambang",
+   "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOeVdiY1I4WjVXTG1MWUZmaHpvUGtvZjEwWHNjQXFjcno0VzhxNW5RaUtqMVowakZBSHVIWFF4VkYtcHNIRk5YSlBBQ3ZNTnNzTkFmNWV3RV9QUmdYRUNHbUd2NkdHNGN0a0l3X3NGTXRoekRKSVlndFpTay1Hc2V0U2UtWHR2S1QwTHA1WDJCVG9PeGZxR0RJak1Damp2aE1fYVk4Uy03U3dqZlpXbV9mQtIBqAFBVV95cUxQMThCTlFiSTY1cm0xb0tnRnRUY0lqZk5NS05lcE83UkxaNkpnQVRPTWNvX0xqRy16NFl4aXl4eFV4MEpsUHVudGFtOTJEcURmVWgyWE1DS3A2SWs4a3VQZ2NLN3h6bVRXTnhDbTVNWGc3UjFtNllxeXNaNHY1ZFk4UDhpOGdCTVR2c1VQcVhDZU5SREotN0NoZm1DSS1aNEEwb1RmZFpZeHY?oc=5",
+   "src": "kontan.co.id",
+   "ts": 1793867551,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "LAPD"
+   ],
+   "found": "2026-11-05 17:34"
+  },
+  {
+   "t": "Besok Penentuan! ULTJ Minta Restu Caplok Frisian Flag Rp14,57 T",
+   "link": "https://www.cnbcindonesia.com/market/20261105133506-17-782625/besok-penentuan-ultj-minta-restu-caplok-frisian-flag-rp1457-t",
+   "src": "CNBC Indonesia",
+   "ts": 1793861228,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "ULTJ"
+   ],
+   "found": "2026-11-05 17:34"
+  },
+  {
+   "t": "Garuda Indonesia (GIAA) Siapkan Rights Issue III, Inbreng 65,77% Saham GMFI",
+   "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQZmZyU2c1Ym96Q1ZCQ1pleXJuc2MxckdGYU1peXdEQ1ViNlE5RVpfZU9YdENGMGloRG8xZEFjbXVGUGwwMFJlYkx1RDNPel94SkNacjdpWlpHb2tEMl9FcmlRTzJVY0JqSzJuZDJxd0pGbGhSZm1pZU8zSEZHSHczMHFSZDdqMTNwLXZ6WTVDLUdiQ09leGFuVm9adkJGeXBCejgwZF9HYVNiQdIBogFBVV95cUxOQ1JlcE9WTFhORldVSlJnTFAtTGtEd1ZyVVpJazUtaE80bDRDNWV0UVJzR0lRbjdoNFROVWxEUFhpbk8tSjdSdERZV3ZLeHEwR0VCRHYwUzJ4VGJ6VlliNlVab3RnVTNfcHFtVDhELXpHVGVUaF9XUDJ4dHhXTFEtcElwMXRIVWl5WURncHJrVzI2UHBvOGxucnZjbl9PRVMwZ3c?oc=5",
+   "src": "kontan.co.id",
+   "ts": 1793860049,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "GIAA",
+    "GMFI"
+   ],
+   "found": "2026-11-05 17:34"
+  },
+  {
+   "t": "Ultrajaya Siapkan Rights Issue 7,88 Miliar Saham untuk Akuisisi FFI",
+   "link": "https://news.google.com/rss/articles/CBMibEFVX3lxTE52d0t5NG94dnk5QmlkRWJFTVJfXzRWM0tzTVROT0pCUERMbnZPYW1PeEFZbHFGR0RMa21tYWdGRHhSb2JJT1lzNzZpc1IyUHQtTHozb1BlQzVNenluZW10UmxDdUpUWG1BTHJweg?oc=5",
+   "src": "Lensa Hukum",
+   "ts": 1793849370,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-05 17:34"
+  },
+  {
+   "t": "Pertamina Akuisisi 3 Aset Lapangan Migas di Cekungan Berkine Aljazair",
+   "link": "https://katadata.co.id/berita/energi/6aeb277a23c3a/pertamina-akuisisi-3-aset-lapangan-migas-di-cekungan-berkine-aljazair",
+   "src": "Katadata",
+   "ts": 1793795940,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-04 20:08"
+  },
+  {
+   "t": "PKPK Gelar Stock Split 1:10 & Akuisisi Tahap Akhir DPAL Rp722,2 Miliar",
+   "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPTkVCcERleXV4Y0Z1RVdHSkhDY1F0RWdfVXRZd1ZIWmlHQk9sMUxpWlp4N29qNTBlaTRpSnVrV2QyUEFWaWtyc3B2RWdsZnRPd3NCeC1HZ09SS29PTW9vbXpGTEx3UDNBYUdEc3F1T2NIN19zNFp2T1AtSml0T051NXR0ME5HS2VJYmY1QjJMZ2JiVExEREhVVjdR?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1793776740,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "PKPK"
+   ],
+   "found": "2026-11-04 15:36"
+  },
+  {
+   "t": "Tokyu Construction Siap Caplok 25 Persen Saham Nusa Konstruksi (DGIK)",
+   "link": "https://www.idxchannel.com/market-news/tokyu-construction-siap-caplok-25-persen-saham-nusa-konstruksi-dgik",
+   "src": "IDX Channel",
+   "ts": 1793773680,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "DGIK"
+   ],
+   "found": "2026-11-04 15:36"
+  },
+  {
+   "t": "Nawasena Nugra Investama Akuisisi 66,58 Persen Saham IDEA",
+   "link": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1MQl9hUXY3Z2FZU2lJUXFXdkdjX0RZUzJTZjlydXJhVm56ZzBSNk9FeVB3MWlKRWFCVGJDS3duNUNIZ2diVHNockJOb3ZpQlVtVTFRTmdNSVFHY1o0UG9Lc1BoaTZwQQ?oc=5",
+   "src": "CentralBatam",
+   "ts": 1793765365,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "IDEA"
+   ],
+   "found": "2026-11-04 15:36"
+  },
+  {
+   "t": "Kuasai 66,58 Persen Saham IDEA, Nawasena Gelar Tender Offer",
+   "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNQ2VUNVV1bU5ZaTZFNnplVlY3bDgyblFKWk5vQWxSWHBqQnk0c0VFeVlxZE41WGF1VTFBZXE5RUlneEZqUy1oNlgzWk1WSlBVWGNrZUNxR3BodDRuYUZ2ZUNHN2FXUXVRcFNQQ3hzZElGSFgxRzZXY3pEcGhGellyU0RvWlpDMFRrcUZNWFZrdDZWNU5iWTJrU2lWT2jSAaIBQVVfeXFMT1hwNVF6MENsMVR1R0JzdlFFMkg2eWVieXMtWlhPWTkxUlJySmkzT01fd0p6ZWJHbmVLakI4OS1HV1dWNlF6emlXS0tBaDdMZlAwcThBbDNGWWM2Si1RM1V6VHBVRHRtTWY4TThrSXAway15X0VkUmJyUi1iNm92UEVWdGNKV1NHekN5RldGVTF0VjZ1emNtQi0xMUZ4MVpQNWN3?oc=5",
+   "src": "IDX Channel",
+   "ts": 1793765160,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "IDEA"
+   ],
+   "found": "2026-11-04 15:36"
+  },
+  {
+   "t": "Investor Cermati Dampak Akuisisi terhadap Saham Emiten",
+   "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE5NQzFUc1UxUzhVekJnblR5Sm5obGJlR040RGMtaHBpN2NZdHplbWFPajRtRmhHM1pDelJOeUNSNTZEY19ZQUZzVlhFSlFaNEYwaFVYOTY5TllBYzl0?oc=5",
+   "src": "ChatNews.id",
+   "ts": 1793759067,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-04 15:36"
+  },
+  {
+   "t": "Jababeka Akuisisi 51 Persen Saham Kawasan Industri Seafer",
+   "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE1uMk1Ga0JNLTB5NVQ1QjVVSzN1RFZyVzdZdFBEb0F5QTUtRXB4UkprTXV3TEg5ZFF1dHpxejFHV2w1OUFDMm1QTHpYeGtfbDMxMWNIUHkxSlFGY0dXSFJocU1TSjJqUGlvUUdXN2F4SQ?oc=5",
+   "src": "Lensa Hukum",
+   "ts": 1793725800,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-04 17:41"
+  },
+  {
+   "t": "RUPS LAPD Tetapkan JSI Sinergi Mas jadi Pemegang Saham Pengendali",
+   "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQM21hMTNndzF5YVlGSlJ3cTNVaXJXOEJ5UkVVNVBrZGlNUjBJZHVTNVJ1WWU0bUNteGxmTUVEbkZBVzd4TlhuV21FVlVNVWVXZE93UzJwd1JobmgtdGhDaF90SFBvZHVHdjJoX1Y4aVhZcXpoNHRQbjdFQ1BqSGl0WGdsNEx6NUhqeURBMHAzSnNoWG5heEFiZQ?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1793712660,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "LAPD"
+   ],
+   "found": "2026-11-04 15:36"
+  },
+  {
+   "t": "Worldline luncurkan tender offer beli kembali o...",
+   "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQX2VBRkRTOWk1b0stV1FZUVZNYXAxeC15am9OX1FOT0hZeVRrQUV6d3kyZ0dqcHJ0bUNhWEd2ZVlQZVVJUHF1Nko4ck1nVkJ5RnpTa1plTWRHNmxOOGFfQ0xoSXJjQllFdXNZUUJCVzA0b2JtQnlQb3NUcXZxeFg1TDUyZ3lqUVk4MTM0?oc=5",
+   "src": "Pluang",
+   "ts": 1793613600,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "found": "2026-11-04 15:36"
+  }
+ ]
+}

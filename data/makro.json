@@ -1,0 +1,65 @@
+{
+ "upd": "5 Nov 2026",
+ "q": [
+  [
+   "Q1 2025",
+   4.87,
+   1.03,
+   5.75
+  ],
+  [
+   "Q2 2025",
+   5.12,
+   1.87,
+   5.5
+  ],
+  [
+   "Q3 2025",
+   5.04,
+   2.65,
+   4.75
+  ],
+  [
+   "Q4 2025",
+   5.39,
+   2.92,
+   4.75
+  ],
+  [
+   "Q1 2026",
+   5.61,
+   3.48,
+   4.75
+  ],
+  [
+   "Q2 2026",
+   5.29,
+   3.34,
+   5.75
+  ],
+  [
+   "Q3 2026",
+   5.47,
+   3.28,
+   5.75
+  ],
+  [
+   "Q4 2026",
+   null,
+   3.23,
+   5.75
+  ]
+ ],
+ "info": [
+  "Robot makro 09-11-2026 22.48 WIB: belum ada angka baru.",
+  "Oktober 2026 (RDG): BI rate ditahan 5,75% (naik 100 bps sejak Mei: 4,75 → 5,25 → 5,75), deposit facility naik ke 5%. Rupiah sekitar Rp17.985/USD (20 Okt).",
+  "Inflasi 2026: Maret 3,48%, Juni 3,34%, Juli 2,88%, Agustus 3,19%, September 3,28% (inti 2,84%), Oktober 3,23% (BPS, 2 Nov; pangan dan transportasi pendorong utama). Target BI 2,5% ± 1%.",
+  "Pertumbuhan ekonomi (BPS): Q1 2026 5,61% yoy, Q2 2026 5,29% yoy, Q3 2026 5,47% yoy dan 1,59% qoq (rilis 5 Nov 2026). PDB Q4 2026 belum dirilis."
+ ],
+ "src": "Bank Indonesia (halaman Indikator: BI-Rate, inflasi IHK yoy); PDB dari judul berita BPS (minimal 2 media sepakat). Dibaca robot tanpa AI.",
+ "asof": {
+  "bi": "2026-10-21",
+  "inf": "2026-10",
+  "gdp": "Q3 2026"
+ }
+}

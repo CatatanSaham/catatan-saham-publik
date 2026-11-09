@@ -1598,6 +1598,33 @@ document.addEventListener('click',e=>{const s=e.target.closest&&e.target.closest
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='vzf'){udRun(Array.from(e.target.files));e.target.value=''}});
 
 
+/* ===== Terapkan file harian tersimpan menjadi hari baru (tahap 1: harga, indeks, Clean Buy, chart, MA) ===== */
+const UDX={dates:[],ch:{},done:{}};
+function udCh(t,a){if(!a||!UDX.dates.length)return a;for(const d6 of UDX.dates){const r=UDX.ch[d6]&&UDX.ch[d6][t];if(r&&(!a.length||a.at(-1)[0]<d6))a.push(r)}return a}
+function udMa(){if(!MAD||!UDX.dates.length)return;MAD.tail=MAD.tail||{};const EM={21:6,100:7,200:8};
+ for(const d6 of UDX.dates){const dt='20'+d6;if(MAD.dates.includes(dt)||(MAD.dates.at(-1)&&dt<MAD.dates.at(-1)))continue;MAD.dates.push(dt);
+  for(const t in MAD.t){const arr=MAD.t[t],pr=arr.at(-1),r=UDX.ch[d6]&&UDX.ch[d6][t],tl=MAD.tail[t];
+   if(!pr||!r||!tl){arr.push(pr?pr.slice():null);continue}
+   tl.push(r[4]);if(tl.length>200)tl.shift();const c0=r[4],sm=n=>tl.length>=n?Math.round(tl.slice(-n).reduce((a,b)=>a+b,0)/n*10)/10:null,row=[c0,sm(5),sm(20),sm(30),sm(100),sm(200)];
+   for(const n of [21,100,200]){const al=2/(n+1),p0=pr[EM[n]];if(p0==null){if(tl.length<n){row.push(null);continue}let e=tl[0];for(let i=1;i<tl.length;i++)e=al*tl[i]+(1-al)*e;row.push(Math.round(e*10)/10)}else row.push(Math.round((al*c0+(1-al)*p0)*10)/10)}
+   arr.push(row)}}}
+function udCb(dt,g){UDX.cbk=UDX.cbk||{};let ch=false;for(const key of ['cb1','cb2','cb3','acc','b10']){const q=g[key];if(!q)continue;const st=q.at||q.uploadedAt||'1';if(UDX.cbk[dt+key]===st)continue;const lab=UDK[key];
+ if(UDX.cbk[dt+key]){D.cb=D.cb.filter(x=>!(x[0]===dt&&x[2]===lab));const m=cbd[dt]||{};for(const t in m){m[t].s.delete(lab);if(!m[t].s.size)delete m[t]}}
+ for(const r of JSON.parse(q.rows)){const t=String(r[0]).trim();D.cb.push([dt,t,lab,r[1]]);((cbd[dt]??={})[t]??={s:new Set(),p:r[1]}).s.add(lab)}if(!cbDates.includes(dt)){cbDates.push(dt);cbDates.sort()}UDX.cbk[dt+key]=st;ch=true}return ch}
+function udApply(){let any=false;const by={};for(const id in UDS.saved){const o=UDS.saved[id];(by[o.date]??={})[o.key]=o}
+ for(const dt of Object.keys(by).sort()){const g=by[dt];if(UDX.done[dt]){if(udCb(dt,g))any=true;continue}if(!g.rs||UDX.done[dt]||D.days[dt]||dt<=dates.at(-1))continue;
+  try{const rs=JSON.parse(g.rs.rows),ci=n=>g.rs.cols.indexOf(n),k=['Kode Saham','Sebelumnya','Open Price','Tertinggi','Terendah','Penutupan','Volume','Nilai','Foreign Sell','Foreign Buy'].map(ci);
+   if(k.some(i=>i<0)||rs.length<500)continue;const day={t:[],c:[],p:[],v:[],a:[],f:[],b:[]},d6=dt.slice(2),chm={};
+   for(const r of rs){const t=String(r[k[0]]).trim(),fb=+r[k[9]]||0,fs=+r[k[8]]||0;day.t.push(t);day.c.push(Math.trunc(+r[k[5]]||0));day.p.push(Math.trunc(+r[k[1]]||0));day.v.push(Math.trunc(+r[k[6]]||0));day.a.push(Math.round((+r[k[7]]||0)/1e6));day.f.push(Math.trunc(fb-fs));day.b.push(Math.round(fb/100));
+    chm[t]=[d6,Math.trunc(+r[k[2]]||0),Math.trunc(+r[k[3]]||0),Math.trunc(+r[k[4]]||0),Math.trunc(+r[k[5]]||0),Math.trunc(+r[k[6]]||0)]}
+   D.days[dt]=day;dates.push(dt);UDX.ch[d6]=chm;UDX.dates.push(d6);
+   const idx=day.t.map((_,i)=>i).filter(i=>day.v[i]>0&&day.p[i]>0).sort((a,b)=>(day.c[b]-day.p[b])/day.p[b]-(day.c[a]-day.p[a])/day.p[a]),sel=idx.slice(0,50).concat(idx.slice(-50)),oh={};
+   for(const i of sel){const c=chm[day.t[i]];oh[day.t[i]]=[c[1]||null,c[2],c[3]]}OHL[dt]=oh;
+   if(g.ri){const ri=JSON.parse(g.ri.rows),cc=n=>g.ri.cols.indexOf(n),IXo={};for(const r of ri){IXo[String(r[0]).trim()]=[r[cc('Penutupan')],r[cc('Sebelumnya')],r[cc('Tertinggi')],r[cc('Terendah')],Math.trunc(r[cc('Nilai')]),Math.trunc(r[cc('Volume')]),Math.trunc(r[cc('Frekuensi')])]}D.ix[dt]=IXo;ixd.push(dt)}
+   udCb(dt,g);
+   UDX.done[dt]=1;any=true;if(MDX.rec)mdRecAdd(d6);if(typeof MAD!=='undefined'&&MAD)udMa();try{vzMergeAll()}catch(x){}}catch(e){UDS.msg='Gagal menerapkan data '+dt+': '+(e&&e.message||e)}}
+ if(any){UDS.msg='Data harian baru diterapkan ke aplikasi.';render()}return any}
+
 /* ===== Berita Terbaru otomatis (judul dari RSS media, disaring kata kunci) ===== */
 const NWQ=q=>'https://news.google.com/rss/search?q='+encodeURIComponent(q+' when:3d')+'&hl=id&gl=ID&ceid=ID:id';
 const NWF=[['https://www.idxchannel.com/rss/market-news','IDX Channel'],['https://www.antaranews.com/rss/ekonomi-bursa.xml','Antara'],['https://stockwatch.id/feed/','StockWatch'],['https://katadata.co.id/rss','Katadata'],['https://www.cnbcindonesia.com/market/rss','CNBC Indonesia'],['https://investasi.kontan.co.id/rss','Kontan'],['https://market.bisnis.com/rss','Bisnis'],
@@ -2624,6 +2651,9 @@ $('#th').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'l
 const h=(location.hash||'').slice(1);if(h&&(P[h]||MENU.some(g=>g[1].some(x=>x[0]===h))))S.p=h;render();
 agInit().then(()=>{AG.chk=true;render();vlStart();vaStart()},()=>{AG.chk=true;render()});
 /* ===== Edisi Non Admin: data broker diminta per saham / per broker ke server (Worker /app/api), tidak tertanam ===== */
+/* Pengganti bagian admin yang dipakai udApply (file 13): Non Admin tidak punya unggahan/hitung ulang. */
+const UDS={saved:{},msg:''},UDK={cb1:'Clean Buy 1',cb2:'Clean Buy 2',cb3:'Clean Buy 3',acc:'Accum 1vs5',b10:'Buy >10K Lot',rs:'Ringkasan Saham',ri:'Ringkasan Indeks'},MDX={};
+function vzMergeAll(){}
 (function(){
 const API=CSW+'/app/api/',NA={dates:null,t:{},b:{},bm:{},busy:{},err:''};
 const naGet=async p=>{const r=await fetch(API+p,{headers:{'X-CS-Device':csDev()}});let j=null;try{j=await r.json()}catch(e){}
@@ -2676,6 +2706,17 @@ P.saham=function(){const q=(S.q||'BBCA').toUpperCase();naDates();naSaham(q);naBa
 bsaham=function(){const q=(S.q||'BBCA').toUpperCase(),n=+S.n||5;if(!naSaham(q))return naNote()||'<div class="ld"><i></i>Memuat broker '+esc(q)+'…</div>';
  const ds=BFD.slice(-n),A=bfAgg(q,ds[0],ds.at(-1)),L=Object.entries(A).map(([b,o])=>[b,o.bv-o.sv]).sort((a,b)=>b[1]-a[1]);
  return `<div class="brand">BROKER INTELLIGENCE</div><h1>Net per Broker</h1>${chips(Nn,String(n),'n')}`+(L.length?tbl(['Broker','Net'],L.map(([b,v])=>`<tr><td>${bch(b)}</td><td>${nv(v,{m:'Net broker',t:q,b,p:n+' sesi sampai '+fd(ds.at(-1))})}</td></tr>`)):'<div class="card">Tidak ada data broker untuk kode ini.</div>')+'<div class="mu" style="font-size:12px">Net = beli − jual (Rp) dari broksum lengkap. Bukan kepemilikan. Bukan rekomendasi.</div>'};
+// Harga harian publik (Ringkasan Saham + Indeks, tanpa broksum) + Clean Buy dari repo publik → hari baru di aplikasi.
+const PUB='https://raw.githubusercontent.com/CatatanSaham/catatan-saham-publik/main/data/';
+async function naHarian(){try{const j=await (await fetch(PUB+'harian/daftar.json?t='+Date.now(),{cache:'no-store'})).json(),last=dates.at(-1);
+ const baru=(j.tanggal||[]).filter(d=>d>last).slice(-30);if(!baru.length)return;
+ for(const d of baru){const h=await (await fetch(PUB+'harian/'+d+'.json')).json();for(const id in h.daily_files)UDS.saved[id]=h.daily_files[id];
+  try{const r=await fetch(PUB+'cleanbuy/'+d+'.json');if(r.ok){const cb=await r.json(),rs=h.daily_files[d+'_rs'],ci=rs.cols.indexOf('Penutupan'),cl={};JSON.parse(rs.rows).forEach(x=>cl[String(x[0]).trim()]=x[ci]);
+   for(const k of ['cb1','cb2','cb3','acc','b10'])if(cb[k]&&cb[k].kode)UDS.saved[d+'_'+k]={date:d,key:k,rows:JSON.stringify(cb[k].kode.map(t=>[t,cl[t]||0])),uploadedAt:'publik'}}}catch(e){}}
+ udApply()}catch(e){}}
+setTimeout(naHarian,600);
+// Status data Non Admin: hanya sumber publik (harga, indeks, Clean Buy 1–3); broksum ada di server, bukan di HP.
+dataPct=function(){const L=dates.at(-1),cbs={};D.cb.forEach(([d,t,sc])=>{if(!cbs[sc]||d>cbs[sc])cbs[sc]=d});const S5=[dates.at(-1),ixd.at(-1),...['Clean Buy 1','Clean Buy 2','Clean Buy 3'].map(k=>cbs[k])],ok=S5.filter(x=>x&&x>=L).length;return{pct:Math.round(ok/S5.length*100),ok,n:S5.length}};
 if(['bdet','bbroker','bdm','saham'].includes(S.p))render();
 })();
 </script></body></html>

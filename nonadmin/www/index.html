@@ -2715,6 +2715,19 @@ async function naHarian(){try{const j=await (await fetch(PUB+'harian/daftar.json
    for(const k of ['cb1','cb2','cb3','acc','b10'])if(cb[k]&&cb[k].kode)UDS.saved[d+'_'+k]={date:d,key:k,rows:JSON.stringify(cb[k].kode.map(t=>[t,cl[t]||0])),uploadedAt:'publik'}}}catch(e){}}
  udApply()}catch(e){}}
 setTimeout(naHarian,600);
+// Izin (pilihan A): tanpa kode. Admin bisa menutup semua / memblokir satu HP dari bot Telegram.
+// Hanya jawaban "ditolak" dari server yang mengunci; server tak terjangkau = aplikasi tetap terbuka.
+const IZ={k:'cs_izin'};
+function izKunci(pesan){let el=document.getElementById('izk');if(!el){el=document.createElement('div');el.id='izk';document.body.appendChild(el)}
+ el.setAttribute('role','alertdialog');el.style.cssText='position:fixed;inset:0;z-index:2147483600;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;padding:24px max(16px,env(safe-area-inset-left,0px)) 24px max(16px,env(safe-area-inset-right,0px));overflow:auto';
+ el.innerHTML=`<div class="card" style="max-width:420px;width:100%;text-align:left"><div style="font-size:40px">🔒</div><b style="font-size:20px;display:block;margin:6px 0">Akses ditutup</b><div style="font-size:15px">${esc(pesan||'Akses Catatan Saham Non Admin ditutup oleh admin.')}</div><div class="mu" style="margin-top:12px;font-size:13px">ID perangkat ini (sebutkan bila menghubungi admin):</div><div style="font-family:monospace;font-size:15px;user-select:all;padding:8px;border:1px solid var(--line);border-radius:8px;margin-top:4px;word-break:break-all">${esc(csDev())}</div><button class="btn on" id="izc" style="width:100%;margin-top:14px">Coba lagi</button></div>`;
+ document.getElementById('izc').onclick=()=>izCek(true)}
+function izBuka(){const el=document.getElementById('izk');if(el)el.remove()}
+async function izCek(manual){try{const c=new AbortController(),t=setTimeout(()=>c.abort(),10000);
+ const r=await fetch(CSW+'/app/izin?dev='+encodeURIComponent(csDev()),{signal:c.signal,cache:'no-store'});clearTimeout(t);const j=await r.json();if(!j||!j.ok)return;
+ if(j.boleh){lsS(IZ.k,'');izBuka()}else{lsS(IZ.k,JSON.stringify({p:j.pesan||''}));izKunci(j.pesan)}}catch(e){if(manual&&typeof vaToast==='function')vaToast('Server tidak bisa dihubungi. Coba lagi nanti.')}}
+try{const z=lsG(IZ.k,'');if(z)izKunci((JSON.parse(z)||{}).p)}catch(e){}
+izCek();setInterval(()=>{if(navigator.onLine)izCek()},6*36e5);window.addEventListener('online',()=>izCek());
 // Status data Non Admin: hanya sumber publik (harga, indeks, Clean Buy 1–3); broksum ada di server, bukan di HP.
 dataPct=function(){const L=dates.at(-1),cbs={};D.cb.forEach(([d,t,sc])=>{if(!cbs[sc]||d>cbs[sc])cbs[sc]=d});const S5=[dates.at(-1),ixd.at(-1),...['Clean Buy 1','Clean Buy 2','Clean Buy 3'].map(k=>cbs[k])],ok=S5.filter(x=>x&&x>=L).length;return{pct:Math.round(ok/S5.length*100),ok,n:S5.length}};
 if(['bdet','bbroker','bdm','saham'].includes(S.p))render();

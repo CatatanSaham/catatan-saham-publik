@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-10 17:29 WIB",
- "baru": 10,
+ "upd": "2026-11-10 22:18 WIB",
+ "baru": 2,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -12,11 +12,22 @@
   "Google Berita: 10",
   "Google Berita: 7",
   "Google Berita: 22",
-  "Google Berita: 32",
+  "Google Berita: 39",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Hanya ganti pengendali / tender offer dan backdoor / inbreng / akuisisi. Judul media, perlu verifikasi.",
  "items": [
+  {
+   "t": "Nawa Capital Akuisisi Idea Indonesia Akademi (IDEA), Kantongi 66,58% Saham",
+   "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPUEMweUNZaGJ2UFpPSnFBNnJKOUJtT0pKNTR5NjcyUERTVUhZdFVKQ1VGZ2kzbTB6XzlZa2t2eG96bFJYRHJUWHA2c3lSMHlZZG1TMnlUbGttajVGa0wxdms0QzNMX0dLT0lmbnJ0ei1NRWNsVXJEdUp6TGkxeVlRdmljemE2eERCY291dW1OanM5UXhhNVNQY0dRRkIzeDBh?oc=5",
+   "src": "SWA.co.id",
+   "ts": 1794307500,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "IDEA"
+   ],
+   "found": "2026-11-10 22:18"
+  },
   {
    "t": "CIMB Niaga (BNGA) Suntik Modal SLCapital Rp365,28 Miliar Lewat inbreng Aset",
    "link": "https://stockwatch.id/cimb-niaga-bnga-suntik-modal-slcapital-rp36528-miliar-lewat-inbreng-aset/",
@@ -27,6 +38,17 @@
     "BNGA"
    ],
    "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Menteri Koperasi Mau Bentuk Konsorsium Buat Akuisisi KB Bank (BBKP)",
+   "link": "https://www.cnbcindonesia.com/market/20261110085802-17-783758/menteri-koperasi-mau-bentuk-konsorsium-buat-akuisisi-kb-bank--bbkp-",
+   "src": "CNBC Indonesia",
+   "ts": 1794278703,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "BBKP"
+   ],
+   "found": "2026-11-10 22:18"
   },
   {
    "t": "Menggeber Cuan, Akuisisi Jadi Pilihan",

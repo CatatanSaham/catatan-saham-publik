@@ -1,22 +1,117 @@
 {
- "upd": "2026-11-09 17:25 WIB",
- "baru": 13,
+ "upd": "2026-11-10 17:29 WIB",
+ "baru": 10,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
   "StockWatch: 12",
   "Katadata: 25",
   "CNBC Indonesia: 100",
-  "Kontan: 25",
+  "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 9",
-  "Google Berita: 9",
-  "Google Berita: 21",
-  "Google Berita: 30",
+  "Google Berita: 10",
+  "Google Berita: 7",
+  "Google Berita: 22",
+  "Google Berita: 32",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Hanya ganti pengendali / tender offer dan backdoor / inbreng / akuisisi. Judul media, perlu verifikasi.",
  "items": [
+  {
+   "t": "CIMB Niaga (BNGA) Suntik Modal SLCapital Rp365,28 Miliar Lewat inbreng Aset",
+   "link": "https://stockwatch.id/cimb-niaga-bnga-suntik-modal-slcapital-rp36528-miliar-lewat-inbreng-aset/",
+   "src": "StockWatch",
+   "ts": 1794306427,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "BNGA"
+   ],
+   "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Menggeber Cuan, Akuisisi Jadi Pilihan",
+   "link": "https://news.google.com/rss/articles/CBMieEFVX3lxTFBmYV9vWVVuMmpIMlpLN3B2cGE4M3RkWnZtakxudVNxaXNLNjM1OWhEUXpLUWtGTnlXc0VUMk42WEo0VmFqcWNIMElLcXJWUW5MQnJWZGM1Y3o4ZnR1Y3FHY0xSaFZWdE1XcmZYdXhYZHpoWV9iRkY5eQ?oc=5",
+   "src": "KONTAN",
+   "ts": 1794269126,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Investor Asing Borong Saham BBCA, AKRA Ambil Alih Penuh SPBU BP",
+   "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQUU4yc3B5bDFncmZlbHI3U2FqUlRUZS0yWGZSTUVEUDhDTnlKT2xOVmc3OW8wbXQ4ZXZMVk14bkVMSHN3ajA3T1E5YUpPYWFiMm45b3JlYUpJbUlEbW54MHJpLW81QUs1M0hOU1dicVFSZ2JBWXdjbHRDTTNpQm5QN3EzLVN1Z2ctSmR4Zm43SnZLRUd5d1ow?oc=5",
+   "src": "https://www.suaralandak.co.id/",
+   "ts": 1794261685,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "BBCA",
+    "AKRA"
+   ],
+   "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Astra Gelontorkan Ratusan Miliar Tender Offer AUTO, Saham Terbang",
+   "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOTXhWUEh2VF9CLVlILXBYcW5jS1pFcVZMcEZVeEwxaThwQ0VrRDV6QzgxRUNIWGVhZEg1cGowVzE1dDRLaEEzRWFoLU9SaW1ud0tQSGxCUWRLUHNSbUxtMElsYmtOcnVLbUtUZ0RCN20wWk9HRmxRM1U0VXdUeEpHeVhsTTdDbEhqc21KUjZ5Qlg1Ri1KSHJqTTVDUDBuNjlC?oc=5",
+   "src": "https://cetro.or.id/",
+   "ts": 1794246312,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "AUTO"
+   ],
+   "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Aksi Merger dan Akuisisi Emiten BEI, Simak Prospek Saham BOGA, IDEA, DOOH, dan KDTN",
+   "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNY2FUMEg2NDBfYWxxN2VVQ1FkaFh0WVNHajZydUNrQXJjUUkzd1l6SlQ5MUFRcHZnbnpDdnJKcTIzTlEwRXFSN2YtLTZ0UkUtSTBjZG1VZm5ISnRHZ0RSS08teHpjVENfU3BieUZtaVlIejBGTlppZi12WG02UVFhVHFQdkxHV2dBTkk2MkZmZ2x6Umo0eUFsSGczOTVEMm96Vmh2YkZodlZjbGVON3ZZN3hPU2xEZ9IBrgFBVV95cUxNdEtnc3FmX2xfdllBN0p3bXpSZGozUXVRbXYtdmZ2NlBDRjdCM09fekx2SHJST1RZbC13Q1ZqZmZxUEstTU9wNlBQd256dGJ3QUJaS2tPTzVyZ2hsRjFKbkhlNFIyNU9SeXFTeDhYa1NDdmdzbW8wNEhaZ3l4a09iQzFBZjVrbnN6WS12UTFvaUNkUWs3SnJxQ0JpU1JpODhBenhWRGhhV0Uwdi1fUmc?oc=5",
+   "src": "kontan.co.id",
+   "ts": 1794243340,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "BOGA",
+    "IDEA",
+    "DOOH",
+    "KDTN"
+   ],
+   "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Emiten BEI Ubah Arah Bisnis Lewat Aksi Akuisisi",
+   "link": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE5zSmZncW5GYXJfWHZPMTN1SHZDaTFLekhvYldZSW9UU2N3ZzR3Q2FLYTZTTFRqYTBzRXZpUlAyd2VlNGhmbTBUWXhJS3RWbHJwTjBR?oc=5",
+   "src": "شبكة تواصل الإخبارية",
+   "ts": 1794226253,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Emiten BEI Perluas Bisnis Lewat Merger dan Akuisisi",
+   "link": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFBTZ2ZvRzNUN0FwSXBsNHNDMTlKZzhQXzkwOUZzeUZCLUJUYW9CSGZicklUQUx2bDdvT3YwdWdIUjZXMG9GdTRzQ2Q5YlVKSDJMcUtsa3dCOHdEc2hZaXVCZEVuVl8tZw?oc=5",
+   "src": "Cirebon Times",
+   "ts": 1794226246,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Cakra Bhakti Kokoh Sebagai Pemegang Saham Pengendali Spindo (ISSP)",
+   "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOUllXaTZtdkR2bFBUeVdlVFZ6cWlSTV9Ja0tMYkR6Tl9ocFJOVFlfbFFLSk9fc2FQeFEwbHFPQnREdzhWUk0xai1RUkM1LWF2X0ZHLW1FZWdCaXQwbmstcGh1M0o1R0FyQWdNb21qaTJocThMVm9KY3FhQ1ltRHZXcVA0cTluYjM5TEtDN0ZHOElfUHhHOXBIZUt4TEk?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794225660,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "ISSP"
+   ],
+   "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Deretan Aksi Akuisisi Emiten Jelang Tutup Tahun, Ini Kata Analis",
+   "link": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOZHZqWVdpYWVsbGRIS1FxQmlmdkMxSWxteTlEX1ZKVE9tU1NDQ29KMHhLRkpBWjJiZkk4Q3lzMkNDUFVpRkJISERHTE5VLTFnUVV0OU0tT3NHZXUxTnNTTTNLOHk0cHo1c1RFRWhuX19fRERxaUhqQ3lHZVJ6UUthdg?oc=5",
+   "src": "TradingView",
+   "ts": 1794225604,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-10 17:29"
+  },
   {
    "t": "Garuda (GIAA) Rights Issue 248,7 Miliar Saham, Ambil Alih GMFI Lagi?",
    "link": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQZjMxMDk5M2VmRlZMZXJiWnFwUVRaQU01WGZ1NXVrN054M3VCWTFVYTNJdGdFSGtkX2RVQXQ2RGtVWUw4a1RJVEVMWmV0ZWtrY3BLcG5GdEVLNDRKRDZqQ1A1aE1NUk1vT1A5T24yQm1iYnBZTWVjNlJ5M0RjZjgwaHRNUUh0YzBtR0lxQVZUTjVPd014T0E?oc=5",
@@ -119,6 +214,17 @@
    "cat": "Backdoor / akuisisi",
    "k": [],
    "found": "2026-11-09 17:25"
+  },
+  {
+   "t": "Ruby Mining Tunda Pengambilalihan Saham KDTN Tanpa Batas Waktu",
+   "link": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE9nMHpick9OMEJOM24xZVFtYVVRWEhqSnpmNTNpVmFtMzFsZjJlRV9JUlYwQlBZWE1LRXJTdmJlQzhBRFA3emREbDBQWXNvM2RxemhGWFlVNkRSazRobkgtcTUxc09vQTA?oc=5",
+   "src": "Lensa Hukum",
+   "ts": 1794159540,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "KDTN"
+   ],
+   "found": "2026-11-10 17:29"
   },
   {
    "t": "Youyi Group Akuisisi 51% Saham EKAD, Saham Langsung ARA",

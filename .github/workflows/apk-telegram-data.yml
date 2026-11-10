@@ -1,0 +1,361 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (bot-data.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: APK to Telegram data
+on:
+  workflow_dispatch:
+concurrency:
+  group: apk-bot-data
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-data
+          persist-credentials: true
+      - name: Get APK baseline from this private repository
+        env:
+          GH_TOKEN: ${{ secrets.PRIVAT_TOKEN }}
+        run: gh release download apk-latest --repo CatatanSaham/catatan-saham-mtf --pattern 'CatatanSaham.apk' --dir /tmp/bot-apk
+      - name: Convert daily uploads with fixed formulas
+        run: |
+          cat > /tmp/build_bot_data.py <<'PYTHON'
+          #!/usr/bin/env python3
+          """Bangun snapshot ringan untuk bot dari APK dan cadangan JSON Catatan Saham."""
+          
+          from __future__ import annotations
+          
+          import argparse
+          import io
+          import json
+          import zipfile
+          import math
+          import re
+          from pathlib import Path
+          
+          
+          MA_FIELDS = ["close", "ma5", "ma20", "ma30", "ma100", "ma200", "ema21", "ema100", "ema200"]
+          
+          
+          def write_json(path: Path, value) -> None:
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(json.dumps(value, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+          
+          
+          def apk_reader(path: Path):
+              raw = path.read_bytes()
+              outer = zipfile.ZipFile(io.BytesIO(raw))
+              if path.suffix.lower() == ".apk" or "assets/public/index.html" in outer.namelist():
+                  return outer
+              apks = [name for name in outer.namelist() if name.lower().endswith(".apk")]
+              if not apks:
+                  raise ValueError("ZIP tidak berisi APK")
+              return zipfile.ZipFile(io.BytesIO(outer.read(apks[0])))
+          
+          
+          def read_shard(apk, name: str):
+              with apk.open(f"assets/public/shards/{name}.json") as fh:
+                  return json.load(fh)
+          
+          
+          def screen_snapshot(backup_path: Path | None):
+              result = {"as_of": None, "screens": {}}
+              if not backup_path or not backup_path.exists():
+                  return result
+              backup = json.loads(backup_path.read_text(encoding="utf-8"))
+              docs = backup.get("docs", {})
+              best = {}
+              for key, doc in docs.items():
+                  if not key.startswith("daily_files/") or not isinstance(doc, dict):
+                      continue
+                  screen_key = str(doc.get("key") or key.rsplit("_", 1)[-1]).lower()
+                  if screen_key not in {"cb1", "cb2", "cb3", "acc", "b10"}:
+                      continue
+                  date = str(doc.get("date") or "")
+                  if screen_key not in best or date > best[screen_key][0]:
+                      rows = doc.get("rows", [])
+                      if isinstance(rows, str):
+                          try:
+                              rows = json.loads(rows)
+                          except json.JSONDecodeError:
+                              rows = []
+                      best[screen_key] = (date, {
+                          "label": doc.get("label") or screen_key.upper(),
+                          "cols": doc.get("cols") or [],
+                          "rows": rows if isinstance(rows, list) else [],
+                      })
+              for key, (date, screen) in best.items():
+                  result["screens"][key] = screen
+                  result["as_of"] = max(result["as_of"] or "", date)
+              return result
+          
+          
+          def build(apk_path: Path, backup_path: Path | None, out: Path, daily_dir: Path | None = None) -> None:
+              apk = apk_reader(apk_path)
+              ma = read_shard(apk, "ma")
+              fund = read_shard(apk, "fund")
+              adm = read_shard(apk, "adm")
+              profile = read_shard(apk, "profil")
+              dna = read_shard(apk, "mdna")
+          
+              daily = []
+              if daily_dir:
+                  for path in sorted(daily_dir.glob('*.zip')):
+                      with zipfile.ZipFile(path) as z:
+                          names = z.namelist()
+                          if len(names) != 1 or not names[0].endswith('.json'):
+                              raise ValueError(f'Arsip tidak valid: {path.name}')
+                          day = json.loads(z.read(names[0]))
+                          if day.get('date') != path.stem:
+                              raise ValueError(f'Tanggal tidak cocok: {path.name}')
+                          daily.append(day)
+              base_date = ma['dates'][-1]
+              for day in daily:
+                  date = day['date']
+                  doc = day.get('daily_files', {}).get(date + '_rs')
+                  if date <= base_date or not doc:
+                      continue
+                  rows = json.loads(doc['rows']) if isinstance(doc['rows'], str) else doc['rows']
+                  cols = doc['cols']
+                  ti, ci = cols.index('Kode Saham'), cols.index('Penutupan')
+                  closes = {str(r[ti]): r[ci] for r in rows}
+                  ma['dates'].append(date)
+                  for ticker, history in ma['t'].items():
+                      prev = history[-1]
+                      tail = ma.get('tail', {}).get(ticker)
+                      c = closes.get(ticker)
+                      if not prev or not tail or not isinstance(c, (int, float)):
+                          history.append(None)
+                          continue
+                      tail.append(c)
+                      del tail[:-200]
+                      sma = lambda n: math.floor(sum(tail[-n:]) / n * 10 + 0.5) / 10 if len(tail) >= n else None
+                      row = [c] + [sma(n) for n in (5,20,30,100,200)]
+                      for n, i in ((21,6),(100,7),(200,8)):
+                          alpha = 2 / (n+1)
+                          e = prev[i]
+                          if e is None:
+                              e = tail[0] if len(tail) >= n else None
+                              if e is not None:
+                                  for v in tail[1:]: e = alpha*v + (1-alpha)*e
+                          else:
+                              e = alpha*c + (1-alpha)*e
+                          row.append(math.floor(e*10+0.5)/10 if e is not None else None)
+                      history.append(row)
+          
+              market = {"as_of": ma.get("dates", [None])[-1], "fields": MA_FIELDS, "stocks": {}}
+              for ticker, rows in ma.get("t", {}).items():
+                  if not rows or not isinstance(rows[-1], list):
+                      continue
+                  market["stocks"][ticker] = dict(zip(MA_FIELDS, rows[-1]))
+          
+              legacy_fields = fund.get("f", [])
+              stocks = {}
+              for ticker in sorted(set(fund.get("d", {})) | set(fund.get("q3", {})) | set(fund.get("prof", {}))):
+                  item = {}
+                  if ticker in fund.get("q3", {}):
+                      item["q3"] = fund["q3"][ticker]
+                  if ticker in fund.get("d", {}):
+                      item["latest"] = dict(zip(legacy_fields, fund["d"][ticker]))
+                  if ticker in fund.get("prof", {}):
+                      item["note"] = fund["prof"][ticker]
+                  stocks[ticker] = item
+              fund_out = {"as_of": fund.get("q3t_src") or fund.get("src"), "source": fund.get("src"), "stocks": stocks}
+          
+              broker = {
+                  "as_of": adm.get("asOf"),
+                  "sessions": adm.get("sess", []),
+                  "coverage": adm.get("cov", {}),
+                  "rank": {str(x.get("t")): x for x in adm.get("rank", []) if x.get("t")},
+                  "detail": {str(x.get("t")): x for x in adm.get("bot", []) if x.get("t")},
+              }
+              clean = screen_snapshot(backup_path)
+              for day in daily:
+                  date = day['date']
+                  docs = day.get('daily_files', {})
+                  for key in ('cb1','cb2','cb3','acc','b10'):
+                      doc = docs.get(date + '_' + key)
+                      if not doc or date < (clean['screens'].get(key, {}).get('as_of') or clean.get('as_of') or ''):
+                          continue
+                      rows = json.loads(doc['rows']) if isinstance(doc['rows'], str) else doc['rows']
+                      if not isinstance(rows, list): raise ValueError('Baris screener tidak valid')
+                      clean['screens'][key] = {'as_of':date,'label':doc['label'],'cols':doc['cols'],'rows':rows}
+                      clean['as_of'] = max(clean['as_of'] or '', date)
+                  meta = docs.get(date + '_bfm')
+                  if meta:
+                      chunks = [docs.get(date + '_bf' + str(i)) for i in range(meta['chunks'])]
+                      if not all(chunks): raise ValueError('Detail broker belum lengkap')
+                      stocks_daily = {}
+                      for chunk in chunks:
+                          items = json.loads(chunk['d']) if isinstance(chunk['d'], str) else chunk['d']
+                          for ticker, a in items.items():
+                              if len(a) % 7: raise ValueError('Kolom broker tidak valid')
+                              net = [{'code':a[i],'value':a[i+1]-a[i+2],'lot':a[i+3]-a[i+4]} for i in range(0,len(a),7)]
+                              stocks_daily[ticker] = {'buyers':sorted((b for b in net if b['value']>0),key=lambda b:-b['value'])[:5],
+                                  'sellers':sorted((b for b in net if b['value']<0),key=lambda b:b['value'])[:5]}
+                      broker = {'as_of':date,'daily':stocks_daily}
+              built_html = apk.read('assets/public/index.html').decode('utf-8')
+              built_match = re.search(r"CS_APK_BUILT='([^']+)'", built_html)
+              status = {
+                  "apk_built": built_match.group(1) if built_match else apk_path.name,
+                  "source": "APK → GitHub apk-data → bot (otomatis, tanpa AI)",
+                  "market_as_of": market["as_of"],
+                  "fund_as_of": fund.get("q3t_src") or fund.get("src"),
+                  "daily_as_of": clean.get("as_of"),
+                  "broker_as_of": broker.get("as_of"),
+                  "screen_counts": {k: len(v.get("rows", [])) for k, v in clean.get("screens", {}).items()},
+              }
+          
+              # Use the same daily closing and reference prices as Market Overview.
+              with apk.open("assets/public/index.html") as page:
+                  embedded = page.read().decode().split("const D=", 1)[1]
+              overview, _ = json.JSONDecoder().raw_decode(embedded)
+              movers = {}
+              for date, day in overview["days"].items():
+                  if date >= "20260701":
+                      movers[date] = dict(zip(day["t"], zip(day["c"], day["p"], day["v"])))
+              for day in daily:
+                  date = day["date"]
+                  doc = day.get("daily_files", {}).get(date + "_rs")
+                  if not doc or date < "20260701":
+                      continue
+                  rows = json.loads(doc["rows"]) if isinstance(doc["rows"], str) else doc["rows"]
+                  columns = [doc["cols"].index(key) for key in
+                             ("Kode Saham", "Penutupan", "Sebelumnya", "Volume")]
+                  movers[date] = {str(row[columns[0]]): [row[i] for i in columns[1:]] for row in rows}
+              write_json(out / "movers.json", {"sessions": movers})
+
+              write_json(out / "market.json", market)
+              write_json(out / "fund.json", fund_out)
+              write_json(out / "broker.json", broker)
+              write_json(out / "profile.json", profile)
+              write_json(out / "dna.json", dna)
+              write_json(out / "cleanbuy.json", clean)
+              write_json(out / "status.json", status)
+          
+          
+          def main() -> None:
+              parser = argparse.ArgumentParser()
+              parser.add_argument("--apk", required=True, type=Path, help="APK atau ZIP yang berisi APK")
+              parser.add_argument("--backup", type=Path, help="cadangan_catatan_saham JSON")
+              parser.add_argument("--out", required=True, type=Path)
+              parser.add_argument("--daily-dir", type=Path)
+              args = parser.parse_args()
+              build(args.apk, args.backup, args.out, args.daily_dir)
+              print(f"Snapshot bot dibuat di {args.out}")
+          
+          
+          if __name__ == "__main__":
+              main()
+          PYTHON
+          python3 /tmp/build_bot_data.py --apk /tmp/bot-apk/CatatanSaham.apk --daily-dir apk-data/harian --out bot-data
+          cat > /tmp/build_bandarmologi.py <<'BANDARMOLOGI_PY'
+          """Build a compact Bandarmologi history from the APK and daily sync ZIPs."""
+          import argparse
+          import json
+          import re
+          from pathlib import Path
+          from zipfile import ZipFile
+          
+          
+          def seed_history(apk):
+              with ZipFile(apk) as archive:
+                  html = archive.read("assets/public/index.html").decode()
+                  market, _ = json.JSONDecoder().raw_decode(html.split("const D=", 1)[1])
+                  top = json.loads(archive.read("assets/public/shards/bm.json"))
+                  sides = json.loads(archive.read("assets/public/shards/bs.json"))
+          
+              sides_index = {date: i * 2 for i, date in enumerate(sides["dates"])}
+              sessions = {}
+              for index, date in enumerate(top["dates"]):
+                  day = market["days"][date]
+                  side = sides_index.get(date)
+                  rows = {}
+                  for i, ticker in enumerate(day["t"]):
+                      if ticker not in top["t"]:
+                          continue
+                      pair = sides["t"].get(ticker)
+                      buy, sell = pair[side:side + 2] if pair is not None and side is not None else (None, None)
+                      foreign_buy = (day.get("b", [0] * len(day["t"]))[i] or 0) * 100
+                      rows[ticker] = [
+                          round(day["a"][i] * 1_000_000), day["v"][i],
+                          foreign_buy, foreign_buy - day["f"][i], buy, sell, top["t"][ticker][index],
+                      ]
+                  sessions[date] = rows
+              return sessions
+          
+          
+          def daily_rows(path):
+              date = path.stem
+              with ZipFile(path) as archive:
+                  payload = json.loads(archive.read(date + ".json"))
+              if payload["date"] != date:
+                  raise ValueError(f"{path}: mismatched date")
+              daily = payload["daily_files"]
+              broker = payload["broker_days"]
+              summary = daily.get(date + "_rs")
+              metadata = broker.get(date + "_m")
+              if not summary or not metadata or not metadata.get("chunks"):
+                  return None
+              chunks = [broker.get(f"{date}_{i}") for i in range(metadata["chunks"])]
+              if any(chunk is None for chunk in chunks):
+                  return None
+              net = {}
+              sides = {}
+              for chunk in chunks:
+                  net.update(chunk["l"])
+                  sides.update(chunk.get("bs", {}))
+              headers = summary["cols"]
+              indexes = [headers.index(column) for column in
+                         ("Kode Saham", "Nilai", "Volume", "Foreign Buy", "Foreign Sell")]
+              rows = {}
+              for source in json.loads(summary["rows"]):
+                  ticker, value, volume, foreign_buy, foreign_sell = [source[i] for i in indexes]
+                  if not re.fullmatch(r"[A-Z]{4}", ticker):
+                      continue
+                  pair = sides.get(ticker)
+                  buy, sell = map(int, pair.split(",")) if pair else ((None, None) if ticker in net else (0, 0))
+                  rows[ticker] = [round(value), volume, foreign_buy, foreign_sell, buy, sell, net.get(ticker, 0)]
+              return rows
+          
+          
+          def build(apk, daily_paths):
+              sessions = seed_history(apk)
+              for path in sorted(daily_paths):
+                  rows = daily_rows(path)
+                  if rows is not None:
+                      sessions[path.stem] = rows
+              return {"sessions": dict(sorted(sessions.items()))}
+          
+          
+          def main():
+              parser = argparse.ArgumentParser()
+              parser.add_argument("apk", type=Path)
+              parser.add_argument("daily_directory", type=Path)
+              parser.add_argument("output", type=Path)
+              args = parser.parse_args()
+              history = build(args.apk, args.daily_directory.glob("????????.zip"))
+              args.output.parent.mkdir(parents=True, exist_ok=True)
+              temporary = args.output.with_suffix(".tmp")
+              temporary.write_text(json.dumps(history, separators=(",", ":")), encoding="utf-8")
+              temporary.replace(args.output)
+          
+          
+          if __name__ == "__main__":
+              main()
+          BANDARMOLOGI_PY
+          python3 /tmp/build_bandarmologi.py /tmp/bot-apk/CatatanSaham.apk apk-data/harian bot-data/bandarmologi.json
+      - name: Publish bot data in this private branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add bot-data
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Update bot data from APK uploads'
+          git push origin HEAD:apk-data

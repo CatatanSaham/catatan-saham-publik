@@ -1,0 +1,44 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (publik.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: Terbit ke repo publik
+# Menyalin hasil yang boleh publik (lihat publik/terbit.py) ke CatatanSaham/catatan-saham-publik
+# untuk APK Non Admin. Butuh secret PUBLIK_TOKEN (fine-grained, hanya repo publik, Contents: write).
+on:
+  workflow_run:
+    workflows: ["Hitung modul otomatis (Fase 3, mode bayangan)", "Data API Non Admin (cabang api-data)", "Radar BEI sore", "Makro (PDB, inflasi, BI-Rate)"]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publik
+  cancel-in-progress: false
+jobs:
+  terbit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cek kunci
+        id: k
+        env: {T: "${{ secrets.PRIVAT_TOKEN }}"}
+        run: if [ -z "$T" ]; then echo "PRIVAT_TOKEN belum diisi, lewati."; echo "ada=0" >> $GITHUB_OUTPUT; else echo "ada=1" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.ada == '1'
+        with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main}
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.ada == '1'
+        with: {ref: apk-data, path: data, sparse-checkout: "apk-data/derived\napk-data/harian\napk-data/kepemilikan\napk-data/makro.json\napk-data/radar.json", sparse-checkout-cone-mode: false, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}"}
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.ada == '1'
+        with: {repository: CatatanSaham/catatan-saham-publik, token: "${{ secrets.PRIVAT_TOKEN }}", path: pub}
+      - name: Salin daftar putih dan simpan
+        if: steps.k.outputs.ada == '1'
+        run: |
+          python main/publik/terbit.py data/apk-data pub
+          cd pub
+          git config user.name "Terbit Catatan Saham"
+          git config user.email "noreply@github.com"
+          git add data
+          git diff --cached --quiet -- data/cleanbuy data/harian data/kepemilikan data/makro.json data/radar.json && exit 0
+          git commit -q -m "Terbit $(TZ=Asia/Jakarta date '+%Y-%m-%d %H:%M')"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done

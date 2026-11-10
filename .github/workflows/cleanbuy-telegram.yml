@@ -1,0 +1,93 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (cleanbuy-telegram.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: Formula Screener ke Telegram
+on:
+  schedule:
+    # 18.30 WIB, lalu tiap 30 menit sampai 23.30 WIB (UTC+7)
+    - cron: '30 11 * * 1-5'
+    - cron: '0,30 12-16 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dari:
+        description: "zip = dipanggil robot penjaga saat ZIP harian masuk"
+        default: ""
+permissions:
+  contents: write
+concurrency:
+  group: cleanbuy-telegram
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Selalu ambil skrip bot dari main. Saat dipanggil dari push ZIP di apk-data,
+      # checkout tanpa ref mengambil apk-data (tidak ada folder bot/) → gagal, lalu
+      # pengiriman baru terjadi lewat jadwal cadangan (jeda ±15 menit).
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-next
+          path: formula
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /apk/www/index.html
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-data
+          path: data
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /apk-data/harian/
+            /bot-data/cleanbuy-delivery/
+      - name: Hitung dan kirim ke topik Clean buy
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Push ZIP sebelum 18.30 WIB ditangani oleh pemeriksaan cadangan 18.30.
+          if [ "${{ inputs.dari }}" = "zip" ]; then
+            wib_time=$(TZ=Asia/Jakarta date +%H%M)
+            if [ "$wib_time" -lt 1830 ]; then
+              echo "ZIP arrived before 18.30 WIB; waiting for scheduled fallback."
+              exit 0
+            fi
+          fi
+          [ -n "$TELEGRAM_TOKEN" ]
+          zip=$(find data/apk-data/harian -maxdepth 1 -name '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].zip' | sort | tail -1)
+          if [ -z "$zip" ]; then exit 0; fi
+          session=$(basename "$zip" .zip)
+          marker="bot-data/cleanbuy-delivery/$session.json"
+          # Setelah ZIP sesi berhasil diproses, marker sent menghentikan pengiriman ulang.
+          if [ -e "data/$marker" ]; then
+            cat "data/$marker"
+            if grep -q '"pending"' "data/$marker"; then
+              echo "Status kirim belum pasti. Periksa topik sebelum membuka ulang pengiriman."
+              exit 1
+            fi
+            exit 0
+          fi
+          unzip -p "$zip" "$session.json" > "$RUNNER_TEMP/cleanbuy-session.json"
+          node bot/run-cleanbuy.cjs formula/apk/www/index.html "$RUNNER_TEMP/cleanbuy-session.json" > "$RUNNER_TEMP/cleanbuy.json"
+          node -e 'if (require(process.argv[1]).as_of !== process.argv[2]) process.exit(1)' "$RUNNER_TEMP/cleanbuy.json" "$session"
+          git -C data config user.name 'github-actions[bot]'
+          git -C data config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          mkdir -p "data/$(dirname "$marker")"
+          printf '{"status":"pending","run_id":"%s"}\n' "$GITHUB_RUN_ID" > "data/$marker"
+          git -C data add "$marker"
+          git -C data commit -m "Reserve Clean Buy delivery for $session"
+          # APK sering mengirim beberapa berkas ke apk-data bersamaan; tanpa pull dulu push ditolak dan Clean Buy tidak terkirim.
+          for i in 1 2 3 4 5; do git -C data pull -q --rebase origin apk-data && git -C data push origin HEAD:apk-data && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); done
+          message_ids=$(node bot/send-cleanbuy.cjs "$RUNNER_TEMP/cleanbuy.json")
+          printf '{"status":"sent","message_ids":%s}\n' "$message_ids" > "data/$marker"
+          git -C data add "$marker"
+          git -C data commit -m "Confirm Clean Buy delivery for $session"
+          for i in 1 2 3 4 5; do git -C data pull -q --rebase origin apk-data && git -C data push origin HEAD:apk-data && break; sleep $((i*3)); done
+          echo "Clean Buy $session sent to topic 5633, messages $message_ids"

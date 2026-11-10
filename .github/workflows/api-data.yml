@@ -1,0 +1,61 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (api-data.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: Data API Non Admin (cabang api-data)
+# Membuat berkas kecil per saham / per broker untuk Worker /app/api/* (APK & web Non Admin).
+# Sumber: shard bf_* (apk-next) + ZIP harian tervalidasi (apk-data/harian). Tidak mengubah rumus.
+# SEMUA tanggal disimpan, dipecah per bulan. Ditulis ke cabang privat `api-data` (commit biasa, hanya
+# bila isi berubah; bulan lama tidak berubah). Tidak menyentuh apk-data, apk-next, apk-build.
+on:
+  schedule:
+    - cron: "27 13 * * 1-5"   # 20.27 WIB
+    - cron: "27 16 * * 1-5"   # 23.27 WIB
+    - cron: "27 0 * * 2-6"    # 07.27 WIB
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: api-data
+  cancel-in-progress: false
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main}
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-next
+          path: next
+          sparse-checkout: apk/www/shards
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-data
+          path: data
+          sparse-checkout: |
+            apk-data/harian
+            apk-data/derived
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Ambil cabang api-data (buat baru bila belum ada)
+        run: |
+          if git ls-remote --exit-code "https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git" api-data >/dev/null; then
+            git clone -q --depth 1 --branch api-data "https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git" out
+          else
+            mkdir out && cd out && git init -q -b api-data && git remote add origin "https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git"
+          fi
+      - name: Bangun data API
+        run: python main/tools/api/build_api.py --shards next/apk/www/shards --zips data/apk-data/harian --derived data/apk-data/derived --out out
+      - name: Simpan ke api-data (hanya bila berubah)
+        run: |
+          cd out
+          git config user.name "Data API Otomatis"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "api-data $(python -c "import json;print(json.load(open('meta.json'))['as_of'])")"
+          git push -q origin HEAD:api-data

@@ -1,0 +1,55 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (publish-foreign-bot-data.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: Publish verified Foreign lots for private Telegram bot
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish-foreign-bot-data
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout APK data branch
+        uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-data
+          persist-credentials: true
+      - name: Checkout tested foreign audit scripts
+        uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: feature/foreign-apk-daily-export
+          path: foreign-audit-scripts
+          sparse-checkout: bot
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reconcile all original APK RS sessions
+        run: |
+          mkdir -p bot-data
+          python foreign-audit-scripts/bot/reconcile-foreign.py apk-data/harian bot-data/foreign.json
+          python - <<'PY'
+          import json
+          d=json.load(open('bot-data/foreign.json'))
+          assert d['source']=='apk-rs' and d['verified'] is True and d['unit']=='shares'
+          assert len(d['sessions']) >= 5
+          print('Verified sessions:',len(d['sessions']))
+          PY
+      - name: Commit verified data to private APK branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bot-data/foreign.json
+          if git diff --cached --quiet; then
+            echo "Verified data unchanged"
+          else
+            git commit -m "data: publish reconciled APK foreign lots for Telegram"
+            git push origin HEAD:apk-data
+          fi

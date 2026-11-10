@@ -1,0 +1,30 @@
+name: Penjaga (picu robot saat ada unggahan / kode baru)
+# Repo privat tidak bisa memicu robot di repo ini secara langsung, jadi penjaga ini memeriksa repo privat:
+# tiap 5 menit, saat APK admin selesai mengirim data (repository_dispatch "unggah"), atau manual.
+# Data harian baru → Clean Buy Telegram, data bot, foreign, hitung modul, data API, terbit publik.
+# File kepemilikan baru → terbit publik. apk-next berubah → OTA Non Admin. apk-build berubah → rakit APK admin.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  repository_dispatch:
+    types: [unggah, kode]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: pemicu
+  cancel-in-progress: false
+jobs:
+  cek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .robot
+      - name: Bandingkan repo privat dan picu robot
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PT: ${{ secrets.PRIVAT_TOKEN }}
+        run: python3 .robot/pemicu.py

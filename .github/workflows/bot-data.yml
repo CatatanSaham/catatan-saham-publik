@@ -1,0 +1,74 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (bot-data.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: Data bot Telegram
+on:
+  schedule:
+    - cron: "17 13 * * 1-5"   # 20.17 WIB
+    - cron: "47 15 * * 1-5"   # 22.47 WIB
+    - cron: "23 0 * * 2-6"    # 07.23 WIB
+  workflow_run:
+    workflows: ["Radar BEI sore"]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: bot-data
+  cancel-in-progress: true
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+          path: main
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-next
+          path: next
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            apk/www/index.html
+            apk/www/shards/*.json
+            !apk/www/shards/bf_*
+            !apk/www/shards/brold.json
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-data
+          path: data
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            apk-data/harian/*
+            apk-data/makro.json
+            apk-data/radar.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rakit jawaban bot
+        run: python main/bot/build.py next/apk/www/shards data/apk-data out next/apk/www/index.html
+      - name: Kirim ke Cloudflare
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        run: |
+          set -e
+          URL=$(curl -s "https://api.telegram.org/bot${TELEGRAM_TOKEN}/getWebhookInfo" | python -c "import sys,json;print(json.load(sys.stdin)['result'].get('url',''))")
+          [ -n "$URL" ] || { echo "Bot belum punya webhook (alamat worker). Buka worker di Cloudflare dulu."; exit 1; }
+          BASE=$(python -c "import sys,urllib.parse as u;p=u.urlparse(sys.argv[1]);print(p.scheme+'://'+p.netloc)" "$URL")
+          echo "Worker: $BASE → $(curl -s "$BASE/" | head -c 200)"
+          KEY=$(printf '%s' "$TELEGRAM_TOKEN" | sha256sum | cut -d' ' -f1)
+          ok=0; bad=0
+          for f in out/*.json; do
+            k=$(basename "$f" .json)
+            r=$(curl -s -o /tmp/r.txt -w '%{http_code}' -X POST "$BASE/data?k=$k" -H "x-key: $KEY" -H 'content-type: application/json' --data-binary @"$f")
+            if [ "$r" = "200" ] && grep -q "^ok $k" /tmp/r.txt; then ok=$((ok+1)); else bad=$((bad+1)); echo "$k gagal $r: $(cat /tmp/r.txt)"; fi
+          done
+          echo "terkirim $ok, gagal $bad"
+          [ "$bad" = "0" ]

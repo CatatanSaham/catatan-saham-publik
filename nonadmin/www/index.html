@@ -2206,7 +2206,10 @@ document.addEventListener('change',e=>{if(e.target&&e.target.id==='rrk'){RR.kode
    Tampilan berdiri sendiri (tidak ikut render()), supaya keyboard HP tidak terganggu saat mengetik. */
 const AICM=[
  {id:'e4b',nama:'Pintar',gb:3.7,ram:7e9,ket:'Gemma 4 E4B · unduh ±3,7 GB · untuk HP RAM 8 GB ke atas',url:'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm'},
- {id:'e2b',nama:'Ringan',gb:2.6,ram:5e9,ket:'Gemma 4 E2B · unduh ±2,6 GB · untuk HP RAM 6 GB ke atas',url:'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm'}];
+ {id:'e2b',nama:'Ringan',gb:2.6,ram:5e9,ket:'Gemma 4 E2B · unduh ±2,6 GB · untuk HP RAM 6 GB ke atas · disarankan',url:'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm'},
+ {id:'q15',nama:'Super Ringan',gb:1.6,ram:3e9,visi:false,ket:'Qwen 2.5 1.5B · unduh ±1,6 GB · untuk HP RAM 4 GB ke atas · lebih sederhana, foto dibaca AI server',url:'https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/main/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm'}];
+/* hemat RAM: batas token per obrolan, dan model dilepas dari memori bila chat ditutup 5 menit */
+const AIC_TOKEN=3072,AIC_LEPAS_MS=5*60e3;
 const AIC={open:false,msgs:[],busy:false,st:null,dl:null,atur:false,ctx:'',ctxLab:'',no:0,err:'',muat:'',lis:false};
 const aicP=()=>{const C=window.Capacitor;if(!C||!C.isPluginAvailable||!C.isPluginAvailable('CsAi'))return null;return AIC.pl||(AIC.pl=C.registerPlugin?C.registerPlugin('CsAi'):C.Plugins.CsAi)};
 const aicLs=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},aicSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
@@ -2220,15 +2223,84 @@ function aicListen(){const p=aicP();if(!p||AIC.lis)return;AIC.lis=true;
  p.addListener('token',o=>{if(!AIC.busy||String(o.no)!==String(AIC.no))return;const m=AIC.msgs.at(-1);if(m&&m.r==='a'){m.t+=o.t;aicTok()}});
  p.addListener('unduh',async o=>{if(o.selesai||o.err){AIC.dl=null;AIC.err=o.err&&o.err!=='Dijeda'?'Unduhan berhenti: '+o.err:'';await aicStat();if(o.selesai&&!o.err){aicSet('cs_ai_model',o.id);aicSet('cs_ai_mode','auto')}aicDraw()}else{AIC.dl={id:o.id,got:o.got,total:o.total};aicDl()}})}
 
-/* ---- konteks: teks halaman yang sedang dibuka + ringkasan harga saham bila di halaman saham ---- */
-function aicKonteks(maks){let lab='',kop='';try{const mn=MENU.flatMap(g=>g[1]).find(x=>x[0]===S.p);lab=S.p==='home'?'Beranda':(mn?mn[1]:S.p)}catch(e){lab=String(S.p||'')}
- try{if(S.p==='saham'){const c=hubSync(),SR=hubSer(c);lab='Saham '+c;if(SR.length){const la=SR.at(-1),f=n=>{const s=SR.slice(-n);return s.length>1?((la.c/s[0].c-1)*100).toFixed(1)+'%':'-'};
-  kop='Saham: '+c+(NM[c]?' ('+NM[c]+')':'')+(SEC&&SEC[c]?' · sektor '+SEC[c]:'')+'\nHarga penutupan terakhir ('+fd(la.d)+'): '+la.c+'\nPerubahan harga: 5 hari '+f(6)+' · 1 bulan '+f(22)+' · 3 bulan '+f(64)+'\nTertinggi/terendah 3 bulan: '+Math.max(...SR.slice(-63).map(r=>r.c))+' / '+Math.min(...SR.slice(-63).map(r=>r.c))+'\n'}}}catch(e){}
- let t='';try{const m=$('#m');t=(m&&m.innerText)||''}catch(e){}
- t=t.replace(/ /g,' ').replace(/[ \t]+/g,' ').replace(/ ?\n ?/g,'\n').replace(/\n{2,}/g,'\n').trim();
- const sisa=Math.max(500,maks-kop.length);if(t.length>sisa)t=t.slice(0,sisa)+'\n…(halaman dipotong)';
- return{lab,teks:kop+(kop?'\nIsi halaman:\n':'')+t}}
-const aicSistem=k=>'Kamu "AI Catatan Saham", asisten di aplikasi riset saham Indonesia (BEI). Jawab dalam bahasa Indonesia yang santai, ringkas, dan mudah dipahami orang awam.\nATURAN:\n1. Semua angka, harga, nama broker, dan fakta HARUS diambil dari DATA di bawah. Jangan mengarang angka, harga, atau berita.\n2. Kalau yang ditanya tidak ada di DATA, katakan terus terang datanya tidak ada di halaman ini, lalu sarankan pengguna membuka halaman atau tab yang memuatnya (misalnya tab Broker, Fundamental, Analisa) dan bertanya lagi.\n3. Jelaskan arti angkanya: apa maksudnya, bagus atau jelek, dan kenapa.\n4. Jangan menyuruh beli atau jual. Beri pertimbangan dua sisi; keputusan di tangan pengguna.\n5. Jawaban pendek: paling banyak sekitar 8 kalimat atau beberapa butir.\n\nDATA (halaman "'+k.lab+'" di aplikasi, tanggal data mengikuti isi halaman):\n'+k.teks;
+/* ---- konteks: halaman yang sedang dibuka, dibaca RAPI (bukan salinan layar mentah) ----
+   Dulu: innerText halaman dipotong 6.000/3.200 huruf. Daftar tanggal di menu pilihan ikut terbaca dan tabel
+   panjang (mis. Top Gainer 50 baris × 8 kolom) terpotong, jadi AI hanya melihat sebagian lalu menebak.
+   Sekarang: menu pilihan → hanya nilai terpilih, tombol/ikon dibuang, tabel → baris "a | b | c" ringkas. */
+const AIC_BLOK=/^(DIV|P|H[1-6]|LI|UL|OL|SECTION|ARTICLE|HEADER|FOOTER|DETAILS|SUMMARY|BLOCKQUOTE|PRE|FIGURE|FORM|FIELDSET|DL|DT|DD|LABEL)$/;
+const aicTampak=el=>{try{if(el.hidden)return false;if(el.checkVisibility)return el.checkVisibility();return el.offsetParent!==null||getComputedStyle(el).position==='fixed'}catch(e){return true}};
+const aicRapi=t=>t.replace(/ /g,' ').replace(/[ \t]+/g,' ').replace(/ ?\n ?/g,'\n').replace(/\n{2,}/g,'\n').trim();
+function aicTeks(n,tab){let o='';for(const c of n.childNodes){if(c.nodeType===3){o+=c.nodeValue;continue}if(c.nodeType!==1)continue;const g=c.tagName;
+  if(/^(SCRIPT|STYLE|SVG|BUTTON|TEXTAREA|CANVAS|IMG|NOSCRIPT|TEMPLATE)$/.test(g)||!aicTampak(c))continue;
+  if(g==='SELECT'){const op=c.options&&c.options[c.selectedIndex];if(op)o+=' ['+op.text.trim()+'] ';continue}
+  if(g==='INPUT'){if(c.value&&!/^(button|submit|checkbox|radio|file|hidden)$/i.test(c.type))o+=' ['+c.value+'] ';continue}
+  if(g==='TABLE'){if(tab){tab.push(c);o+='\n⟦TABEL '+tab.length+'⟧\n'}continue}
+  if(g==='BR'){o+='\n';continue}
+  const bl=AIC_BLOK.test(g);if(bl)o+='\n';o+=aicTeks(c,tab);if(bl)o+='\n'}return o}
+const aicSel=td=>aicRapi(aicTeks(td)).replace(/\n/g,' ');
+/* tabel → {kop:[...], baris:[[...]]} */
+function aicBacaTabel(t){const rs=[...t.rows].filter(aicTampak).map(r=>[...r.cells].map(aicSel));if(!rs.length)return null;
+ const kop=[...t.rows[0].cells].some(c=>c.tagName==='TH')?rs.shift():null;return{kop,baris:rs.filter(r=>r.some(x=>x))}}
+function aicTabelTeks(T,maksHuruf,maksKol){const pk=r=>(maksKol?r.slice(0,maksKol):r).join(' | ');let o=T.kop?'Kolom: '+pk(T.kop)+'\n':'',n=0;
+ for(const r of T.baris){const l=pk(r)+'\n';if(o.length+l.length>maksHuruf)break;o+=l;n++}
+ if(n<T.baris.length)o+='…(tabel dipotong: '+n+' dari '+T.baris.length+' baris terbaca)\n';else o+='(semua '+T.baris.length+' baris)\n';return o}
+function aicHalaman(m){m=m||$('#m');const tab=[];let t='';try{t=aicRapi(aicTeks(m,tab))}catch(e){}return{t,tabel:tab.map(aicBacaTabel)}}
+/* ringkasan harga satu saham dari data aplikasi (dipakai di halaman saham dan bila kode disebut di pertanyaan) */
+function aicRingkasSaham(c){try{const SR=hubSer(c);if(!SR.length)return'';const la=SR.at(-1),f=n=>{const s=SR.slice(-n);return s.length>1?((la.c/s[0].c-1)*100).toFixed(1)+'%':'-'},s3=SR.slice(-63).map(r=>r.c);
+ return 'Saham '+c+(NM[c]?' ('+NM[c]+')':'')+(typeof SEC!=='undefined'&&SEC&&SEC[c]?' · sektor '+SEC[c]:'')+'\nHarga penutupan terakhir ('+fd(la.d)+'): '+la.c+(la.p?' (sebelumnya '+la.p+', '+((la.c/la.p-1)*100).toFixed(2)+'%)':'')+'\nPerubahan harga: 5 hari '+f(6)+' · 1 bulan '+f(22)+' · 3 bulan '+f(64)+'\nTertinggi/terendah 3 bulan: '+Math.max(...s3)+' / '+Math.min(...s3)+'\n'}catch(e){return''}}
+/* kode saham yang disebut di pertanyaan (huruf besar, atau huruf kecil bila kata "saham" ikut disebut) */
+function aicKodeDisebut(q){const ada=new Set(),kecil=/saham|emiten|kode/i.test(q);for(const w of q.match(/\b[A-Za-z]{4}\b/g)||[]){const u=w.toUpperCase();if((w===u||kecil)&&NM[u])ada.add(u)}return[...ada].slice(0,3)}
+/* ---- AI kenal seluruh Catatan Saham ----
+   Tiap halaman dibuat oleh fungsi P[kunci](). Bila pertanyaan menyebut halaman lain (mis. "clean buy" saat membuka
+   Top Gainer), halaman itu dirakit diam-diam di wadah tak terlihat, dibaca tabelnya, lalu dibuang.
+   Layar pengguna tidak berubah. Halaman admin tidak dibaca di edisi Non Admin / tanpa izin admin. */
+const AIC_ALIAS={gainer:['top gainer','gainer','naik paling','paling naik','kenaikan tertinggi'],gainerL:['top loser','loser','turun paling','paling turun','penurunan terbesar'],cleanbuy:['clean buy','cleanbuy','cb1','cb2','cb3'],market:['market overview','kondisi pasar','ihsg','pasar hari ini'],sektor:['sektor','heatmap sektor'],own:['foreign','asing','kepemilikan asing'],bdm:['bandarmologi','bandar'],radar:['radar','berita','keterbukaan','aksi korporasi'],fund:['fundamental','laporan keuangan','pbv'],htp:['harta terpendam'],ma:['moving average',' ma ','ema'],dna:['dna 90','ranking dna'],rencana:['rencana trading'],smart:['smart accumulation','matrix'],awal:['akumulasi awal'],bdet:['broker action','radar akumulasi','broker detector'],dup:['dupont'],siklus:['siklus ekonomi']};
+function aicMenu(){try{return MENU.flatMap(g=>g[1]).filter(x=>P[x[0]]&&!(ADMP.has(x[0])&&!AG.admin))}catch(e){return[]}}
+function aicPeta(){const g=[];try{for(const[gr,it]of MENU){const n=it.filter(x=>P[x[0]]&&!(ADMP.has(x[0])&&!AG.admin)).map(x=>x[1].replace(/ ·.*$/,''));if(n.length)g.push(gr+': '+n.join(', '))}}catch(e){}return g.join('\n')}
+/* halaman alat/admin yang tidak berisi data untuk dibaca AI */
+const AIC_LEWAT=new Set(['ai','achart','agambar','chart','mm','tanya','vzip','pmgu','pelacak','visit','admin','support','tunda','mtfs','cari','saham','profil','lap','dvg','auto']);
+function aicCariHalaman(q){const t=' '+q.toLowerCase()+' ',ok=new Set(aicMenu().map(x=>x[0]).filter(k=>!AIC_LEWAT.has(k))),h=[];
+ for(const[k,al]of Object.entries(AIC_ALIAS)){const kk=k==='gainerL'?'gainer':k;if(ok.has(kk)&&al.some(a=>t.includes(a)))h.push(k)}
+ for(const[k,l]of aicMenu()){const nm=l.replace(/\(.*?\)|·.*$/g,'').trim().toLowerCase();if(nm.length>5&&t.includes(nm)&&!h.includes(k))h.push(k)}
+ const kini=S.p==='gainer'?(S.gk==='l'?'gainerL':'gainer'):S.p;return h.filter(k=>k!==kini).slice(0,2)}
+function aicRakit(k){const kk=k==='gainerL'?'gainer':k,f=P[kk];if(!f)return null;const simpan={p:S.p,gk:S.gk,gm:S.gm,gh:S.gh};let w=$('#aicmaya');
+ if(!w){w=document.createElement('div');w.id='aicmaya';w.setAttribute('aria-hidden','true');w.style.cssText='position:fixed;left:-10000px;top:0;width:380px;opacity:0;pointer-events:none;z-index:-1';document.body.appendChild(w)}
+ try{S.p=kk;if(kk==='gainer'){S.gk=k==='gainerL'?'l':'g';S.gm='';S.gh=''}w.innerHTML=f();const H=aicHalaman(w);const lab=(aicMenu().find(x=>x[0]===kk)||[0,kk])[1]+(kk==='gainer'?(k==='gainerL'?' (Top Loser)':' (Top Gainer)'):'');return{lab,...H}}
+ catch(e){return null}finally{Object.assign(S,simpan);w.innerHTML=''}}
+function aicLabel(){try{const mn=MENU.flatMap(g=>g[1]).find(x=>x[0]===S.p);if(S.p==='saham')return'Saham '+hubSync();return S.p==='home'?'Beranda':(mn?mn[1]:S.p)}catch(e){return String(S.p||'')}}
+/* maks = jumlah huruf yang boleh dikirim; hp = AI di HP (ingatan kecil: tabel dibatasi 5 kolom pertama) */
+function aicKonteks(maks,hp,q,tanpaLain){const lab=aicLabel();let kop='';
+ if(S.p==='saham'){try{kop=aicRingkasSaham(hubSync())}catch(e){}}
+ for(const c of aicKodeDisebut(q||''))if(!kop.includes('Saham '+c+' '))kop+=(kop?'\n':'')+aicRingkasSaham(c);
+ const H=aicHalaman();let teks=H.t,lain='';const tabelLain=[];
+ /* halaman lain yang disebut di pertanyaan */
+ const hl=tanpaLain?[]:aicCariHalaman(q||'').slice(0,hp?1:2);const jatahLain=hl.length?Math.round(maks*(hp?0.45:0.5)/hl.length):0;
+ for(const k of hl){const R=aicRakit(k);if(!R)continue;let t=R.t.replace(/⟦TABEL (\d+)⟧/g,(_,i)=>{const T=R.tabel[i-1];return T?aicTabelTeks(T,Math.max(600,Math.round(jatahLain*0.8/R.tabel.length)),hp?5:0):''});
+  if(t.length>jatahLain)t=t.slice(0,jatahLain)+'\n…(dipotong)';lain+='\n=== Data dari halaman lain: "'+R.lab+'" ===\n'+t+'\n';tabelLain.push(...R.tabel)}
+ maks-=lain.length;
+ /* bagian tabel mendapat jatah terbesar; teks biasa di luar tabel paling banyak 1/3 */
+ const jatahTabel=Math.max(800,maks-kop.length-Math.min(teks.replace(/⟦TABEL \d+⟧/g,'').length,Math.round(maks/3))),perTabel=H.tabel.length?Math.floor(jatahTabel/H.tabel.length):0;
+ teks=teks.replace(/⟦TABEL (\d+)⟧/g,(_,i)=>{const T=H.tabel[i-1];return T?'[Tabel '+i+']\n'+aicTabelTeks(T,Math.max(perTabel,600),hp?5:0):''});
+ if(kop.length+teks.length>maks)teks=teks.slice(0,Math.max(500,maks-kop.length))+'\n…(halaman dipotong)';
+ return{lab,teks:(kop?kop+'\nIsi halaman:\n':'')+teks+lain,tabel:H.tabel,tabelLain,lainLab:hl}}
+/* model kecil di HP: aturan pendek dan tegas (aturan panjang justru membuatnya bingung) */
+const aicSistemHp=(k,foto)=>'Kamu asisten aplikasi saham Catatan Saham. Jawab bahasa Indonesia sederhana.\nATURAN: (1) Ambil angka dan kode saham HANYA dari DATA'+(foto?' atau foto':'')+'. Jangan mengarang. (2) Kalau tidak ada di DATA, bilang tidak ada. (3) Tabel ditulis per baris, kolom dipisah |. (4) Jangan menyuruh beli/jual.\n\nDATA (halaman "'+k.lab+'"):\n'+k.teks;
+const aicSistem=(k,foto)=>'Kamu "AI Catatan Saham", asisten khusus aplikasi riset saham Indonesia (BEI) Catatan Saham. Tugasmu hanya membantu memahami data dan fitur Catatan Saham. Jawab dalam bahasa Indonesia yang santai dan mudah dipahami orang awam.\nATURAN:\n1. Semua angka, harga, kode saham, nama broker, dan fakta HARUS diambil dari DATA di bawah'+(foto?' atau dari foto yang dikirim':'')+'. Jangan mengarang angka, harga, atau berita. Jangan menyebut jumlah baris yang tidak ada di DATA.\n2. Tabel di DATA ditulis per baris, kolom dipisah tanda |. Baris "Kolom:" adalah judul kolomnya. Tulisan "(semua N baris)" berarti tabel lengkap.\n3. Kalau yang ditanya tidak ada di DATA, katakan terus terang, lalu sarankan halaman atau tab Catatan Saham yang memuatnya.\n4. Jelaskan arti angkanya: maksudnya apa, bagus atau jelek, dan kenapa.\n5. Jangan menyuruh beli atau jual. Beri pertimbangan dua sisi; keputusan di tangan pengguna.\n6. Panjang jawaban sesuai kebutuhan: penjelasan biasa cukup ringkas; kalau diminta daftar, tulis SEMUA barisnya sampai selesai.'+(foto?'\n7. Pengguna mengirim foto (biasanya chart atau tangkapan layar). Baca isi foto dengan teliti; sebutkan yang terlihat jelas saja dan katakan bila tulisan di foto tidak terbaca.':'')+(k.peta?'\n\nMENU CATATAN SASHAM (untuk menyarankan halaman):\n'.replace('SASHAM','SAHAM')+k.peta:'')+'\n\nDATA (halaman yang sedang dibuka: "'+k.lab+'"; bagian "Data dari halaman lain" diambil aplikasi otomatis sesuai pertanyaan; tanggal data mengikuti isi halaman):\n'+k.teks;
+/* Permintaan daftar ("list 50 top gainer", "sebutkan 10 teratas") dijawab langsung dari tabel halaman, tanpa AI:
+   pasti lengkap dan angkanya sama persis dengan layar. Pertanyaan yang minta penjelasan tetap ke AI. */
+function aicDaftarLangsung(q,k){if(!/\b(list|daftar|daftarnya|sebutkan|sebut|tampilkan|tuliskan|tulis|urutan|urutkan)\b/i.test(q)||/jelas|analis|kenapa|mengapa|arti|bagus|jelek|risiko|pendapat|saran|bandingkan|beda|rangkum|ringkas|kesimpulan/i.test(q))return null;
+ const T=((k.tabelLain&&k.tabelLain.length?k.tabelLain:k.tabel)||[]).filter(Boolean).sort((a,b)=>b.baris.length-a.baris.length)[0];if(!T||T.baris.length<3)return null;
+ const m=q.match(/\b(\d{1,3})\b/),n=Math.min(T.baris.length,m?+m[1]:T.baris.length);if(!n)return null;
+ /* buang kolom nomor urut (isinya 1,2,3,…) dan kolom panjang (OHLC dsb.) supaya tiap baris pendek */
+ const nk=Math.max(...T.baris.map(r=>r.length)),pakai=[];
+ const kodeSaja={};
+ for(let j=0;j<nk&&pakai.length<4;j++){const v=T.baris.slice(0,n).map(r=>r[j]||'');
+  /* kolom saham ("DKFT Central Omega…") → cukup kodenya */
+  if(v.filter(x=>/^[A-Z]{4}\b/.test(x)).length>v.length*0.8){kodeSaja[j]=1;pakai.push(j);continue}if(v.every((x,i)=>x===String(i+1)))continue;const pj=v.reduce((a,x)=>a+x.length,0)/v.length;if(pj>24||v.every(x=>!x||x==='—')||v.filter(x=>(x.match(/\d+/g)||[]).length>=3).length>v.length/2)continue;pakai.push(j)}
+ if(!pakai.length)return null;
+ const kop=T.kop?pakai.map(j=>T.kop[j]||'').join(' · '):'';
+ const isi=T.baris.slice(0,n).map((r,i)=>(i+1)+'. '+pakai.map(j=>kodeSaja[j]?((r[j]||'').match(/^[A-Z]{4}/)||['—'])[0]:(r[j]||'—')).join(' · ')).join('\n');
+ return (k.lainLab&&k.lainLab.length?(aicMenu().find(x=>x[0]===(k.lainLab[0]==='gainerL'?'gainer':k.lainLab[0]))||[0,k.lab])[1]+(k.lainLab[0]==='gainerL'?' (Top Loser)':''):k.lab)+(kop?' ('+kop+')':'')+', '+n+(n<T.baris.length?' dari '+T.baris.length:'')+' baris:\n\n'+isi+'\n\nDiambil langsung dari tabel '+(k.lainLab&&k.lainLab.length?'halaman itu':'di halaman ini')+' (bukan tebakan AI). Tanyakan "jelaskan" atau "apa yang menarik" kalau mau dianalisa.'}
 
 /* ---- tampilan ---- */
 /* Tampilan: jejak roket (biru muda → ungu → jingga) dari kartu tanggal aplikasi jadi identitas Tanya AI. */
@@ -2240,14 +2312,18 @@ const AIC_CSS=`
 #aicb{position:fixed;left:0;top:0;z-index:7;width:56px;height:56px;border-radius:50%;border:0;padding:0;background:var(--aic-jejak);color:#fff;--aic-lubang:#5b62e0;font-size:28px;display:grid;place-items:center;box-shadow:0 6px 20px #4b3fd066,0 0 0 3px #ffffff2e inset;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;will-change:transform}
 #aicb.seret{cursor:grabbing;box-shadow:0 12px 30px #4b3fd099,0 0 0 3px #ffffff55 inset}
 #aicb:focus-visible,#aicw button:focus-visible,#aict:focus-visible{outline:3px solid #8a78f5;outline-offset:2px}
-#aicw{position:fixed;inset:0;z-index:50;background:var(--aic-bg2),var(--aic-bg);color:var(--aic-ink);display:none;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);font:15px/1.55 system-ui,Roboto,Arial,sans-serif}
+#aicw{position:fixed;left:8px;right:8px;bottom:var(--aic-bawah,72px);height:var(--aic-tinggi,62vh);max-height:calc(100% - var(--aic-bawah,72px) - 8px - env(safe-area-inset-top,0px));min-height:220px;z-index:50;background:var(--aic-bg2),var(--aic-bg);color:var(--aic-ink);display:none;flex-direction:column;border:1px solid var(--aic-garis);border-radius:22px;box-shadow:0 18px 50px #0b0f2a66;overflow:hidden;font:15px/1.55 system-ui,Roboto,Arial,sans-serif}
+#aicw.penuh{left:0;right:0;bottom:0;top:0;height:auto;max-height:none;border-radius:0;border:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#aicw.seret{transition:none;user-select:none;-webkit-user-select:none}
+#aicpg{flex:none;display:flex;justify-content:center;padding:7px 0 0;touch-action:none;cursor:ns-resize}#aicpg i{width:42px;height:5px;border-radius:9px;background:var(--aic-garis)}#aicw.penuh #aicpg{display:none}
 #aicw.o{display:flex;animation:aicnaik .2s ease-out}
 @keyframes aicnaik{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#aicw.o{animation:none}}
-#aich{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
-#aich .aiclg{flex:none;width:40px;height:40px;border-radius:50%;background:var(--aic-jejak);color:#fff;--aic-lubang:#5b62e0;font-size:22px;display:grid;place-items:center}
-#aich .aicjd{flex:1;min-width:0}#aich .aicjd b{display:block;font:700 19px/1.15 Georgia,'Times New Roman',serif}#aics{font-size:12px;color:var(--aic-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#aicw button{font:600 13px system-ui,Roboto,Arial,sans-serif;border:1px solid var(--aic-garis);background:var(--aic-kartu);color:var(--aic-ink);border-radius:999px;padding:9px 13px;min-height:40px}
+#aich{display:flex;align-items:center;gap:8px;padding:6px 10px 8px 12px;touch-action:none}
+#aich .aiclg{flex:none;width:34px;height:34px;border-radius:50%;background:var(--aic-jejak);color:#fff;--aic-lubang:#5b62e0;font-size:22px;display:grid;place-items:center}
+#aich .aicjd{flex:1;min-width:0}#aich .aicjd b{display:block;font:700 17px/1.15 Georgia,'Times New Roman',serif}#aics{font-size:12px;color:var(--aic-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#aicw button{font:600 13px system-ui,Roboto,Arial,sans-serif;border:1px solid var(--aic-garis);background:var(--aic-kartu);color:var(--aic-ink);border-radius:999px;padding:8px 11px;min-height:40px}
+#aicw button.aicik{flex:none;width:40px;padding:0;display:grid;place-items:center}
 #aicw button.on{background:var(--aic-jejak);color:#fff;border-color:transparent}#aicw button:disabled{opacity:.5}
 #aicgs{height:3px;background:var(--aic-jejak);border-radius:3px;margin:0 14px;opacity:.9}
 #aicl{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -2260,14 +2336,18 @@ const AIC_CSS=`
 .aicks .aicbs{width:84px;height:84px;border-radius:50%;background:var(--aic-jejak);color:#fff;--aic-lubang:#5b62e0;font-size:46px;display:grid;place-items:center;box-shadow:0 10px 34px #4b3fd055}
 .aicks h2{margin:0;font:700 22px/1.2 Georgia,'Times New Roman',serif;color:var(--aic-ink)}.aicks p{margin:0;color:var(--aic-mute);max-width:32ch}
 .aicsug{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px}.aicsug button{width:100%;text-align:left;border-radius:14px!important;padding:12px 14px!important;font-weight:500!important;font-size:14px!important}
-#aicf{display:flex;gap:8px;padding:10px 12px 12px;align-items:flex-end}
+#aicf{display:flex;gap:6px;padding:8px 10px 10px;align-items:flex-end}
+#aicw button.aicfb{flex:none;width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;display:grid;place-items:center;color:var(--aic-mute)}
+#aicfoto{display:flex;align-items:center;gap:10px;margin:0 12px;padding:8px;border:1px solid var(--aic-garis);border-radius:14px;background:var(--aic-kartu);font-size:13px;color:var(--aic-mute)}#aicfoto[hidden]{display:none}#aicfoto img{width:52px;height:52px;object-fit:cover;border-radius:10px}
+.aicm img{display:block;max-width:200px;max-height:240px;border-radius:12px;margin-bottom:6px}
+.aicm .aicsb{display:block;margin-top:6px;font-size:12px;opacity:.75}
 #aict{flex:1;min-height:46px;max-height:120px;resize:none;border:1px solid var(--aic-garis);border-radius:23px;background:var(--aic-kartu);color:var(--aic-ink);padding:11px 16px;font:16px system-ui,Roboto,Arial,sans-serif}
 #aict::placeholder{color:var(--aic-mute)}
 #aicw button.aickr{flex:none;width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;border:0;background:var(--aic-jejak);color:#fff;display:grid;place-items:center}
-#aica{padding:4px 14px 12px;overflow-y:auto;max-height:70vh}#aica .mu{color:var(--aic-mute)}
+#aica{padding:4px 14px 12px;overflow-y:auto;flex:1}#aicw.atur #aicl,#aicw.atur #aicfoto{display:none}#aica .mu{color:var(--aic-mute)}
 .aick{border:1px solid var(--aic-garis);background:var(--aic-kartu);border-radius:16px;padding:12px;margin:8px 0}.aick .r{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .aicbar{height:8px;border-radius:99px;background:var(--aic-garis);overflow:hidden;margin-top:8px}.aicbar i{display:block;height:100%;background:var(--aic-jejak);width:0}`;
-const AIC_IK={kirim:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="M12 19V5m0 0-6 6m6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',stop:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2.500" fill="currentColor"/></svg>'};
+const AIC_IK={foto:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="M4 8.500A2.500 2.500 0 0 1 6.500 6h1.700l1.400-2h4.800l1.400 2h1.700A2.500 2.500 0 0 1 20 8.500v8A2.500 2.500 0 0 1 17.500 19h-11A2.500 2.500 0 0 1 4 16.500z" stroke="currentColor" stroke-width="1.900" stroke-linejoin="round"/><circle cx="12" cy="12.500" r="3.300" stroke="currentColor" stroke-width="1.900"/></svg>',besar:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',kecil:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',kirim:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="M12 19V5m0 0-6 6m6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',stop:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2.500" fill="currentColor"/></svg>'};
 /* Tombol roket bisa digeser ke mana saja; posisinya diingat. Geser < 8 px dianggap ketukan. */
 function aicPos(x,y,simpan){const b=$('#aicb');if(!b)return;const W=innerWidth,H=innerHeight,nv=$('#nv'),bawah=(nv?nv.offsetHeight:64)+8;
  x=Math.max(8,Math.min(W-64,x));y=Math.max(8,Math.min(H-56-bawah,y));b.style.transform='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';AIC.px=x;AIC.py=y;
@@ -2284,25 +2364,46 @@ function aicSeret(b){let s=null;
 function aicInit(){if($('#aicb'))return;const st=document.createElement('style');st.textContent=AIC_CSS;document.head.appendChild(st);
  const b=document.createElement('button');b.id='aicb';b.type='button';b.innerHTML=AIC_RKT;b.setAttribute('aria-label','Tanya AI tentang halaman ini. Tombol ini bisa digeser.');b.title='Tanya AI (tahan lalu geser untuk memindahkan)';document.body.appendChild(b);
  const w=document.createElement('section');w.id='aicw';w.setAttribute('aria-label','Tanya AI');
- w.innerHTML='<div id="aich"><span class="aiclg">'+AIC_RKT+'</span><div class="aicjd"><b>Tanya AI</b><div id="aics"></div></div><button type="button" data-aic="atur">Atur</button><button type="button" data-aic="baru">Baru</button><button type="button" data-aic="tutup" aria-label="Tutup">✕</button></div><div id="aicgs"></div><div id="aica" hidden></div><div id="aicl"></div><div id="aicf"><textarea id="aict" rows="1" maxlength="1000" placeholder="Tanya tentang halaman ini" aria-label="Pertanyaan"></textarea><button type="button" class="aickr" data-aic="kirim" aria-label="Kirim">'+AIC_IK.kirim+'</button></div>';
+ w.innerHTML='<div id="aicpg" title="Geser untuk mengubah tinggi"><i></i></div><div id="aich"><span class="aiclg">'+AIC_RKT+'</span><div class="aicjd"><b>Tanya AI</b><div id="aics"></div></div><button type="button" data-aic="atur">Atur</button><button type="button" data-aic="baru">Baru</button><button type="button" class="aicik" data-aic="ukuran" aria-label="Layar penuh">'+AIC_IK.besar+'</button><button type="button" class="aicik" data-aic="tutup" aria-label="Tutup (percakapan tetap tersimpan)">✕</button></div><div id="aicgs"></div><div id="aica" hidden></div><div id="aicl"></div><div id="aicfoto" hidden></div><div id="aicf"><button type="button" class="aicfb" data-aic="foto" aria-label="Kirim foto untuk dianalisa">'+AIC_IK.foto+'</button><input type="file" id="aicfi" accept="image/*" hidden><textarea id="aict" rows="1" maxlength="1000" placeholder="Tanya soal Catatan Saham" aria-label="Pertanyaan"></textarea><button type="button" class="aickr" data-aic="kirim" aria-label="Kirim">'+AIC_IK.kirim+'</button></div>';
  document.body.appendChild(w);
- aicPosAwal();aicSeret(b);
+ aicPosAwal();aicSeret(b);aicPanelSeret(w);aicTata();addEventListener('resize',aicTata);
+ $('#aicfi').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;AIC.err='';try{AIC.foto=await aicKecilkan(f)}catch(x){AIC.err=String(x.message||x)}aicFotoDraw();aicList()});
+ /* pengguna pindah halaman sementara panel terbuka: label "halaman ini" ikut diperbarui */
+ document.addEventListener('click',e=>{if(AIC.open&&!(e.target.closest&&e.target.closest('#aicw')))setTimeout(aicHead,300)},true);
  w.addEventListener('click',e=>{const x=e.target.closest&&e.target.closest('[data-aic]');if(x)aicAct(x.dataset.aic,x.dataset.id,x)});
  $('#aict').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!('ontouchstart' in window)){e.preventDefault();aicKirim()}})}
-async function aicOpen(){const k=aicKonteks(6000);AIC.ctx=k;AIC.ctxLab=k.lab;AIC.open=true;AIC.err='';$('#aicw').classList.add('o');$('#aicb').style.display='none';aicListen();await aicStat();aicDraw()}
-function aicClose(){AIC.open=false;$('#aicw').classList.remove('o');$('#aicb').style.display=''}
+/* Panel mengambang: di atas halaman, setengah layar; halaman di belakang tetap bisa dibaca dan dipindah.
+   Geser garis kecil di atas untuk mengubah tinggi; tombol ⤢ untuk layar penuh. Ukuran diingat. */
+function aicTata(){const w=$('#aicw');if(!w)return;const nv=$('#nv'),bw=(nv&&nv.offsetHeight?nv.offsetHeight:0)+8;w.style.setProperty('--aic-bawah',bw+'px');
+ const t=parseFloat(aicLs('cs_ai_tinggi','0.62'))||0.62;w.style.setProperty('--aic-tinggi',Math.round(Math.max(0.35,Math.min(0.92,t))*innerHeight)+'px');w.classList.toggle('penuh',aicLs('cs_ai_penuh','0')==='1');
+ const u=w.querySelector('[data-aic="ukuran"]');if(u){const p=w.classList.contains('penuh');u.innerHTML=p?AIC_IK.kecil:AIC_IK.besar;u.setAttribute('aria-label',p?'Kecilkan jadi mengambang':'Layar penuh')}}
+function aicPanelSeret(w){let s=null;const mulai=e=>{if(e.button||w.classList.contains('penuh')||(e.target.closest&&e.target.closest('button')))return;s={y:e.clientY,h:w.getBoundingClientRect().height,g:false};try{e.currentTarget.setPointerCapture(e.pointerId)}catch(x){}};
+ const gerak=e=>{if(!s)return;const dy=e.clientY-s.y;if(!s.g&&Math.abs(dy)<6)return;s.g=true;w.classList.add('seret');const h=Math.max(220,Math.min(innerHeight*0.92,s.h-dy));w.style.setProperty('--aic-tinggi',Math.round(h)+'px');s.akhir=h};
+ const lepas=()=>{if(!s)return;if(s.g&&s.akhir)aicSet('cs_ai_tinggi',(s.akhir/innerHeight).toFixed(3));s=null;w.classList.remove('seret')};
+ for(const el of [w.querySelector('#aicpg'),w.querySelector('#aich')]){el.addEventListener('pointerdown',mulai);el.addEventListener('pointermove',gerak);el.addEventListener('pointerup',lepas);el.addEventListener('pointercancel',lepas)}}
+/* foto diperkecil di HP sebelum dikirim (sisi terpanjang 1280 px, JPEG): hemat kuota dan cepat */
+function aicKecilkan(file){return new Promise((ok,no)=>{if(!/^image\//.test(file.type||'image/'))return no(new Error('Yang dipilih bukan foto.'));const u=URL.createObjectURL(file),im=new Image();
+ im.onload=()=>{try{const k=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',0.82))}catch(e){no(e)}};
+ im.onerror=()=>{URL.revokeObjectURL(u);no(new Error('Foto tidak bisa dibuka. Coba foto lain (JPG/PNG).'))};im.src=u})}
+function aicFotoDraw(){const e=$('#aicfoto');if(!e)return;e.hidden=!AIC.foto;if(!AIC.foto){e.textContent='';return}
+ e.innerHTML='<img alt="Foto yang akan dikirim" src="'+AIC.foto+'"><span style="flex:1">Foto siap. Tulis pertanyaan (mis. "analisa chart ini") lalu kirim.'+(aicMesin()==='hp'&&((AICM.find(x=>x.id===aicSiapId())||{}).visi===false||(AIC.st&&AIC.st.visiGagal))?' Foto dibaca oleh AI server.':'')+'</span><button type="button" class="aicik" data-aic="buangfoto" aria-label="Batal kirim foto">✕</button>'}
+async function aicOpen(){clearTimeout(AIC.tLepas);AIC.ctxLab=aicLabel();AIC.open=true;AIC.err='';aicTata();$('#aicw').classList.add('o');$('#aicb').style.display='none';aicListen();await aicStat();aicDraw()}
+function aicClose(){AIC.open=false;$('#aicw').classList.remove('o');$('#aicb').style.display='';clearTimeout(AIC.tLepas);
+ AIC.tLepas=setTimeout(async()=>{const p=aicP();if(!p||AIC.open||AIC.busy||!AIC.st||!AIC.st.siap)return;try{await p.lepas();AIC.st.siap='';AIC.st.visi=false}catch(e){}},AIC_LEPAS_MS)}
 function aicHead(){const e=$('#aics');if(!e)return;const hp=aicMesin()==='hp',id=aicSiapId(),m=AICM.find(x=>x.id===id);
- e.textContent=(AIC.ctxLab||'-')+' · '+(hp?'AI di HP ('+(m?m.nama:id)+(AIC.st&&AIC.st.siap===id&&AIC.st.backend?', '+AIC.st.backend:'')+')':'AI server')}
-function aicBub(m){const d=document.createElement('div');d.className='aicm '+m.r;if(m.r==='a'&&m.done)d.innerHTML=esc(m.t).replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/^[*-] /gm,'• ');else d.textContent=m.t||(m.r==='a'?'…':'');return d}
+ e.textContent=(AIC.open?aicLabel():(AIC.ctxLab||'-'))+' · '+(hp?'AI di HP ('+(m?m.nama:id)+(AIC.st&&AIC.st.siap===id&&AIC.st.backend?', '+AIC.st.backend:'')+')':'AI server')}
+function aicBub(m){const d=document.createElement('div');d.className='aicm '+m.r;
+ if(m.r==='a'&&m.done)d.innerHTML=esc(m.t).replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/^[*-] /gm,'• ')+(m.sb?'<span class="aicsb">'+esc(m.sb)+'</span>':'');
+ else{d.textContent=m.t||(m.r==='a'?'…':'');if(m.img){const i=document.createElement('img');i.src=m.img;i.alt='Foto yang dikirim';d.prepend(i)}}return d}
 function aicList(){const l=$('#aicl');if(!l)return;l.textContent='';
- if(!AIC.msgs.length){const k=document.createElement('div');k.className='aicks';k.innerHTML='<span class="aicbs">'+AIC_RKT+'</span><h2>Mau tahu apa soal '+esc(AIC.ctxLab||'halaman ini')+'?</h2><p>AI membaca halaman yang sedang dibuka lalu menjelaskan angkanya. Untuk data di tab lain, buka dulu tab itu.</p><div class="aicsug">'+['Jelaskan halaman ini dengan bahasa sederhana','Apa yang paling penting diperhatikan di sini?','Apa risikonya?'].map(q=>'<button type="button" data-aic="usul">'+esc(q)+'</button>').join('')+'</div>';l.appendChild(k)}
+ if(!AIC.msgs.length){const k=document.createElement('div');k.className='aicks';k.innerHTML='<span class="aicbs">'+AIC_RKT+'</span><h2>Mau tahu apa soal '+esc(aicLabel()||'halaman ini')+'?</h2><p>AI membaca halaman yang dibuka, dan bisa mengambil data halaman lain bila disebut (mis. "clean buy", "top gainer", "BBCA"). Bisa juga kirim foto chart.</p><div class="aicsug">'+['Jelaskan halaman ini dengan bahasa sederhana','Sebutkan semua saham di tabel ini','Saham top gainer mana yang juga ada di Clean Buy?','Apa yang paling penting diperhatikan di sini?'].map(q=>'<button type="button" data-aic="usul">'+esc(q)+'</button>').join('')+'</div>';l.appendChild(k)}
  for(const m of AIC.msgs)l.appendChild(aicBub(m));
  if(AIC.muat){const n=document.createElement('div');n.className='aicm n';n.textContent=AIC.muat;l.appendChild(n)}
  if(AIC.err){const n=document.createElement('div');n.className='aicm n s';n.textContent=AIC.err;l.appendChild(n)}
  l.scrollTop=l.scrollHeight}
 function aicTok(){const l=$('#aicl');if(!l)return;const m=AIC.msgs.at(-1),bs=l.querySelectorAll('.aicm.a'),b=bs[bs.length-1];if(b&&m){const dekat=l.scrollHeight-l.scrollTop-l.clientHeight<80;b.textContent=m.t;if(dekat)l.scrollTop=l.scrollHeight}}
 function aicDl(){const d=AIC.dl,e=$('#aicdl');if(!d||!e)return aicAturDraw();const pc=d.total?Math.min(100,d.got/d.total*100):0;e.querySelector('i').style.width=pc.toFixed(1)+'%';e.querySelector('span').textContent='Mengunduh '+aicGB(d.got)+(d.total?' dari '+aicGB(d.total)+' ('+pc.toFixed(0)+'%)':'')+'. Biarkan aplikasi tetap terbuka.'}
-function aicAturDraw(){const a=$('#aica');if(!a)return;a.hidden=!AIC.atur;if(!AIC.atur)return;const p=aicP(),st=AIC.st,awan=aicLs('cs_ai_mode','auto')==='awan',pakai=aicSiapId();let h='';
+function aicAturDraw(){const a=$('#aica');if(!a)return;a.hidden=!AIC.atur;$('#aicw').classList.toggle('atur',!!AIC.atur);if(!AIC.atur)return;const p=aicP(),st=AIC.st,awan=aicLs('cs_ai_mode','auto')==='awan',pakai=aicSiapId();let h='';
  if(!window.Capacitor)h+='<div class="aick">Di versi web, AI memakai <b>AI server</b> (gratis, jatah harian terbatas). AI yang jalan di HP tanpa internet tersedia di aplikasi Android (APK).</div>';
  else if(!p)h+='<div class="aick"><b>AI di HP butuh APK versi baru.</b><div class="mu">APK yang terpasang belum punya mesin AI. Sementara ini dipakai AI server (jatah harian terbatas). Pasang APK terbaru untuk AI yang jalan di HP, gratis tanpa batas.</div></div>';
  else{h+='<div class="mu" style="font-size:13px">AI di HP: gratis, tanpa batas, jalan tanpa internet. Model diunduh sekali lewat internet (sebaiknya Wi-Fi).'+(st?' RAM HP ini '+aicGB(st.ram)+', ruang kosong '+aicGB(st.ruang)+'.':'')+'</div>';
@@ -2320,7 +2421,10 @@ async function aicAct(a,id,el){const p=aicP();
  if(a==='tutup')return aicClose();
  if(a==='kirim')return AIC.busy?aicStop():aicKirim();
  if(a==='usul'){$('#aict').value=el.textContent;return aicKirim()}
- if(a==='baru'){if(AIC.busy)return;AIC.msgs=[];AIC.err='';const k=aicKonteks(6000);AIC.ctx=k;AIC.ctxLab=k.lab;return aicDraw()}
+ if(a==='baru'){if(AIC.busy)return;AIC.msgs=[];AIC.err='';AIC.foto=null;aicFotoDraw();return aicDraw()}
+ if(a==='ukuran'){aicSet('cs_ai_penuh',$('#aicw').classList.contains('penuh')?'0':'1');aicTata();return aicList()}
+ if(a==='foto'){if(!AIC.busy)$('#aicfi').click();return}
+ if(a==='buangfoto'){AIC.foto=null;return aicFotoDraw()}
  if(a==='atur'){AIC.atur=!AIC.atur;AIC.cf=null;if(AIC.atur)await aicStat();return aicDraw()}
  if(a==='mode'){aicSet('cs_ai_mode',id);return aicDraw()}
  if(!p)return;
@@ -2330,15 +2434,30 @@ async function aicAct(a,id,el){const p=aicP();
   else if(a==='hapus'){if(AIC.cf!==id){AIC.cf=id;return aicDraw()}AIC.cf=null;await p.hapus({id});await aicStat();aicDraw()}
  }catch(e){AIC.dl=null;AIC.err=String((e&&e.message)||e);await aicStat();aicDraw()}}
 async function aicStop(){const p=aicP();if(p&&AIC.viaHp){try{await p.berhenti()}catch(e){}}else if(AIC.abort){AIC.batal=true}}
-async function aicKirim(){if(AIC.busy)return;const ta=$('#aict'),q=(ta.value||'').trim();if(!q)return;ta.value='';AIC.err='';
+async function aicKirim(){if(AIC.busy)return;const ta=$('#aict'),foto=AIC.foto||'';let q=(ta.value||'').trim();if(!q&&!foto)return;if(!q)q='Jelaskan isi foto ini.';ta.value='';AIC.err='';AIC.foto=null;aicFotoDraw();
  const hist=AIC.msgs.filter(m=>m.done||m.r==='u').slice(-6).map(m=>({r:m.r,t:m.t.slice(0,700)}));
- AIC.msgs.push({r:'u',t:q},{r:'a',t:'',done:false});AIC.busy=true;AIC.batal=false;const no=++AIC.no,jw=AIC.msgs.at(-1),hp=aicMesin()==='hp';AIC.viaHp=hp;aicDraw();
+ /* model HP yang tidak bisa membaca gambar → foto ke AI server */
+ const mHp=AICM.find(x=>x.id===aicSiapId());
+ let hp=aicMesin()==='hp'&&!(foto&&((mHp&&mHp.visi===false)||(AIC.st&&AIC.st.visiGagal&&AIC.st.siap===aicSiapId())));
+ /* data dikumpulkan SAAT bertanya: halaman yang dibuka sekarang + halaman lain yang disebut + saham yang disebut */
+ const k=aicKonteks(hp?(foto?2200:3600):(foto?5000:10500),hp,q,!!foto);AIC.ctxLab=k.lab;
+ const histHp=hist.slice(-4).map(m=>({r:m.r,t:m.t.slice(0,500)}));
+ AIC.msgs.push({r:'u',t:q,img:foto||null},{r:'a',t:'',done:false});const jw=AIC.msgs.at(-1);
+ const ls=foto?null:aicDaftarLangsung(q,k);
+ if(ls){jw.t=ls;jw.done=true;jw.sb='Sumber: tabel Catatan Saham';return aicDraw()}
+ AIC.busy=true;AIC.batal=false;const no=++AIC.no;AIC.viaHp=hp;aicDraw();
  try{if(hp){const p=aicP(),id=aicSiapId();
-   if(!AIC.st||AIC.st.siap!==id){AIC.muat='Memuat model ke memori… (pertama kali bisa ±10–40 detik)';aicList();try{const r=await p.muat({id,gpu:true});AIC.st=Object.assign(AIC.st||{},{siap:id,backend:r.backend})}finally{AIC.muat=''}aicHead();aicList()}
-   const r=await p.tanya({no:String(no),sistem:aicSistem({lab:AIC.ctx.lab,teks:AIC.ctx.teks.slice(0,3200)}),pesan:q,riwayat:hist});if(!jw.t)jw.t=r.teks||''}
-  else{AIC.abort=true;const j=await csPost('/app/ai',{sistem:aicSistem(AIC.ctx),pesan:hist.map(m=>({role:m.r==='a'?'assistant':'user',content:m.t})).concat([{role:'user',content:q}])});AIC.abort=false;if(!AIC.batal)jw.t=j.teks||'';else jw.t='(dihentikan)';if(j.sisa!=null&&j.sisa<=3)AIC.err='Sisa jatah AI server hari ini: '+j.sisa+' pertanyaan.'}
+   /* pembaca foto hanya dimuat saat ada foto (lebih hemat RAM); muat ulang bila perlu */
+   if(!AIC.st||AIC.st.siap!==id||(foto&&!AIC.st.visi)){AIC.muat=foto?'Menyiapkan pembaca foto… (±10–40 detik)':'Memuat model ke memori… (pertama kali bisa ±10–40 detik)';aicList();try{const r=await p.muat({id,gpu:true,visi:!!foto,token:AIC_TOKEN});AIC.st=Object.assign(AIC.st||{},{siap:id,backend:r.backend,visi:!!r.visi,visiGagal:!!foto&&!r.visi})}finally{AIC.muat=''}aicHead();aicList()}
+   if(foto&&!AIC.st.visi){hp=false;AIC.viaHp=false}
+   else{let r=null;try{r=await p.tanya(Object.assign({no:String(no),sistem:aicSistemHp(k,!!foto),pesan:q,riwayat:histHp,suhu:0.3},foto?{gambar:foto.replace(/^data:[^,]*,/,'')}:{}))}
+    catch(e){if(foto&&!jw.t&&/TANPA_VISI|image|vision|gambar/i.test(String(e&&e.message||e))){hp=false;AIC.viaHp=false;if(AIC.st){AIC.st.visi=false;AIC.st.visiGagal=true}}else throw e}
+    if(r&&!jw.t)jw.t=r.teks||''}}
+  if(!hp){
+  {AIC.abort=true;const j=await csPost('/app/ai',Object.assign({sistem:aicSistem(Object.assign({},k,{peta:aicPeta()}),!!foto),pesan:hist.map(m=>({role:m.r==='a'?'assistant':'user',content:m.t})).concat([{role:'user',content:q}])},foto?{gambar:foto}:{}));AIC.abort=false;if(!AIC.batal)jw.t=j.teks||'';else jw.t='(dihentikan)';if(foto&&aicMesin()==='hp')jw.sb='Foto dibaca oleh AI server (model AI di HP ini tidak bisa membaca foto)';if(j.sisa!=null&&j.sisa<=3)AIC.err='Sisa jatah AI server hari ini: '+j.sisa+' pertanyaan.'}}
+  if(k.lainLab&&k.lainLab.length&&!jw.sb)jw.sb='Ikut membaca: '+k.lainLab.map(x=>x==='gainerL'?'Top Loser':((aicMenu().find(y=>y[0]===x)||[0,x])[1])).join(', ');
   if(!jw.t)jw.t='(AI tidak memberi jawaban. Coba tanyakan dengan kalimat lain.)'}
- catch(e){const s=String((e&&e.message)||e);if(jw.t){/* dihentikan di tengah: simpan yang sudah ada */}else{AIC.msgs.pop();AIC.msgs.pop();ta.value=q;AIC.err=/Failed to fetch|NetworkError|Load failed/i.test(s)?'AI server tidak terjangkau. Periksa internet'+(aicP()?', atau unduh AI di HP lewat tombol Atur.':'.'):s}}
+ catch(e){const s=String((e&&e.message)||e);if(jw.t){/* dihentikan di tengah: simpan yang sudah ada */}else{AIC.msgs.pop();AIC.msgs.pop();ta.value=q;if(foto){AIC.foto=foto;aicFotoDraw()}AIC.err=/Failed to fetch|NetworkError|Load failed/i.test(s)?'AI server tidak terjangkau. Periksa internet'+(aicP()&&!foto?', atau unduh AI di HP lewat tombol Atur.':'.'):s}}
  finally{AIC.busy=false;AIC.abort=false;jw.done=true;aicDraw()}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',aicInit);else setTimeout(aicInit,0);
 /* ===== Hub Saham: satu halaman per emiten (tab) ===== */

@@ -2805,12 +2805,11 @@ function naPasar(ds){let ok=true;for(const mo of new Set(ds.map(d=>d.slice(0,6))
 const naUseBR=ds=>ds.forEach(d=>{if(NA.br[d])BR[d]=Object.assign({},NA.br[d])});
 // Heatmap 10 sesi terakhir (bentuk X.hm).
 function naHeat(){if(NA.hm)return true;naOnce('heat',async()=>{const j=await naGet('pasar/heat');X.hm=j.hm;NA.hm=1});return false}
-// Broker Action: 1/3/5/10/20 sesi terakhir, Top 3/5/10 (server mengirim beli/jual kelompok; skor & status dihitung di sini).
-const BAH=[1,3,5,10,20];
-function naBaH(){const last=BFD.at(-1),from=BFD.includes(S.baf)?S.baf:last,c=BFD.filter(d=>d>=from).length;return BAH.find(x=>x>=c)||20}
-function naBa(h){if(NA.ba[h])return true;naOnce('ba'+h,async()=>{NA.ba[h]=await naGet('pasar/ba'+h)});return false}
-baAll=function(from,to,n){const h=BFD.filter(d=>d>=from&&d<=to).length,j=NA.ba[h];if(!j||to!==BFD.at(-1)||!j.n[n])return[];
- return j.c&&j.c[n]||((j.c??={})[n]=j.n[n].map(([t,gb,gs,br])=>{const sc=(gb-gs)/(gb+gs)*100;return{t,sc,st:baSt(sc),k:baSt(sc),gb,gs,net:gb-gs,br}}))};
+// Broker Action: rentang tanggal bebas. Server menghitung dari seluruh broksum dan hanya mengirim HASIL per saham
+// (10 broker teratas menurut beli+jual, beli/jual kelompok Top 3/5/10); skor & status dihitung di sini.
+function naBaR(from,to){const k=from+'|'+to;if(NA.ba[k])return true;naOnce('ba'+k,async()=>{NA.ba[k]=await naGet('rentang?dari='+from+'&sampai='+to)});return false}
+baAll=function(from,to,n){const j=NA.ba[from+'|'+to],g={3:2,5:4,10:6}[n];if(!j||!g)return[];
+ return j.c&&j.c[n]||((j.c??={})[n]=j.baris.filter(r=>r[g]+r[g+1]>0).map(r=>{const gb=r[g],gs=r[g+1],sc=(gb-gs)/(gb+gs)*100;return{t:r[0],sc,st:baSt(sc),k:baSt(sc),gb,gs,net:gb-gs,br:r[1].split(',').slice(0,n)}}))};
 // Bandarmologi seluruh pasar (bentuk bm.json + bs.json).
 function naBmAll(){if(NA.bmAll)return true;naOnce('bmall',async()=>{const j=await naGet('pasar/bm');
   // hanya sesi yang harga hariannya sudah ada di aplikasi (mesin grafik membaca D.days per sesi)
@@ -2831,11 +2830,11 @@ P.bdet=function(){if(!naDates())return wait('Broker Detector','Memuat tanggal da
   const ds=bd.slice(-h);ds.forEach(d=>{const T=BF[d]&&BF[d].t;if(!T)return;for(const K in T){const a=T[K];for(let k=0;k<a.length;k+=7)if(a[k]===q){const net=a[k+3]-a[k+4];BR[d][K]=net>=0?[[q,net],[]]:[[],[q,net]]}}})}
  return (tab==='#'?naNote():'')+oBdet().replace(/<div class="card bdtc[^>]*data-v="(?:smart|awal)">[\s\S]*?<\/div><\/div>/g,'').replace('.bdt{display:grid;grid-template-columns:repeat(3,1fr)','.bdt{display:grid;grid-template-columns:repeat(2,1fr)').replace('cursor:pointer;min-height:140px','cursor:pointer;min-height:104px').replace(/<div class="mu" style="margin-top:6px"><b>\d+<\/b> broker · periode[\s\S]*?per sesi\)<\/div>/,'<div class="mu" style="margin-top:6px">Broksum lengkap semua broker, diambil dari server per pencarian.</div>')};
 bdTab=function(g){
- if(g==='flow'){const ds=naFlowDs();if(new Set(ds.map(d=>d.slice(0,6))).size>3)return '<div class="bdin"><div class="card">Periode Radar Akumulasi di Catatan Saham Non Admin paling panjang sekitar 3 bulan. Persempit pilihan Dari–Sampai.</div></div>';
+ if(g==='flow'){const ds=naFlowDs();
   if(!naPasar(ds))return '<div class="bdin">'+muat('Memuat Radar Akumulasi…')+'</div>';naUseBR(ds)}
  else if(g==='heat'){if(!naHeat())return '<div class="bdin">'+muat('Memuat Heatmap…')+'</div>'}
- else if(g==='bact'){const h=naBaH();S.baz=BFD.at(-1);S.baf=BFD[Math.max(0,BFD.length-h)];if(!naBa(h))return '<div class="bdin">'+muat('Memuat Broker Action '+h+' sesi…')+'</div>';
-  return oTab(g).replace('<div class="card"><div style="display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center"><span>Dari</span>','<div class="card"><div class="mu" style="font-size:12px;margin-bottom:8px">Periode yang tersedia di sini: <b>1, 3, 5, 10, atau 20 sesi terakhir</b>. Pilih tanggal “Dari”; aplikasi memakai periode terdekat (sekarang '+h+' sesi).</div><div style="display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center"><span>Dari</span>')}
+ else if(g==='bact'){const last=BFD.at(-1);let from=BFD.includes(S.baf)?S.baf:last,to=BFD.includes(S.baz)?S.baz:last;if(from>to)[from,to]=[to,from];
+  if(!naBaR(from,to))return '<div class="bdin">'+muat('Menghitung Broker Action '+fd(from)+(from===to?'':' – '+fd(to))+'…')+'</div>'}
  return oTab(g)};
 P.bbroker=function(){if(!naDates())return wait('Cari Broker','Memuat tanggal data broker…');const h=bbH(),sel=bbSel();let ok=true;sel.forEach(B=>{if(/^[A-Z0-9]{2}$/.test(B)&&!naBroker(B,h))ok=false});
  if(!ok)return wait('Cari Broker','Memuat data broker '+esc(sel.join(' + '))+'…');S.bbe=0;return naNote()+oBbroker()};

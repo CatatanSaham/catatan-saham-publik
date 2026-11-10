@@ -2119,7 +2119,7 @@ const TA={busy:false,msg:'',ok:false};
 const lsG=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},lsS=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 function csDev(){let d=lsG('cs_dev','');if(!d){d=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).slice(0,18);lsS('cs_dev',d)}return d}
 const csNonAdmin=()=>!!window.CS_NONADMIN;
-async function csPost(path,body){const r=await fetch(CSW+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({id:csDev(),nama:lsG('cs_nama',''),app:csNonAdmin()?'Non Admin':'Admin',ver:typeof BUILT!=='undefined'?BUILT:''},body))});let j=null;try{j=await r.json()}catch(e){}if(!r.ok||!j||!j.ok)throw new Error((j&&j.error)||('HTTP '+r.status));return j}
+async function csPost(path,body){const r=await fetch(CSW+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({id:csDev(),nama:lsG('cs_nama',''),app:csNonAdmin()?'Non Admin':'Admin',ver:(typeof csVer==='function'&&csVer())||''},body))});let j=null;try{j=await r.json()}catch(e){}if(!r.ok||!j||!j.ok)throw new Error((j&&j.error)||('HTTP '+r.status));return j}
 /* Lokasi perkiraan (2 desimal ≈ 1 km), hanya bila pengguna mengizinkan. */
 function csLoc(){return new Promise(ok=>{if(lsG('cs_lok','')!=='1'||!navigator.geolocation)return ok(null);navigator.geolocation.getCurrentPosition(p=>ok({lat:Math.round(p.coords.latitude*100)/100,lon:Math.round(p.coords.longitude*100)/100}),()=>ok(null),{enableHighAccuracy:false,timeout:8000,maximumAge:36e5})})}
 async function csVisit(force){if(!force&&!csNonAdmin())return;const last=+lsG('cs_vat',0);if(!force&&Date.now()-last<6*36e5)return;
@@ -2231,32 +2231,74 @@ function aicKonteks(maks){let lab='',kop='';try{const mn=MENU.flatMap(g=>g[1]).f
 const aicSistem=k=>'Kamu "AI Catatan Saham", asisten di aplikasi riset saham Indonesia (BEI). Jawab dalam bahasa Indonesia yang santai, ringkas, dan mudah dipahami orang awam.\nATURAN:\n1. Semua angka, harga, nama broker, dan fakta HARUS diambil dari DATA di bawah. Jangan mengarang angka, harga, atau berita.\n2. Kalau yang ditanya tidak ada di DATA, katakan terus terang datanya tidak ada di halaman ini, lalu sarankan pengguna membuka halaman atau tab yang memuatnya (misalnya tab Broker, Fundamental, Analisa) dan bertanya lagi.\n3. Jelaskan arti angkanya: apa maksudnya, bagus atau jelek, dan kenapa.\n4. Jangan menyuruh beli atau jual. Beri pertimbangan dua sisi; keputusan di tangan pengguna.\n5. Jawaban pendek: paling banyak sekitar 8 kalimat atau beberapa butir.\n\nDATA (halaman "'+k.lab+'" di aplikasi, tanggal data mengikuti isi halaman):\n'+k.teks;
 
 /* ---- tampilan ---- */
-const AIC_CSS='#aicb{position:fixed;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:7;border:1px solid var(--line);background:var(--navy);color:#fff;border-radius:999px;padding:11px 15px;font:700 14px system-ui;box-shadow:var(--shadow)}'
-+'#aicw{position:fixed;inset:0;z-index:50;background:var(--bg);color:var(--ink);display:none;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);font:15px/1.5 system-ui}#aicw.o{display:flex}'
-+'#aich{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}#aich b{flex:1;font-size:17px}#aicw button{font:600 13px system-ui;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:10px;padding:9px 12px;min-height:40px}#aicw button.on{background:var(--navy);color:#fff}#aicw button:disabled{opacity:.5}'
-+'#aics{padding:6px 12px;font-size:12px;color:var(--mute);border-bottom:1px solid var(--line)}#aicl{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}'
-+'.aicm{max-width:88%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid var(--line)}.aicm.u{align-self:flex-end;background:var(--navy);color:#fff;border-color:transparent}.aicm.a{align-self:flex-start;background:var(--card)}.aicm.n{align-self:center;background:none;border:0;color:var(--mute);font-size:13px;text-align:center}'
-+'#aicf{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);align-items:flex-end}#aict{flex:1;min-height:44px;max-height:120px;resize:none;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:10px;font:16px system-ui}'
-+'#aica{padding:12px;border-bottom:1px solid var(--line);overflow-y:auto;max-height:70vh}.aick{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px;margin:8px 0}.aick .r{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.aicbar{height:8px;border-radius:99px;background:var(--chip);overflow:hidden;margin-top:8px}.aicbar i{display:block;height:100%;background:var(--gold);width:0}.aicsug{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}';
+/* Tampilan: jejak roket (biru muda → ungu → jingga) dari kartu tanggal aplikasi jadi identitas Tanya AI. */
+const AIC_RKT='<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" aria-hidden="true"><path d="M13.6 3.2c3-1.5 5.800-1.300 7.200-.900.400 1.400.600 4.200-.900 7.200-1.100 2.200-3.300 4.200-5.600 5.600l-.500 3.300-3.100 1.800-.800-3.700-2.400-2.400-3.700-.800 1.800-3.100 3.300-.500c1.400-2.300 3.400-4.500 5.600-5.600Z" fill="currentColor"/><circle cx="15.300" cy="8.700" r="1.900" fill="var(--aic-lubang,#0a1020)"/><path d="M6.900 15.200c-1.900.300-3.100 1.900-3.500 5.400 3.500-.400 5.100-1.600 5.400-3.500" stroke="currentColor" stroke-width="1.700" stroke-linecap="round"/></svg>';
+const AIC_CSS=`
+#aicb,#aicw{--aic-jejak:linear-gradient(100deg,#27c4dc,#8a78f5 55%,#ffad42);--aic-bg:#f5f6fc;--aic-bg2:radial-gradient(90% 55% at 100% 0%,#dcd8ff 0%,transparent 62%),radial-gradient(80% 50% at 0% 100%,#cdf1f6 0%,transparent 60%);--aic-ink:#161a2c;--aic-mute:#5d6481;--aic-kartu:#ffffff;--aic-garis:#d9dcef;--aic-saya:#3b3fb8;--aic-lubang:#fff;--aic-salah:#c0263c}
+[data-theme="dark"] #aicb,[data-theme="dark"] #aicw{--aic-bg:#070a14;--aic-bg2:radial-gradient(90% 55% at 100% 0%,#262a78 0%,transparent 62%),radial-gradient(80% 50% at 0% 100%,#0b4654 0%,transparent 60%);--aic-ink:#eef0ff;--aic-mute:#9aa3c7;--aic-kartu:#111729;--aic-garis:#28304f;--aic-saya:#4a4fd6;--aic-lubang:#0a1020;--aic-salah:#ff8090}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #aicb,:root:not([data-theme="light"]) #aicw{--aic-bg:#070a14;--aic-bg2:radial-gradient(90% 55% at 100% 0%,#262a78 0%,transparent 62%),radial-gradient(80% 50% at 0% 100%,#0b4654 0%,transparent 60%);--aic-ink:#eef0ff;--aic-mute:#9aa3c7;--aic-kartu:#111729;--aic-garis:#28304f;--aic-saya:#4a4fd6;--aic-lubang:#0a1020;--aic-salah:#ff8090}}
+#aicb{position:fixed;left:0;top:0;z-index:7;width:56px;height:56px;border-radius:50%;border:0;padding:0;background:var(--aic-jejak);color:#fff;--aic-lubang:#5b62e0;font-size:28px;display:grid;place-items:center;box-shadow:0 6px 20px #4b3fd066,0 0 0 3px #ffffff2e inset;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;will-change:transform}
+#aicb.seret{cursor:grabbing;box-shadow:0 12px 30px #4b3fd099,0 0 0 3px #ffffff55 inset}
+#aicb:focus-visible,#aicw button:focus-visible,#aict:focus-visible{outline:3px solid #8a78f5;outline-offset:2px}
+#aicw{position:fixed;inset:0;z-index:50;background:var(--aic-bg2),var(--aic-bg);color:var(--aic-ink);display:none;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);font:15px/1.55 system-ui,Roboto,Arial,sans-serif}
+#aicw.o{display:flex;animation:aicnaik .2s ease-out}
+@keyframes aicnaik{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#aicw.o{animation:none}}
+#aich{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
+#aich .aiclg{flex:none;width:40px;height:40px;border-radius:50%;background:var(--aic-jejak);color:#fff;--aic-lubang:#5b62e0;font-size:22px;display:grid;place-items:center}
+#aich .aicjd{flex:1;min-width:0}#aich .aicjd b{display:block;font:700 19px/1.15 Georgia,'Times New Roman',serif}#aics{font-size:12px;color:var(--aic-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#aicw button{font:600 13px system-ui,Roboto,Arial,sans-serif;border:1px solid var(--aic-garis);background:var(--aic-kartu);color:var(--aic-ink);border-radius:999px;padding:9px 13px;min-height:40px}
+#aicw button.on{background:var(--aic-jejak);color:#fff;border-color:transparent}#aicw button:disabled{opacity:.5}
+#aicgs{height:3px;background:var(--aic-jejak);border-radius:3px;margin:0 14px;opacity:.9}
+#aicl{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.aicm{max-width:88%;padding:10px 13px;border-radius:18px;white-space:pre-wrap;overflow-wrap:anywhere}
+.aicm.u{align-self:flex-end;background:var(--aic-saya);color:#fff;border-bottom-right-radius:6px}
+.aicm.a{align-self:flex-start;background:var(--aic-kartu);border:1px solid var(--aic-garis);border-bottom-left-radius:6px}
+.aicm.n{align-self:center;max-width:100%;color:var(--aic-mute);font-size:13px;text-align:center;padding:4px 8px}
+.aicm.s{color:var(--aic-salah)}
+.aicks{margin:auto 0;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:8px 6px}
+.aicks .aicbs{width:84px;height:84px;border-radius:50%;background:var(--aic-jejak);color:#fff;--aic-lubang:#5b62e0;font-size:46px;display:grid;place-items:center;box-shadow:0 10px 34px #4b3fd055}
+.aicks h2{margin:0;font:700 22px/1.2 Georgia,'Times New Roman',serif;color:var(--aic-ink)}.aicks p{margin:0;color:var(--aic-mute);max-width:32ch}
+.aicsug{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px}.aicsug button{width:100%;text-align:left;border-radius:14px!important;padding:12px 14px!important;font-weight:500!important;font-size:14px!important}
+#aicf{display:flex;gap:8px;padding:10px 12px 12px;align-items:flex-end}
+#aict{flex:1;min-height:46px;max-height:120px;resize:none;border:1px solid var(--aic-garis);border-radius:23px;background:var(--aic-kartu);color:var(--aic-ink);padding:11px 16px;font:16px system-ui,Roboto,Arial,sans-serif}
+#aict::placeholder{color:var(--aic-mute)}
+#aicw button.aickr{flex:none;width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;border:0;background:var(--aic-jejak);color:#fff;display:grid;place-items:center}
+#aica{padding:4px 14px 12px;overflow-y:auto;max-height:70vh}#aica .mu{color:var(--aic-mute)}
+.aick{border:1px solid var(--aic-garis);background:var(--aic-kartu);border-radius:16px;padding:12px;margin:8px 0}.aick .r{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.aicbar{height:8px;border-radius:99px;background:var(--aic-garis);overflow:hidden;margin-top:8px}.aicbar i{display:block;height:100%;background:var(--aic-jejak);width:0}`;
+const AIC_IK={kirim:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="M12 19V5m0 0-6 6m6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',stop:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2.500" fill="currentColor"/></svg>'};
+/* Tombol roket bisa digeser ke mana saja; posisinya diingat. Geser < 8 px dianggap ketukan. */
+function aicPos(x,y,simpan){const b=$('#aicb');if(!b)return;const W=innerWidth,H=innerHeight,nv=$('#nv'),bawah=(nv?nv.offsetHeight:64)+8;
+ x=Math.max(8,Math.min(W-64,x));y=Math.max(8,Math.min(H-56-bawah,y));b.style.transform='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';AIC.px=x;AIC.py=y;
+ if(simpan)aicSet('cs_ai_pos',JSON.stringify([+(x/W).toFixed(4),+(y/H).toFixed(4)]))}
+function aicPosAwal(){let f=null;try{f=JSON.parse(aicLs('cs_ai_pos','null'))}catch(e){}if(Array.isArray(f)&&f.length===2)aicPos(f[0]*innerWidth,f[1]*innerHeight);else aicPos(innerWidth-64-12,innerHeight)}
+function aicSeret(b){let s=null;
+ b.addEventListener('pointerdown',e=>{if(e.button)return;s={x:e.clientX,y:e.clientY,px:AIC.px,py:AIC.py,g:false};try{b.setPointerCapture(e.pointerId)}catch(x){}});
+ b.addEventListener('pointermove',e=>{if(!s)return;const dx=e.clientX-s.x,dy=e.clientY-s.y;if(!s.g&&Math.hypot(dx,dy)<8)return;s.g=true;b.classList.add('seret');aicPos(s.px+dx,s.py+dy)});
+ const lepas=e=>{if(!s)return;const g=s.g;s=null;b.classList.remove('seret');if(g){aicPos(AIC.px,AIC.py,true);AIC.baruSeret=Date.now()}};
+ b.addEventListener('pointerup',lepas);b.addEventListener('pointercancel',lepas);
+ b.addEventListener('click',e=>{if(Date.now()-(AIC.baruSeret||0)<350){e.preventDefault();return}aicOpen()});
+ b.addEventListener('keydown',e=>{const d={ArrowLeft:[-24,0],ArrowRight:[24,0],ArrowUp:[0,-24],ArrowDown:[0,24]}[e.key];if(d){e.preventDefault();aicPos(AIC.px+d[0],AIC.py+d[1],true)}});
+ addEventListener('resize',aicPosAwal)}
 function aicInit(){if($('#aicb'))return;const st=document.createElement('style');st.textContent=AIC_CSS;document.head.appendChild(st);
- const b=document.createElement('button');b.id='aicb';b.type='button';b.textContent='🤖 Tanya AI';b.setAttribute('aria-label','Tanya AI tentang halaman ini');document.body.appendChild(b);
+ const b=document.createElement('button');b.id='aicb';b.type='button';b.innerHTML=AIC_RKT;b.setAttribute('aria-label','Tanya AI tentang halaman ini. Tombol ini bisa digeser.');b.title='Tanya AI (tahan lalu geser untuk memindahkan)';document.body.appendChild(b);
  const w=document.createElement('section');w.id='aicw';w.setAttribute('aria-label','Tanya AI');
- w.innerHTML='<div id="aich"><b>🤖 Tanya AI</b><button type="button" data-aic="atur">Atur</button><button type="button" data-aic="baru">Baru</button><button type="button" data-aic="tutup">Tutup</button></div><div id="aics"></div><div id="aica" hidden></div><div id="aicl"></div><div id="aicf"><textarea id="aict" rows="1" maxlength="1000" placeholder="Tanya tentang halaman ini…" aria-label="Pertanyaan"></textarea><button type="button" class="on" data-aic="kirim">Kirim</button></div>';
+ w.innerHTML='<div id="aich"><span class="aiclg">'+AIC_RKT+'</span><div class="aicjd"><b>Tanya AI</b><div id="aics"></div></div><button type="button" data-aic="atur">Atur</button><button type="button" data-aic="baru">Baru</button><button type="button" data-aic="tutup" aria-label="Tutup">✕</button></div><div id="aicgs"></div><div id="aica" hidden></div><div id="aicl"></div><div id="aicf"><textarea id="aict" rows="1" maxlength="1000" placeholder="Tanya tentang halaman ini" aria-label="Pertanyaan"></textarea><button type="button" class="aickr" data-aic="kirim" aria-label="Kirim">'+AIC_IK.kirim+'</button></div>';
  document.body.appendChild(w);
- b.onclick=aicOpen;
+ aicPosAwal();aicSeret(b);
  w.addEventListener('click',e=>{const x=e.target.closest&&e.target.closest('[data-aic]');if(x)aicAct(x.dataset.aic,x.dataset.id,x)});
  $('#aict').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!('ontouchstart' in window)){e.preventDefault();aicKirim()}})}
 async function aicOpen(){const k=aicKonteks(6000);AIC.ctx=k;AIC.ctxLab=k.lab;AIC.open=true;AIC.err='';$('#aicw').classList.add('o');$('#aicb').style.display='none';aicListen();await aicStat();aicDraw()}
 function aicClose(){AIC.open=false;$('#aicw').classList.remove('o');$('#aicb').style.display=''}
 function aicHead(){const e=$('#aics');if(!e)return;const hp=aicMesin()==='hp',id=aicSiapId(),m=AICM.find(x=>x.id===id);
- e.textContent='Membaca: '+(AIC.ctxLab||'-')+' · Mesin: '+(hp?'AI di HP ('+(m?m.nama:id)+(AIC.st&&AIC.st.siap===id&&AIC.st.backend?' · '+AIC.st.backend:'')+', offline)':'AI server (jatah harian terbatas)')}
+ e.textContent=(AIC.ctxLab||'-')+' · '+(hp?'AI di HP ('+(m?m.nama:id)+(AIC.st&&AIC.st.siap===id&&AIC.st.backend?', '+AIC.st.backend:'')+')':'AI server')}
 function aicBub(m){const d=document.createElement('div');d.className='aicm '+m.r;if(m.r==='a'&&m.done)d.innerHTML=esc(m.t).replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/^[*-] /gm,'• ');else d.textContent=m.t||(m.r==='a'?'…':'');return d}
 function aicList(){const l=$('#aicl');if(!l)return;l.textContent='';
- if(!AIC.msgs.length){const n=document.createElement('div');n.className='aicm n';n.textContent='AI membaca halaman yang sedang dibuka ('+(AIC.ctxLab||'-')+'), lalu menjelaskan angkanya. Buka halaman atau tab lain dulu kalau ingin bertanya soal data di sana.';l.appendChild(n);
-  const s=document.createElement('div');s.className='aicsug';s.innerHTML=['Jelaskan halaman ini dengan bahasa sederhana','Apa yang paling penting diperhatikan di sini?','Apa risikonya?'].map(q=>'<button type="button" data-aic="usul">'+esc(q)+'</button>').join('');l.appendChild(s)}
+ if(!AIC.msgs.length){const k=document.createElement('div');k.className='aicks';k.innerHTML='<span class="aicbs">'+AIC_RKT+'</span><h2>Mau tahu apa soal '+esc(AIC.ctxLab||'halaman ini')+'?</h2><p>AI membaca halaman yang sedang dibuka lalu menjelaskan angkanya. Untuk data di tab lain, buka dulu tab itu.</p><div class="aicsug">'+['Jelaskan halaman ini dengan bahasa sederhana','Apa yang paling penting diperhatikan di sini?','Apa risikonya?'].map(q=>'<button type="button" data-aic="usul">'+esc(q)+'</button>').join('')+'</div>';l.appendChild(k)}
  for(const m of AIC.msgs)l.appendChild(aicBub(m));
  if(AIC.muat){const n=document.createElement('div');n.className='aicm n';n.textContent=AIC.muat;l.appendChild(n)}
- if(AIC.err){const n=document.createElement('div');n.className='aicm n';n.style.color='var(--dn)';n.textContent=AIC.err;l.appendChild(n)}
+ if(AIC.err){const n=document.createElement('div');n.className='aicm n s';n.textContent=AIC.err;l.appendChild(n)}
  l.scrollTop=l.scrollHeight}
 function aicTok(){const l=$('#aicl');if(!l)return;const m=AIC.msgs.at(-1),bs=l.querySelectorAll('.aicm.a'),b=bs[bs.length-1];if(b&&m){const dekat=l.scrollHeight-l.scrollTop-l.clientHeight<80;b.textContent=m.t;if(dekat)l.scrollTop=l.scrollHeight}}
 function aicDl(){const d=AIC.dl,e=$('#aicdl');if(!d||!e)return aicAturDraw();const pc=d.total?Math.min(100,d.got/d.total*100):0;e.querySelector('i').style.width=pc.toFixed(1)+'%';e.querySelector('span').textContent='Mengunduh '+aicGB(d.got)+(d.total?' dari '+aicGB(d.total)+' ('+pc.toFixed(0)+'%)':'')+'. Biarkan aplikasi tetap terbuka.'}
@@ -2265,15 +2307,15 @@ function aicAturDraw(){const a=$('#aica');if(!a)return;a.hidden=!AIC.atur;if(!AI
  else if(!p)h+='<div class="aick"><b>AI di HP butuh APK versi baru.</b><div class="mu">APK yang terpasang belum punya mesin AI. Sementara ini dipakai AI server (jatah harian terbatas). Pasang APK terbaru untuk AI yang jalan di HP, gratis tanpa batas.</div></div>';
  else{h+='<div class="mu" style="font-size:13px">AI di HP: gratis, tanpa batas, jalan tanpa internet. Model diunduh sekali lewat internet (sebaiknya Wi-Fi).'+(st?' RAM HP ini '+aicGB(st.ram)+', ruang kosong '+aicGB(st.ruang)+'.':'')+'</div>';
   for(const m of AICM){const f=aicFile(m.id),ok=f&&f.lengkap,dl=AIC.dl&&AIC.dl.id===m.id,kecil=st&&st.ram<m.ram,sempit=st&&!ok&&st.ruang<(m.gb+0.3)*1e9-(f?f.ukuran:0);
-   h+='<div class="aick"><b>'+m.nama+'</b>'+(ok&&pakai===m.id&&!awan?' <span class="tk" style="color:var(--up)">dipakai</span>':'')+'<div class="mu" style="font-size:13px">'+m.ket+'</div>'
-    +(kecil&&!ok?'<div class="mu" style="font-size:13px;color:var(--dn)">RAM HP ini kurang untuk model ini; kemungkinan lambat atau gagal dimuat.</div>':'')
+   h+='<div class="aick"><b>'+m.nama+'</b>'+(ok&&pakai===m.id&&!awan?' <span style="color:#1f9d55;font-weight:700;font-size:12px">dipakai</span>':'')+'<div class="mu" style="font-size:13px">'+m.ket+'</div>'
+    +(kecil&&!ok?'<div class="mu" style="font-size:13px;color:var(--aic-salah)">RAM HP ini kurang untuk model ini; kemungkinan lambat atau gagal dimuat.</div>':'')
     +(dl?'<div id="aicdl"><div class="aicbar"><i></i></div><span class="mu" style="font-size:13px"></span></div><div class="r"><button type="button" data-aic="jeda">Jeda</button></div>'
      :ok?'<div class="r">'+(pakai===m.id&&!awan?'':'<button type="button" class="on" data-aic="pakai" data-id="'+m.id+'">Pakai</button>')+'<button type="button" data-aic="hapus" data-id="'+m.id+'">'+(AIC.cf===m.id?'Ketuk lagi untuk hapus':'Hapus ('+aicGB(f.ukuran)+')')+'</button></div>'
-     :'<div class="r"><button type="button" class="on" data-aic="unduh" data-id="'+m.id+'"'+(AIC.dl||sempit?' disabled':'')+'>'+(f?'Lanjutkan unduhan ('+aicGB(f.ukuran)+' sudah ada)':'Unduh '+String(m.gb).replace('.',',')+' GB')+'</button>'+(f?'<button type="button" data-aic="hapus" data-id="'+m.id+'">'+(AIC.cf===m.id?'Ketuk lagi untuk hapus':'Buang')+'</button>':'')+'</div>'+(sempit?'<div class="mu" style="font-size:13px;color:var(--dn)">Ruang penyimpanan HP tidak cukup.</div>':''))
+     :'<div class="r"><button type="button" class="on" data-aic="unduh" data-id="'+m.id+'"'+(AIC.dl||sempit?' disabled':'')+'>'+(f?'Lanjutkan unduhan ('+aicGB(f.ukuran)+' sudah ada)':'Unduh '+String(m.gb).replace('.',',')+' GB')+'</button>'+(f?'<button type="button" data-aic="hapus" data-id="'+m.id+'">'+(AIC.cf===m.id?'Ketuk lagi untuk hapus':'Buang')+'</button>':'')+'</div>'+(sempit?'<div class="mu" style="font-size:13px;color:var(--aic-salah)">Ruang penyimpanan HP tidak cukup.</div>':''))
     +'</div>'}
-  h+='<div class="aick"><b>AI server</b>'+(awan||!pakai?' <span class="tk" style="color:var(--up)">dipakai</span>':'')+'<div class="mu" style="font-size:13px">Tanpa unduhan, butuh internet, jatah harian terbatas dan dipakai bersama semua pengguna.</div>'+(pakai?'<div class="r"><button type="button" data-aic="mode" data-id="'+(awan?'auto':'awan')+'">'+(awan?'Kembali pakai AI di HP':'Pakai AI server saja')+'</button></div>':'')+'</div>'}
+  h+='<div class="aick"><b>AI server</b>'+(awan||!pakai?' <span style="color:#1f9d55;font-weight:700;font-size:12px">dipakai</span>':'')+'<div class="mu" style="font-size:13px">Tanpa unduhan, butuh internet, jatah harian terbatas dan dipakai bersama semua pengguna.</div>'+(pakai?'<div class="r"><button type="button" data-aic="mode" data-id="'+(awan?'auto':'awan')+'">'+(awan?'Kembali pakai AI di HP':'Pakai AI server saja')+'</button></div>':'')+'</div>'}
  a.innerHTML=h;if(AIC.dl)aicDl()}
-function aicDraw(){if(!AIC.open)return;aicHead();aicAturDraw();aicList();const k=$('[data-aic="kirim"]');if(k){k.textContent=AIC.busy?'Stop':'Kirim'}}
+function aicDraw(){if(!AIC.open)return;aicHead();aicAturDraw();aicList();const k=$('[data-aic="kirim"]');if(k){k.innerHTML=AIC.busy?AIC_IK.stop:AIC_IK.kirim;k.setAttribute('aria-label',AIC.busy?'Hentikan':'Kirim')}}
 async function aicAct(a,id,el){const p=aicP();
  if(a==='tutup')return aicClose();
  if(a==='kirim')return AIC.busy?aicStop():aicKirim();

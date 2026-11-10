@@ -1,0 +1,100 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (apk-nonadmin.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: Catatan Saham Non Admin (OTA publik + APK)
+# 1) Setiap perubahan apk-next: rakit edisi Non Admin dan terbitkan ke repo PUBLIK
+#    CatatanSaham/catatan-saham-publik/nonadmin/ (www + versi.json) → OTA APK Non Admin.
+# 2) Rilis APK Non Admin hanya lewat "Run workflow" (rilis=true): appId id.catatansaham.nonadmin,
+#    nama "Catatan Saham Non Admin", keystore sama (apk/signing), dirilis ke repo publik (rilis apk-nonadmin).
+# Tidak menyentuh APK admin (appId id.catatansaham.app, apk.yml, apk-build, versionCode admin).
+# Butuh secret PUBLIK_TOKEN (Contents: read/write repo publik).
+on:
+  workflow_dispatch:
+    inputs:
+      rilis:
+        description: "Rilis APK Non Admin baru (true) atau hanya terbitkan OTA (false)"
+        default: "false"
+permissions:
+  contents: read
+concurrency:
+  group: apk-nonadmin
+  cancel-in-progress: false
+jobs:
+  nonadmin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-next
+      - uses: actions/setup-node@v4
+        with: {node-version: "20"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Rakit paket Non Admin
+        run: |
+          npm i --no-save --prefix tools acorn@8
+          pip install pillow
+          python tools/pack_nonadmin.py --out na
+      - name: Terbitkan OTA ke repo publik
+        env: {T: "${{ secrets.PRIVAT_TOKEN }}"}
+        run: |
+          [ -n "$T" ] || { echo "::error::PUBLIK_TOKEN belum diisi"; exit 1; }
+          git clone -q --depth 1 "https://x-access-token:${T}@github.com/CatatanSaham/catatan-saham-publik.git" pub
+          rm -rf pub/nonadmin && mkdir -p pub/nonadmin && cp -r na/www pub/nonadmin/www && cp na/versi.json pub/nonadmin/versi.json
+          rm -f pub/nonadmin/www/ota-base.json
+          cd pub
+          git config user.name "Terbit Catatan Saham"
+          git config user.email "noreply@github.com"
+          git add -A nonadmin
+          git diff --cached --quiet && { echo "OTA tidak berubah."; exit 0; }
+          git commit -q -m "Non Admin $(python3 -c "import json;v=json.load(open('nonadmin/versi.json'));print(v['d'],v['c'][:12])")"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
+      - uses: actions/setup-java@v4
+        if: github.event.inputs.rilis == 'true'
+        with: {distribution: temurin, java-version: "21"}
+      - name: Bangun APK Non Admin
+        if: github.event.inputs.rilis == 'true'
+        run: |
+          mkdir build && cp apk/package.json apk/make_icons.py build/ && cp -r apk/signing apk/native build/ && cp -r apk/icon-src-nonadmin build/icon-src && cp -r na/www build/www
+          cd build
+          python3 - <<'PY'
+          import json
+          c=json.load(open('../apk/capacitor.config.json'))
+          c['appId']='id.catatansaham.nonadmin'; c['appName']='Catatan Saham Non Admin'
+          json.dump(c,open('capacitor.config.json','w'),indent=1)
+          PY
+          pip install pillow
+          npm install --no-audit --no-fund
+          cp node_modules/lightweight-charts/dist/lightweight-charts.standalone.production.js www/lwc.js
+          V=$(python3 -c "import json;v=json.load(open('www/ota-base.json'));print(v['c']+' '+v['d'])")
+          set -- $V
+          BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          sed -i "s#<head>#<head><script>window.CS_APK_BASE={c:'$1',d:'$2'}</script>#" www/index.html
+          sed -i "s#<head>#<head><script>window.CS_APK_BUILT='$BUILT'</script>#" www/index.html
+          if grep -qF "window.CS_APK_ADMIN=true" www/index.html; then echo "GAGAL: penanda admin ikut"; exit 1; fi
+          npx cap add android
+          python make_icons.py android/app/src/main/res
+          npx cap sync android
+          python native/pasang.py android
+          sed -i "s/versionCode 1/versionCode $((100 + ${{ github.run_number }}))/; s/versionName \"1.0\"/versionName \"NA.$((100 + ${{ github.run_number }}))\"/" android/app/build.gradle
+          python3 - <<'PY'
+          p='android/app/build.gradle'
+          t=open(p).read()
+          blk='android {\n    signingConfigs {\n        debug {\n            storeFile file("$rootDir/../signing/debug.keystore")\n            storePassword "android"\n            keyAlias "androiddebugkey"\n            keyPassword "android"\n        }\n    }\n'
+          assert t.count('android {\n')==1
+          open(p,'w').write(t.replace('android {\n',blk,1))
+          PY
+          grep -n "applicationId\|versionCode" android/app/build.gradle
+          cd android && ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../../CatatanSahamNonAdmin.apk && ls -la ../../CatatanSahamNonAdmin.apk
+      - name: Rilis APK Non Admin di repo publik
+        if: github.event.inputs.rilis == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PRIVAT_TOKEN }}
+        run: |
+          gh release delete apk-nonadmin --repo CatatanSaham/catatan-saham-publik --yes --cleanup-tag || true
+          gh release create apk-nonadmin CatatanSahamNonAdmin.apk --repo CatatanSaham/catatan-saham-publik \
+            --title "Catatan Saham Non Admin (terbaru)" \
+            --notes "APK Catatan Saham Non Admin. Diperbarui otomatis (OTA). Catatan analisis, bukan rekomendasi investasi."

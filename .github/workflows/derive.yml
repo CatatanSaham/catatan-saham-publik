@@ -1,0 +1,56 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (derive.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: Hitung modul otomatis (Fase 3, mode bayangan)
+# Membaca ZIP harian di apk-data, memvalidasi, menghitung modul dengan mesin index.html (apk-next),
+# lalu menulis hasil ke apk-data/derived/. Hasil belum dipakai web/APK/bot.
+# Hanya menulis ke apk-data/derived/** — tidak memicu workflow lain (semuanya memantau apk-data/harian).
+on:
+  schedule:
+    - cron: "7 13 * * 1-5"   # 20.07 WIB
+    - cron: "7 16 * * 1-5"   # 23.07 WIB
+    - cron: "7 0 * * 2-6"    # 07.07 WIB
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: derive
+  cancel-in-progress: false
+jobs:
+  derive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main}
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-next
+          path: next
+          sparse-checkout: apk/www
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-data
+          path: data
+          sparse-checkout: |
+            apk-data/harian
+            apk-data/derived
+      - uses: actions/setup-node@v4
+        with: {node-version: "20"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install playwright==1.* && python -m playwright install --with-deps chromium
+      - name: Validasi dan hitung
+        run: python main/tools/derive/derive.py --www next/apk/www --zips data/apk-data/harian --out data/apk-data/derived
+      - name: Simpan ke apk-data/derived (hanya bila berubah)
+        run: |
+          cd data
+          git config user.name "Hitung Otomatis"
+          git config user.email "noreply@github.com"
+          git add apk-data/derived
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "derived: $(python -c "import json;print(json.load(open('apk-data/derived/status.json'))['data_terakhir'])")"
+          for i in 1 2 3; do git pull -q --rebase origin apk-data && git push -q origin HEAD:apk-data && break; sleep 5; done

@@ -1,0 +1,79 @@
+# DIPINDAH dari repo privat CatatanSaham/catatan-saham-mtf (apk.yml) karena menit Actions repo privat terbatas.
+# Kode & data tetap di repo privat; diambil saat jalan memakai secret PRIVAT_TOKEN. Jangan cetak data mentah ke log (log repo ini publik).
+name: Build APK Catatan Saham
+on:
+  workflow_dispatch:
+    inputs:
+      admin:
+        description: "APK pribadi dengan akses admin (jangan dibagikan)"
+        default: "true"
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: apk
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-build
+      - uses: actions/setup-node@v4
+        with: {node-version: "20"}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: "21"}
+      - run: pip install pillow
+      - run: npm install --no-audit --no-fund
+      - name: Pasang library chart dan flag admin
+        run: |
+          cp node_modules/lightweight-charts/dist/lightweight-charts.standalone.production.js www/lwc.js
+          ADMIN="${{ github.event.inputs.admin || 'true' }}"
+          if [ "$ADMIN" = "true" ]; then sed -i 's#<head>#<head><script>window.CS_APK_ADMIN=true</script>#' www/index.html; fi
+          BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          # OTA: catat versi bawaan (commit + tanggal + sidik git tiap file www) untuk pembaruan otomatis
+          BASE_C=$(git rev-parse HEAD)
+          BASE_D=$(TZ=UTC git log -1 --date=format-local:%Y-%m-%dT%H:%M:%SZ --format=%cd)
+          git ls-tree -r HEAD www | python3 -c "import sys,json;f={l.split()[3][4:]:l.split()[2] for l in sys.stdin if l.split()[1]=='blob'};json.dump({'c':'$BASE_C','d':'$BASE_D','files':f},open('www/ota-base.json','w'),separators=(',',':'))"
+          python3 -c "import json;print('ota-base files', len(json.load(open('www/ota-base.json'))['files']))"
+          sed -i "s#<head>#<head><script>window.CS_APK_BASE={c:'$BASE_C',d:'$BASE_D'}</script>#" www/index.html
+          sed -i "s#<head>#<head><script>window.CS_APK_BUILT='$BUILT'</script>#" www/index.html
+          grep -c CS_APK_ADMIN www/index.html || true
+      - name: Uji Yahoo intraday IHSG dari runner
+        run: |
+          R=$(curl -s -m 30 -w ' HTTP=%{http_code}' -A "Mozilla/5.0" "https://query1.finance.yahoo.com/v8/finance/chart/%5EJKSE?interval=5m&range=5d" | tr -d '\n' | head -c 600)
+          echo "::notice title=yahoo::$R"
+      - run: npx cap add android
+      - run: |
+          python make_icons.py android/app/src/main/res
+          npx cap sync android
+      - name: Pasang AI lokal (plugin CsAi, LiteRT-LM)
+        run: python native/pasang.py android
+      - name: Tanda tangan tetap + nomor versi
+        run: |
+          mkdir -p ~/.android && cp signing/debug.keystore ~/.android/debug.keystore
+          sed -i "s/versionCode 1/versionCode $((100 + ${{ github.run_number }}))/; s/versionName \"1.0\"/versionName \"1.$((100 + ${{ github.run_number }}))\"/" android/app/build.gradle
+          grep -n "versionCode\|versionName" android/app/build.gradle
+          python - <<'PY'
+          import re
+          p='android/app/build.gradle'
+          t=open(p).read()
+          blk='android {\n    signingConfigs {\n        debug {\n            storeFile file("$rootDir/../signing/debug.keystore")\n            storePassword "android"\n            keyAlias "androiddebugkey"\n            keyPassword "android"\n        }\n    }\n'
+          assert t.count('android {\n')==1
+          open(p,'w').write(t.replace('android {\n',blk,1))
+          PY
+          grep -n "debug.keystore" android/app/build.gradle
+      - name: Build debug APK
+        working-directory: apk/android
+        run: ./gradlew assembleDebug --no-daemon
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk CatatanSaham.apk && ls -la CatatanSaham.apk
+      - name: Rilis APK terbaru
+        env:
+          GH_TOKEN: ${{ secrets.PRIVAT_TOKEN }}
+        working-directory: apk
+        run: |
+          gh release delete apk-latest --repo CatatanSaham/catatan-saham-mtf --yes --cleanup-tag || true
+          gh release create apk-latest CatatanSaham.apk --repo CatatanSaham/catatan-saham-mtf --title "Catatan Saham APK (terbaru)" --notes "Build otomatis dari cabang apk-build. Pakai hanya untuk diri sendiri (versi admin)." --target "$(git rev-parse HEAD)"

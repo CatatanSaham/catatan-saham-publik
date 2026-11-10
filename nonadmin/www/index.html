@@ -2187,6 +2187,104 @@ ${!L.length?(busy?'<div class="mu">Memuat…</div>':'<div class="mu">Belum ada b
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-rrc],[data-rrh],[data-rrr],[data-rrp],[data-rrkd]');if(!t)return;const d=t.dataset;
  if(d.rrc!=null){RR.cat=d.rrc;RR.pg=0;render()}else if(d.rrh){RR.hr=+d.rrh;RR.pg=0;if(RR.hr>IK.hari&&RR.hr<=7){IK.hari=RR.hr;ikLoad()}else render()}else if(d.rrr){rrLoadAll()}else if(d.rrp){RR.pg=Math.max(0,RR.pg+(+d.rrp));render();window.scrollTo(0,0)}else if(d.rrkd){RR.kode=RR.kode===d.rrkd?'':d.rrkd;RR.pg=0;render()}});
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='rrk'){RR.kode=e.target.value.trim().toUpperCase();RR.pg=0;render()}});
+/* ===== 🤖 Tanya AI: AI lokal di HP (plugin CsAi / LiteRT-LM) + cadangan AI server (Worker /app/ai) =====
+   AI hanya MEMBACA halaman yang sedang dibuka (angka hasil hitung aplikasi) lalu menjelaskan; tidak menghitung sendiri.
+   Tampilan berdiri sendiri (tidak ikut render()), supaya keyboard HP tidak terganggu saat mengetik. */
+const AICM=[
+ {id:'e4b',nama:'Pintar',gb:3.7,ram:7e9,ket:'Gemma 4 E4B · unduh ±3,7 GB · untuk HP RAM 8 GB ke atas',url:'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm'},
+ {id:'e2b',nama:'Ringan',gb:2.6,ram:5e9,ket:'Gemma 4 E2B · unduh ±2,6 GB · untuk HP RAM 6 GB ke atas',url:'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm'}];
+const AIC={open:false,msgs:[],busy:false,st:null,dl:null,atur:false,ctx:'',ctxLab:'',no:0,err:'',muat:'',lis:false};
+const aicP=()=>{const C=window.Capacitor;if(!C||!C.isPluginAvailable||!C.isPluginAvailable('CsAi'))return null;return AIC.pl||(AIC.pl=C.registerPlugin?C.registerPlugin('CsAi'):C.Plugins.CsAi)};
+const aicLs=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},aicSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const aicGB=b=>(b/1e9).toFixed(b<1e10?1:0).replace('.',',')+' GB';
+const aicFile=id=>((AIC.st&&AIC.st.berkas)||[]).find(f=>f.id===id);
+const aicSiapId=()=>{const p=aicLs('cs_ai_model','');const ok=id=>{const f=aicFile(id);return f&&f.lengkap};if(p&&ok(p))return p;const m=AICM.find(x=>ok(x.id));return m?m.id:''};
+/* mesin yang dipakai: 'hp' bila plugin ada, model sudah diunduh, dan pengguna tidak memilih server */
+const aicMesin=()=>(aicP()&&aicLs('cs_ai_mode','auto')!=='awan'&&aicSiapId())?'hp':'awan';
+async function aicStat(){const p=aicP();if(!p)return;try{AIC.st=await p.status();if(AIC.st.unduhId&&!AIC.dl)AIC.dl={id:AIC.st.unduhId,got:AIC.st.unduhGot,total:AIC.st.unduhTotal}}catch(e){}}
+function aicListen(){const p=aicP();if(!p||AIC.lis)return;AIC.lis=true;
+ p.addListener('token',o=>{if(!AIC.busy||String(o.no)!==String(AIC.no))return;const m=AIC.msgs.at(-1);if(m&&m.r==='a'){m.t+=o.t;aicTok()}});
+ p.addListener('unduh',async o=>{if(o.selesai||o.err){AIC.dl=null;AIC.err=o.err&&o.err!=='Dijeda'?'Unduhan berhenti: '+o.err:'';await aicStat();if(o.selesai&&!o.err){aicSet('cs_ai_model',o.id);aicSet('cs_ai_mode','auto')}aicDraw()}else{AIC.dl={id:o.id,got:o.got,total:o.total};aicDl()}})}
+
+/* ---- konteks: teks halaman yang sedang dibuka + ringkasan harga saham bila di halaman saham ---- */
+function aicKonteks(maks){let lab='',kop='';try{const mn=MENU.flatMap(g=>g[1]).find(x=>x[0]===S.p);lab=S.p==='home'?'Beranda':(mn?mn[1]:S.p)}catch(e){lab=String(S.p||'')}
+ try{if(S.p==='saham'){const c=hubSync(),SR=hubSer(c);lab='Saham '+c;if(SR.length){const la=SR.at(-1),f=n=>{const s=SR.slice(-n);return s.length>1?((la.c/s[0].c-1)*100).toFixed(1)+'%':'-'};
+  kop='Saham: '+c+(NM[c]?' ('+NM[c]+')':'')+(SEC&&SEC[c]?' · sektor '+SEC[c]:'')+'\nHarga penutupan terakhir ('+fd(la.d)+'): '+la.c+'\nPerubahan harga: 5 hari '+f(6)+' · 1 bulan '+f(22)+' · 3 bulan '+f(64)+'\nTertinggi/terendah 3 bulan: '+Math.max(...SR.slice(-63).map(r=>r.c))+' / '+Math.min(...SR.slice(-63).map(r=>r.c))+'\n'}}}catch(e){}
+ let t='';try{const m=$('#m');t=(m&&m.innerText)||''}catch(e){}
+ t=t.replace(/ /g,' ').replace(/[ \t]+/g,' ').replace(/ ?\n ?/g,'\n').replace(/\n{2,}/g,'\n').trim();
+ const sisa=Math.max(500,maks-kop.length);if(t.length>sisa)t=t.slice(0,sisa)+'\n…(halaman dipotong)';
+ return{lab,teks:kop+(kop?'\nIsi halaman:\n':'')+t}}
+const aicSistem=k=>'Kamu "AI Catatan Saham", asisten di aplikasi riset saham Indonesia (BEI). Jawab dalam bahasa Indonesia yang santai, ringkas, dan mudah dipahami orang awam.\nATURAN:\n1. Semua angka, harga, nama broker, dan fakta HARUS diambil dari DATA di bawah. Jangan mengarang angka, harga, atau berita.\n2. Kalau yang ditanya tidak ada di DATA, katakan terus terang datanya tidak ada di halaman ini, lalu sarankan pengguna membuka halaman atau tab yang memuatnya (misalnya tab Broker, Fundamental, Analisa) dan bertanya lagi.\n3. Jelaskan arti angkanya: apa maksudnya, bagus atau jelek, dan kenapa.\n4. Jangan menyuruh beli atau jual. Beri pertimbangan dua sisi; keputusan di tangan pengguna.\n5. Jawaban pendek: paling banyak sekitar 8 kalimat atau beberapa butir.\n\nDATA (halaman "'+k.lab+'" di aplikasi, tanggal data mengikuti isi halaman):\n'+k.teks;
+
+/* ---- tampilan ---- */
+const AIC_CSS='#aicb{position:fixed;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:7;border:1px solid var(--line);background:var(--navy);color:#fff;border-radius:999px;padding:11px 15px;font:700 14px system-ui;box-shadow:var(--shadow)}'
++'#aicw{position:fixed;inset:0;z-index:50;background:var(--bg);color:var(--ink);display:none;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);font:15px/1.5 system-ui}#aicw.o{display:flex}'
++'#aich{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}#aich b{flex:1;font-size:17px}#aicw button{font:600 13px system-ui;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:10px;padding:9px 12px;min-height:40px}#aicw button.on{background:var(--navy);color:#fff}#aicw button:disabled{opacity:.5}'
++'#aics{padding:6px 12px;font-size:12px;color:var(--mute);border-bottom:1px solid var(--line)}#aicl{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}'
++'.aicm{max-width:88%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid var(--line)}.aicm.u{align-self:flex-end;background:var(--navy);color:#fff;border-color:transparent}.aicm.a{align-self:flex-start;background:var(--card)}.aicm.n{align-self:center;background:none;border:0;color:var(--mute);font-size:13px;text-align:center}'
++'#aicf{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);align-items:flex-end}#aict{flex:1;min-height:44px;max-height:120px;resize:none;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:10px;font:16px system-ui}'
++'#aica{padding:12px;border-bottom:1px solid var(--line);overflow-y:auto;max-height:70vh}.aick{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px;margin:8px 0}.aick .r{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.aicbar{height:8px;border-radius:99px;background:var(--chip);overflow:hidden;margin-top:8px}.aicbar i{display:block;height:100%;background:var(--gold);width:0}.aicsug{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}';
+function aicInit(){if($('#aicb'))return;const st=document.createElement('style');st.textContent=AIC_CSS;document.head.appendChild(st);
+ const b=document.createElement('button');b.id='aicb';b.type='button';b.textContent='🤖 Tanya AI';b.setAttribute('aria-label','Tanya AI tentang halaman ini');document.body.appendChild(b);
+ const w=document.createElement('section');w.id='aicw';w.setAttribute('aria-label','Tanya AI');
+ w.innerHTML='<div id="aich"><b>🤖 Tanya AI</b><button type="button" data-aic="atur">Atur</button><button type="button" data-aic="baru">Baru</button><button type="button" data-aic="tutup">Tutup</button></div><div id="aics"></div><div id="aica" hidden></div><div id="aicl"></div><div id="aicf"><textarea id="aict" rows="1" maxlength="1000" placeholder="Tanya tentang halaman ini…" aria-label="Pertanyaan"></textarea><button type="button" class="on" data-aic="kirim">Kirim</button></div>';
+ document.body.appendChild(w);
+ b.onclick=aicOpen;
+ w.addEventListener('click',e=>{const x=e.target.closest&&e.target.closest('[data-aic]');if(x)aicAct(x.dataset.aic,x.dataset.id,x)});
+ $('#aict').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!('ontouchstart' in window)){e.preventDefault();aicKirim()}})}
+async function aicOpen(){const k=aicKonteks(6000);AIC.ctx=k;AIC.ctxLab=k.lab;AIC.open=true;AIC.err='';$('#aicw').classList.add('o');$('#aicb').style.display='none';aicListen();await aicStat();aicDraw()}
+function aicClose(){AIC.open=false;$('#aicw').classList.remove('o');$('#aicb').style.display=''}
+function aicHead(){const e=$('#aics');if(!e)return;const hp=aicMesin()==='hp',id=aicSiapId(),m=AICM.find(x=>x.id===id);
+ e.textContent='Membaca: '+(AIC.ctxLab||'-')+' · Mesin: '+(hp?'AI di HP ('+(m?m.nama:id)+(AIC.st&&AIC.st.siap===id&&AIC.st.backend?' · '+AIC.st.backend:'')+', offline)':'AI server (jatah harian terbatas)')}
+function aicBub(m){const d=document.createElement('div');d.className='aicm '+m.r;if(m.r==='a'&&m.done)d.innerHTML=esc(m.t).replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/^[*-] /gm,'• ');else d.textContent=m.t||(m.r==='a'?'…':'');return d}
+function aicList(){const l=$('#aicl');if(!l)return;l.textContent='';
+ if(!AIC.msgs.length){const n=document.createElement('div');n.className='aicm n';n.textContent='AI membaca halaman yang sedang dibuka ('+(AIC.ctxLab||'-')+'), lalu menjelaskan angkanya. Buka halaman atau tab lain dulu kalau ingin bertanya soal data di sana.';l.appendChild(n);
+  const s=document.createElement('div');s.className='aicsug';s.innerHTML=['Jelaskan halaman ini dengan bahasa sederhana','Apa yang paling penting diperhatikan di sini?','Apa risikonya?'].map(q=>'<button type="button" data-aic="usul">'+esc(q)+'</button>').join('');l.appendChild(s)}
+ for(const m of AIC.msgs)l.appendChild(aicBub(m));
+ if(AIC.muat){const n=document.createElement('div');n.className='aicm n';n.textContent=AIC.muat;l.appendChild(n)}
+ if(AIC.err){const n=document.createElement('div');n.className='aicm n';n.style.color='var(--dn)';n.textContent=AIC.err;l.appendChild(n)}
+ l.scrollTop=l.scrollHeight}
+function aicTok(){const l=$('#aicl');if(!l)return;const m=AIC.msgs.at(-1),bs=l.querySelectorAll('.aicm.a'),b=bs[bs.length-1];if(b&&m){const dekat=l.scrollHeight-l.scrollTop-l.clientHeight<80;b.textContent=m.t;if(dekat)l.scrollTop=l.scrollHeight}}
+function aicDl(){const d=AIC.dl,e=$('#aicdl');if(!d||!e)return aicAturDraw();const pc=d.total?Math.min(100,d.got/d.total*100):0;e.querySelector('i').style.width=pc.toFixed(1)+'%';e.querySelector('span').textContent='Mengunduh '+aicGB(d.got)+(d.total?' dari '+aicGB(d.total)+' ('+pc.toFixed(0)+'%)':'')+'. Biarkan aplikasi tetap terbuka.'}
+function aicAturDraw(){const a=$('#aica');if(!a)return;a.hidden=!AIC.atur;if(!AIC.atur)return;const p=aicP(),st=AIC.st,awan=aicLs('cs_ai_mode','auto')==='awan',pakai=aicSiapId();let h='';
+ if(!window.Capacitor)h+='<div class="aick">Di versi web, AI memakai <b>AI server</b> (gratis, jatah harian terbatas). AI yang jalan di HP tanpa internet tersedia di aplikasi Android (APK).</div>';
+ else if(!p)h+='<div class="aick"><b>AI di HP butuh APK versi baru.</b><div class="mu">APK yang terpasang belum punya mesin AI. Sementara ini dipakai AI server (jatah harian terbatas). Pasang APK terbaru untuk AI yang jalan di HP, gratis tanpa batas.</div></div>';
+ else{h+='<div class="mu" style="font-size:13px">AI di HP: gratis, tanpa batas, jalan tanpa internet. Model diunduh sekali lewat internet (sebaiknya Wi-Fi).'+(st?' RAM HP ini '+aicGB(st.ram)+', ruang kosong '+aicGB(st.ruang)+'.':'')+'</div>';
+  for(const m of AICM){const f=aicFile(m.id),ok=f&&f.lengkap,dl=AIC.dl&&AIC.dl.id===m.id,kecil=st&&st.ram<m.ram,sempit=st&&!ok&&st.ruang<(m.gb+0.3)*1e9-(f?f.ukuran:0);
+   h+='<div class="aick"><b>'+m.nama+'</b>'+(ok&&pakai===m.id&&!awan?' <span class="tk" style="color:var(--up)">dipakai</span>':'')+'<div class="mu" style="font-size:13px">'+m.ket+'</div>'
+    +(kecil&&!ok?'<div class="mu" style="font-size:13px;color:var(--dn)">RAM HP ini kurang untuk model ini; kemungkinan lambat atau gagal dimuat.</div>':'')
+    +(dl?'<div id="aicdl"><div class="aicbar"><i></i></div><span class="mu" style="font-size:13px"></span></div><div class="r"><button type="button" data-aic="jeda">Jeda</button></div>'
+     :ok?'<div class="r">'+(pakai===m.id&&!awan?'':'<button type="button" class="on" data-aic="pakai" data-id="'+m.id+'">Pakai</button>')+'<button type="button" data-aic="hapus" data-id="'+m.id+'">'+(AIC.cf===m.id?'Ketuk lagi untuk hapus':'Hapus ('+aicGB(f.ukuran)+')')+'</button></div>'
+     :'<div class="r"><button type="button" class="on" data-aic="unduh" data-id="'+m.id+'"'+(AIC.dl||sempit?' disabled':'')+'>'+(f?'Lanjutkan unduhan ('+aicGB(f.ukuran)+' sudah ada)':'Unduh '+String(m.gb).replace('.',',')+' GB')+'</button>'+(f?'<button type="button" data-aic="hapus" data-id="'+m.id+'">'+(AIC.cf===m.id?'Ketuk lagi untuk hapus':'Buang')+'</button>':'')+'</div>'+(sempit?'<div class="mu" style="font-size:13px;color:var(--dn)">Ruang penyimpanan HP tidak cukup.</div>':''))
+    +'</div>'}
+  h+='<div class="aick"><b>AI server</b>'+(awan||!pakai?' <span class="tk" style="color:var(--up)">dipakai</span>':'')+'<div class="mu" style="font-size:13px">Tanpa unduhan, butuh internet, jatah harian terbatas dan dipakai bersama semua pengguna.</div>'+(pakai?'<div class="r"><button type="button" data-aic="mode" data-id="'+(awan?'auto':'awan')+'">'+(awan?'Kembali pakai AI di HP':'Pakai AI server saja')+'</button></div>':'')+'</div>'}
+ a.innerHTML=h;if(AIC.dl)aicDl()}
+function aicDraw(){if(!AIC.open)return;aicHead();aicAturDraw();aicList();const k=$('[data-aic="kirim"]');if(k){k.textContent=AIC.busy?'Stop':'Kirim'}}
+async function aicAct(a,id,el){const p=aicP();
+ if(a==='tutup')return aicClose();
+ if(a==='kirim')return AIC.busy?aicStop():aicKirim();
+ if(a==='usul'){$('#aict').value=el.textContent;return aicKirim()}
+ if(a==='baru'){if(AIC.busy)return;AIC.msgs=[];AIC.err='';const k=aicKonteks(6000);AIC.ctx=k;AIC.ctxLab=k.lab;return aicDraw()}
+ if(a==='atur'){AIC.atur=!AIC.atur;AIC.cf=null;if(AIC.atur)await aicStat();return aicDraw()}
+ if(a==='mode'){aicSet('cs_ai_mode',id);return aicDraw()}
+ if(!p)return;
+ try{if(a==='unduh'){const m=AICM.find(x=>x.id===id);AIC.err='';AIC.dl={id,got:(aicFile(id)||{}).ukuran||0,total:0};aicDraw();await p.unduh({id,url:m.url})}
+  else if(a==='jeda'){await p.jedaUnduh()}
+  else if(a==='pakai'){aicSet('cs_ai_model',id);aicSet('cs_ai_mode','auto');if(AIC.st&&AIC.st.siap&&AIC.st.siap!==id)await p.lepas();await aicStat();aicDraw()}
+  else if(a==='hapus'){if(AIC.cf!==id){AIC.cf=id;return aicDraw()}AIC.cf=null;await p.hapus({id});await aicStat();aicDraw()}
+ }catch(e){AIC.dl=null;AIC.err=String((e&&e.message)||e);await aicStat();aicDraw()}}
+async function aicStop(){const p=aicP();if(p&&AIC.viaHp){try{await p.berhenti()}catch(e){}}else if(AIC.abort){AIC.batal=true}}
+async function aicKirim(){if(AIC.busy)return;const ta=$('#aict'),q=(ta.value||'').trim();if(!q)return;ta.value='';AIC.err='';
+ const hist=AIC.msgs.filter(m=>m.done||m.r==='u').slice(-6).map(m=>({r:m.r,t:m.t.slice(0,700)}));
+ AIC.msgs.push({r:'u',t:q},{r:'a',t:'',done:false});AIC.busy=true;AIC.batal=false;const no=++AIC.no,jw=AIC.msgs.at(-1),hp=aicMesin()==='hp';AIC.viaHp=hp;aicDraw();
+ try{if(hp){const p=aicP(),id=aicSiapId();
+   if(!AIC.st||AIC.st.siap!==id){AIC.muat='Memuat model ke memori… (pertama kali bisa ±10–40 detik)';aicList();try{const r=await p.muat({id,gpu:true});AIC.st=Object.assign(AIC.st||{},{siap:id,backend:r.backend})}finally{AIC.muat=''}aicHead();aicList()}
+   const r=await p.tanya({no:String(no),sistem:aicSistem({lab:AIC.ctx.lab,teks:AIC.ctx.teks.slice(0,3200)}),pesan:q,riwayat:hist});if(!jw.t)jw.t=r.teks||''}
+  else{AIC.abort=true;const j=await csPost('/app/ai',{sistem:aicSistem(AIC.ctx),pesan:hist.map(m=>({role:m.r==='a'?'assistant':'user',content:m.t})).concat([{role:'user',content:q}])});AIC.abort=false;if(!AIC.batal)jw.t=j.teks||'';else jw.t='(dihentikan)';if(j.sisa!=null&&j.sisa<=3)AIC.err='Sisa jatah AI server hari ini: '+j.sisa+' pertanyaan.'}
+  if(!jw.t)jw.t='(AI tidak memberi jawaban. Coba tanyakan dengan kalimat lain.)'}
+ catch(e){const s=String((e&&e.message)||e);if(jw.t){/* dihentikan di tengah: simpan yang sudah ada */}else{AIC.msgs.pop();AIC.msgs.pop();ta.value=q;AIC.err=/Failed to fetch|NetworkError|Load failed/i.test(s)?'AI server tidak terjangkau. Periksa internet'+(aicP()?', atau unduh AI di HP lewat tombol Atur.':'.'):s}}
+ finally{AIC.busy=false;AIC.abort=false;jw.done=true;aicDraw()}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',aicInit);else setTimeout(aicInit,0);
 /* ===== Hub Saham: satu halaman per emiten (tab) ===== */
 const HV=['q','bmq','cq','aq','pq','lq','ft','rt'];
 function hubSync(){const H=S.hs||(S.hs={});let c=(S.hq||'').toString().toUpperCase().trim();

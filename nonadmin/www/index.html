@@ -2250,7 +2250,9 @@ function aicTeks(n,tab){let o='';for(const c of n.childNodes){if(c.nodeType===3)
   if(g==='INPUT'){if(c.value&&!/^(button|submit|checkbox|radio|file|hidden)$/i.test(c.type))o+=' ['+c.value+'] ';continue}
   if(g==='TABLE'){if(tab){tab.push(c);o+='\n⟦TABEL '+tab.length+'⟧\n'}continue}
   if(g==='BR'){o+='\n';continue}
-  const bl=AIC_BLOK.test(g);if(bl)o+='\n';o+=aicTeks(c,tab);if(bl)o+='\n'}return o}
+  const bl=AIC_BLOK.test(g);if(bl)o+='\n';const isi=aicTeks(c,tab);
+  /* elemen sebaris (span/b) yang berdempetan diberi spasi: dulu "IDEA"+"PT NAWASENA" terbaca "IDEAPT NAWASENA" */
+  if(!bl&&o&&isi&&/[^\s(\[]$/.test(o)&&/^[^\s,.;:%)\]]/.test(isi))o+=' ';o+=isi;if(bl)o+='\n'}return o}
 const aicSel=td=>aicRapi(aicTeks(td)).replace(/\n/g,' ');
 /* tabel → {kop:[...], baris:[[...]]} */
 function aicBacaTabel(t){const rs=[...t.rows].filter(aicTampak).map(r=>[...r.cells].map(aicSel));if(!rs.length)return null;
@@ -2268,7 +2270,7 @@ function aicKodeDisebut(q){const ada=new Set(),kecil=/saham|emiten|kode/i.test(q
    Tiap halaman dibuat oleh fungsi P[kunci](). Bila pertanyaan menyebut halaman lain (mis. "clean buy" saat membuka
    Top Gainer), halaman itu dirakit diam-diam di wadah tak terlihat, dibaca tabelnya, lalu dibuang.
    Layar pengguna tidak berubah. Halaman admin tidak dibaca di edisi Non Admin / tanpa izin admin. */
-const AIC_ALIAS={gainer:['top gainer','gainer','naik paling','paling naik','kenaikan tertinggi'],gainerL:['top loser','loser','turun paling','paling turun','penurunan terbesar'],cleanbuy:['clean buy','cleanbuy','cb1','cb2','cb3'],market:['market overview','kondisi pasar','ihsg','pasar hari ini'],sektor:['sektor','heatmap sektor'],own:['foreign','asing','kepemilikan asing'],bdm:['bandarmologi','bandar'],radar:['radar','berita','keterbukaan','aksi korporasi'],fund:['fundamental','laporan keuangan','pbv'],htp:['harta terpendam'],ma:['moving average',' ma ','ema'],dna:['dna 90','ranking dna'],rencana:['rencana trading'],smart:['smart accumulation','matrix'],awal:['akumulasi awal'],bdet:['broker action','radar akumulasi','broker detector'],dup:['dupont'],siklus:['siklus ekonomi']};
+const AIC_ALIAS={gainer:['top gainer','gainer','naik paling','paling naik','kenaikan tertinggi'],gainerL:['top loser','loser','turun paling','paling turun','penurunan terbesar'],cleanbuy:['clean buy','cleanbuy','cb1','cb2','cb3'],market:['market overview','kondisi pasar','ihsg','pasar hari ini'],sektor:['sektor','heatmap sektor'],own:['foreign','asing','kepemilikan asing'],pmg:['kepemilikan','pemegang saham','pemegang','lima persen','satu persen'],bdm:['bandarmologi','bandar'],radar:['radar','berita','keterbukaan','aksi korporasi'],fund:['fundamental','laporan keuangan','pbv'],htp:['harta terpendam'],ma:['moving average',' ma ','ema'],dna:['dna 90','ranking dna'],rencana:['rencana trading'],smart:['smart accumulation','matrix'],awal:['akumulasi awal'],bdet:['broker action','radar akumulasi','broker detector'],dup:['dupont'],siklus:['siklus ekonomi']};
 function aicMenu(){try{return MENU.flatMap(g=>g[1]).filter(x=>P[x[0]]&&!(ADMP.has(x[0])&&!AG.admin))}catch(e){return[]}}
 function aicPeta(){const g=[];try{for(const[gr,it]of MENU){const n=it.filter(x=>P[x[0]]&&!(ADMP.has(x[0])&&!AG.admin)).map(x=>x[1].replace(/ ·.*$/,''));if(n.length)g.push(gr+': '+n.join(', '))}}catch(e){}return g.join('\n')}
 /* halaman alat/admin yang tidak berisi data untuk dibaca AI */
@@ -2430,8 +2432,9 @@ function aicClose(){AIC.open=false;$('#aicw').classList.remove('o');$('#aicb').s
 function aicHead(){const e=$('#aics');if(!e)return;const hp=aicMesin()==='hp',id=aicSiapId(),m=AICM.find(x=>x.id===id);
  e.textContent=(AIC.open?aicLabel():(AIC.ctxLab||'-'))+' · '+(hp?'AI di HP ('+(m?m.nama:id)+(AIC.st&&AIC.st.siap===id&&AIC.st.backend?', '+AIC.st.backend:'')+')':'AI server')}
 /* Penjaga angka: angka di jawaban AI yang tidak ada di data halaman/pertanyaan ditandai (AI kecil kadang salah salin, mis. 42,16 → 4,161). */
-function aicCekAngka(t,data){const D=String(data||''),nb=x=>x.replace(/[.,]+$/,'');const ada=x=>{const re=new RegExp('(^|[^0-9.,])'+x.replace(/[.]/g,'\\.')+'(?![0-9]|[.,][0-9])');return re.test(D)};
- const out=[];for(const m of String(t||'').match(/\d[\d.,]*\d|\d/g)||[]){const x=nb(m);if(x.replace(/\D/g,'').length<2||/^(19|20)\d\d$/.test(x)||out.includes(x))continue;if(!ada(x))out.push(x)}return out}
+function aicNilai(x){const o=[],id=x.replace(/\./g,'').replace(',','.'),en=x.replace(/,/g,'');for(const v of [id,en]){const n=parseFloat(v);if(isFinite(n))o.push(Math.round(n*100)/100)}return o}
+function aicCekAngka(t,data){const ada=new Set();for(const m of String(data||'').match(/\d[\d.,]*\d|\d/g)||[])for(const v of aicNilai(m.replace(/[.,]+$/,'')))ada.add(v);
+ const out=[];for(const m of String(t||'').match(/\d[\d.,]*\d|\d/g)||[]){const x=m.replace(/[.,]+$/,'');if(x.replace(/\D/g,'').length<2||/^(19|20)\d\d$/.test(x)||out.includes(x))continue;if(!aicNilai(x).some(v=>ada.has(v)))out.push(x)}return out}
 /* Model kecil kadang tetap menulis tabel markdown: ubah jadi poin "kolom1: kolom2 · kolom3" supaya terbaca di HP. */
 function aicJawab(t){return String(t||'').split('\n').filter(l=>!/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l)).map(l=>{if(!/^\s*\|.*\|\s*$/.test(l))return l;const c=l.trim().replace(/^\||\|$/g,'').split('|').map(x=>x.trim()).filter(Boolean);
  if(!c.length)return '';if(c.length===2&&/^(item|kolom|hal|data)$/i.test(c[0].replace(/\*/g,'')))return '';return '• '+c[0]+(c.length>1?': '+c.slice(1).join(' · '):'')}).join('\n').replace(/\n{3,}/g,'\n\n').trim()}
@@ -2484,6 +2487,7 @@ async function aicKirim(){if(AIC.busy)return;const ta=$('#aict'),foto=AIC.foto||
  const mHp=AICM.find(x=>x.id===aicSiapId());
  let hp=aicMesin()==='hp'&&!(foto&&((mHp&&mHp.visi===false)||(AIC.st&&AIC.st.visiGagal&&AIC.st.siap===aicSiapId())));
  /* data dikumpulkan SAAT bertanya: halaman yang dibuka sekarang + halaman lain yang disebut + saham yang disebut */
+ if(!foto&&typeof pmBase==='function'&&(S.p==='pmg'||aicCariHalaman(q).includes('pmg'))){try{await pmBase()}catch(e){}}
  const k=aicKonteks(hp?(foto?2200:3600):(foto?5000:10500),hp,q,!!foto);AIC.ctxLab=k.lab;
  const histHp=hist.slice(-4).map(m=>({r:m.r,t:m.t.slice(0,500)}));
  AIC.msgs.push({r:'u',t:q,img:foto||null},{r:'a',t:'',done:false});const jw=AIC.msgs.at(-1);

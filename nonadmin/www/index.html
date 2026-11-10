@@ -1625,6 +1625,14 @@ function udApply(){let any=false;const by={};for(const id in UDS.saved){const o=
    UDX.done[dt]=1;any=true;if(MDX.rec)mdRecAdd(d6);if(typeof MAD!=='undefined'&&MAD)udMa();try{vzMergeAll()}catch(x){}}catch(e){UDS.msg='Gagal menerapkan data '+dt+': '+(e&&e.message||e)}}
  if(any){UDS.msg='Data harian baru diterapkan ke aplikasi.';render()}return any}
 
+/*SUGGEST*/
+(()=>{const attr=el=>{if(el.tagName!=='INPUT')return;const ty=(el.getAttribute('type')||'text').toLowerCase();if(ty!=='text'&&ty!=='search')return;el.setAttribute('autocomplete','off');el.setAttribute('autocorrect','off');el.setAttribute('spellcheck','false');if(!el.getAttribute('autocapitalize'))el.setAttribute('autocapitalize','characters')};
+new MutationObserver(ms=>{ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.tagName==='INPUT')attr(n);n.querySelectorAll&&n.querySelectorAll('input').forEach(attr)}))}).observe(document.body,{childList:true,subtree:true});document.querySelectorAll('input').forEach(attr);
+const hide=()=>{document.querySelectorAll('.sgp').forEach(x=>x.remove())};
+const isStock=el=>{const ty=(el.getAttribute('type')||'text').toLowerCase();if(ty!=='text'&&ty!=='search')return false;const h=((el.placeholder||'')+' '+(el.getAttribute('aria-label')||'')+' '+el.id).toLowerCase();if(/broker|\bqi\b|qbk/.test(h))return false;return typeof el.onchange==='function'||/saham|emiten|kode/.test(h)};
+document.addEventListener('input',e=>{const el=e.target;if(!el||el.tagName!=='INPUT'||!isStock(el))return;hide();const v=el.value.trim().toUpperCase();if(!v)return;const R=[];for(const c in NM){const nm=(NM[c]||'').toUpperCase();const sc=c===v?0:c.startsWith(v)?1:c.includes(v)?2:nm.startsWith(v)?3:nm.includes(v)?4:9;if(sc<9)R.push([sc,c,NM[c]])}if(!R.length)return;R.sort((a,b)=>a[0]-b[0]||a[1].localeCompare(b[1]));const box=document.createElement('div');box.className='sgp';box.innerHTML=R.slice(0,40).map(r=>`<div class="sgi" data-sg="${r[1]}"><b>${r[1]}</b> <span>${esc(r[2]||'')}</span></div>`).join('');box.addEventListener('mousedown',ev=>ev.preventDefault());box.addEventListener('click',ev=>{const it=ev.target.closest('.sgi');if(!it)return;ev.preventDefault();el.value=it.dataset.sg;hide();el.dispatchEvent(new Event('change',{bubbles:true}));el.blur()});el.insertAdjacentElement('afterend',box)});
+document.addEventListener('focusout',e=>{if(e.target&&e.target.tagName==='INPUT')setTimeout(hide,500)});
+})();
 /* ===== Berita Terbaru otomatis (judul dari RSS media, disaring kata kunci) ===== */
 const NWQ=q=>'https://news.google.com/rss/search?q='+encodeURIComponent(q+' when:3d')+'&hl=id&gl=ID&ceid=ID:id';
 const NWF=[['https://www.idxchannel.com/rss/market-news','IDX Channel'],['https://www.antaranews.com/rss/ekonomi-bursa.xml','Antara'],['https://stockwatch.id/feed/','StockWatch'],['https://katadata.co.id/rss','Katadata'],['https://www.cnbcindonesia.com/market/rss','CNBC Indonesia'],['https://investasi.kontan.co.id/rss','Kontan'],['https://market.bisnis.com/rss','Bisnis'],
@@ -2775,11 +2783,16 @@ function naBroker(B,h){const key=B+':'+h;if(NA.b[key])return true;
   j.dates.forEach((d,i)=>{BF[d]=BF[d]&&typeof BF[d]!=='string'?BF[d]:{date:d,t:{}};const day=j.rinci[i]||{};
    for(const K in day){if(NA.t[K])continue;const a=BF[d].t[K]??=[];let has=false;for(let k=0;k<a.length;k+=7)if(a[k]===B){has=true;break}if(!has)a.push(B,...day[K])}});
   NA.b[key]=1});return false}
-// Bandarmologi satu saham → BM.d / BM.bs (mesin grafik bandarmologi dipakai apa adanya).
-function naBandar(K){K=(K||'').toUpperCase();if(NA.bm[K])return true;
- naOnce('m'+K,async()=>{const j=await naGet('saham/'+encodeURIComponent(K));const rows=(j.bandarmologi&&j.bandarmologi.baris)||[],by={};rows.forEach(r=>by[r[0]]=r);
-  if(!BM.d){const ds=Object.keys(D.days).sort().filter(d=>d>='20260701');BM.d={dates:ds,t:{}};BM.bs={dates:ds,t:{}};BM.ser={};BM.wk=null}
-  const ds=BM.d.dates;BM.d.t[K]=ds.map(d=>by[d]?by[d][7]||0:0);BM.bs.t[K]=ds.flatMap(d=>by[d]&&by[d][5]!=null?[by[d][5],by[d][6]]:[null,null]);delete BM.ser[K];NA.bm[K]=1});return false}
+// Bandarmologi satu saham → BM.d / BM.bs, dihitung di HP dari broksum lengkap saham itu (rumus sama dengan admin:
+// net lot tiap broker; 5 net beli terbesar dan 5 net jual terbesar per sesi). Semua sesi terisi, tanpa permintaan tambahan ke server.
+function naBmFill(K){const ds=Object.keys(D.days).sort().filter(d=>d>='20260701');
+ if(!BM.d||BM.d.dates.length!==ds.length||BM.d.dates.at(-1)!==ds.at(-1)){BM.d={dates:ds,t:{}};BM.bs={dates:ds,t:{}};BM.ser={};BM.wk=null;NA.bm={}}
+ if(NA.bm[K])return;const net=[],bs=[];let ada=false;
+ for(const d of ds){const a=BF[d]&&typeof BF[d]!=='string'&&BF[d].t&&BF[d].t[K];if(!a||!a.length){net.push(0);bs.push(null,null);continue}ada=true;
+  const pv=[],ng=[];for(let k=0;k<a.length;k+=7){const v=a[k+3]-a[k+4];if(v>0)pv.push(v);else if(v<0)ng.push(v)}
+  pv.sort((x,y)=>y-x);ng.sort((x,y)=>x-y);const sb=pv.slice(0,5).reduce((x,y)=>x+y,0),ss=ng.slice(0,5).reduce((x,y)=>x+y,0);net.push(sb+ss);bs.push(sb,-ss)}
+ if(ada){BM.d.t[K]=net;BM.bs.t[K]=bs}delete BM.ser[K];NA.bm[K]=1}
+function naBandar(K){K=(K||'').toUpperCase();if(!naSaham(K))return false;if(NA.t[K])naBmFill(K);return true}
 const wait=(h,t)=>`<div class="brand">BROKER INTELLIGENCE</div><h1>${h}</h1>${naNote()||`<div class="ld"><i></i>${t}</div>`}`;
 const pasar='<div class="card">Daftar seluruh pasar belum tersedia di Catatan Saham Non Admin. Pakai pencarian per saham atau per broker.</div>';
 
@@ -2799,7 +2812,10 @@ P.bbroker=function(){if(!naDates())return wait('Cari Broker','Memuat tanggal dat
  if(!ok)return wait('Cari Broker','Memuat data broker '+esc(sel.join(' + '))+'…');S.bbe=0;return naNote()+oBbroker()};
 P.bdm=function(){if(S.bmv==='k')return `<div class="brand">BROKER INTELLIGENCE</div><h1>Bandarmologi</h1>${chips([['s','Per saham'],['k','Daftar']],'k','bmv')}`+pasar;
  const q=(S.bmq||'BBCA').toUpperCase();if(!naBandar(q))return wait('Bandarmologi','Memuat bandarmologi '+esc(q)+'…');return naNote()+oBdm()};
-P.saham=function(){const q=(S.q||'BBCA').toUpperCase();naDates();naSaham(q);naBandar(S.bmq||q);return oHub()};
+P.saham=function(){const q=hubSync();naDates();naBandar(q);return oHub()};
+// Tab Bandarmologi di halaman Saham: tunggu broksum saham itu; jangan tampilkan "belum punya data" saat masih memuat/gagal.
+const oBdmStock=bdmStock;
+bdmStock=function(){const q=(S.bmq||S.hq||'BBCA').toUpperCase();if(!naBandar(q))return naNote()||'<div class="ld"><i></i>Memuat bandarmologi '+esc(q)+'…</div>';return oBdmStock()};
 // Ringkasan "Net per Broker" di hub saham: dari broksum lengkap saham itu (server), bukan data tertanam.
 bsaham=function(){const q=(S.q||'BBCA').toUpperCase(),n=+S.n||5;if(!naSaham(q))return naNote()||'<div class="ld"><i></i>Memuat broker '+esc(q)+'…</div>';
  const ds=BFD.slice(-n),A=bfAgg(q,ds[0],ds.at(-1)),L=Object.entries(A).map(([b,o])=>[b,o.bv-o.sv]).sort((a,b)=>b[1]-a[1]);

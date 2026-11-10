@@ -2228,7 +2228,10 @@ const aicGB=b=>(b/1e9).toFixed(b<1e10?1:0).replace('.',',')+' GB';
 const aicFile=id=>((AIC.st&&AIC.st.berkas)||[]).find(f=>f.id===id);
 const aicSiapId=()=>{const p=aicLs('cs_ai_model','');const ok=id=>{const f=aicFile(id);return f&&f.lengkap};if(p&&ok(p))return p;const m=AICM.find(x=>ok(x.id));return m?m.id:''};
 /* mesin yang dipakai: 'hp' bila plugin ada, model sudah diunduh, dan pengguna tidak memilih server */
-const aicMesin=()=>(aicP()&&aicLs('cs_ai_mode','auto')!=='awan'&&aicSiapId())?'hp':'awan';
+/* cs_ai_mode: 'auto' = AI server dulu (lebih teliti), AI di HP bila offline/jatah server habis; 'hp' = AI di HP saja; 'awan' = server saja */
+const aicHari=()=>new Date(Date.now()+7*36e5).toISOString().slice(0,10);
+const aicHpSiap=()=>!!(aicP()&&aicLs('cs_ai_mode','auto')!=='awan'&&aicSiapId());
+const aicMesin=()=>aicHpSiap()&&(aicLs('cs_ai_mode','auto')==='hp'||!navigator.onLine||aicLs('cs_ai_srv_habis','')===aicHari()||Date.now()-(AIC.srvGagal||0)<10*60e3)?'hp':'awan';
 async function aicStat(){const p=aicP();if(!p)return;try{AIC.st=await p.status();if(AIC.st.unduhId&&!AIC.dl)AIC.dl={id:AIC.st.unduhId,got:AIC.st.unduhGot,total:AIC.st.unduhTotal}}catch(e){}}
 function aicListen(){const p=aicP();if(!p||AIC.lis)return;AIC.lis=true;
  p.addListener('token',o=>{if(!AIC.busy||String(o.no)!==String(AIC.no))return;const m=AIC.msgs.at(-1);if(m&&m.r==='a'){m.t+=o.t;aicTok()}});
@@ -2426,6 +2429,9 @@ function aicClose(){AIC.open=false;$('#aicw').classList.remove('o');$('#aicb').s
  AIC.tLepas=setTimeout(async()=>{const p=aicP();if(!p||AIC.open||AIC.busy||!AIC.st||!AIC.st.siap)return;try{await p.lepas();AIC.st.siap='';AIC.st.visi=false}catch(e){}},AIC_LEPAS_MS)}
 function aicHead(){const e=$('#aics');if(!e)return;const hp=aicMesin()==='hp',id=aicSiapId(),m=AICM.find(x=>x.id===id);
  e.textContent=(AIC.open?aicLabel():(AIC.ctxLab||'-'))+' · '+(hp?'AI di HP ('+(m?m.nama:id)+(AIC.st&&AIC.st.siap===id&&AIC.st.backend?', '+AIC.st.backend:'')+')':'AI server')}
+/* Penjaga angka: angka di jawaban AI yang tidak ada di data halaman/pertanyaan ditandai (AI kecil kadang salah salin, mis. 42,16 → 4,161). */
+function aicCekAngka(t,data){const D=String(data||''),nb=x=>x.replace(/[.,]+$/,'');const ada=x=>{const re=new RegExp('(^|[^0-9.,])'+x.replace(/[.]/g,'\\.')+'(?![0-9]|[.,][0-9])');return re.test(D)};
+ const out=[];for(const m of String(t||'').match(/\d[\d.,]*\d|\d/g)||[]){const x=nb(m);if(x.replace(/\D/g,'').length<2||/^(19|20)\d\d$/.test(x)||out.includes(x))continue;if(!ada(x))out.push(x)}return out}
 /* Model kecil kadang tetap menulis tabel markdown: ubah jadi poin "kolom1: kolom2 · kolom3" supaya terbaca di HP. */
 function aicJawab(t){return String(t||'').split('\n').filter(l=>!/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l)).map(l=>{if(!/^\s*\|.*\|\s*$/.test(l))return l;const c=l.trim().replace(/^\||\|$/g,'').split('|').map(x=>x.trim()).filter(Boolean);
  if(!c.length)return '';if(c.length===2&&/^(item|kolom|hal|data)$/i.test(c[0].replace(/\*/g,'')))return '';return '• '+c[0]+(c.length>1?': '+c.slice(1).join(' · '):'')}).join('\n').replace(/\n{3,}/g,'\n\n').trim()}
@@ -2440,7 +2446,7 @@ function aicList(){const l=$('#aicl');if(!l)return;l.textContent='';
  l.scrollTop=l.scrollHeight}
 function aicTok(){const l=$('#aicl');if(!l)return;const m=AIC.msgs.at(-1),bs=l.querySelectorAll('.aicm.a'),b=bs[bs.length-1];if(b&&m){const dekat=l.scrollHeight-l.scrollTop-l.clientHeight<80;b.textContent=m.t;if(dekat)l.scrollTop=l.scrollHeight}}
 function aicDl(){const d=AIC.dl,e=$('#aicdl');if(!d||!e)return aicAturDraw();const pc=d.total?Math.min(100,d.got/d.total*100):0;e.querySelector('i').style.width=pc.toFixed(1)+'%';e.querySelector('span').textContent='Mengunduh '+aicGB(d.got)+(d.total?' dari '+aicGB(d.total)+' ('+pc.toFixed(0)+'%)':'')+'. Biarkan aplikasi tetap terbuka.'}
-function aicAturDraw(){const a=$('#aica');if(!a)return;a.hidden=!AIC.atur;$('#aicw').classList.toggle('atur',!!AIC.atur);if(!AIC.atur)return;const p=aicP(),st=AIC.st,awan=aicLs('cs_ai_mode','auto')==='awan',pakai=aicSiapId();let h='';
+function aicAturDraw(){const a=$('#aica');if(!a)return;a.hidden=!AIC.atur;$('#aicw').classList.toggle('atur',!!AIC.atur);if(!AIC.atur)return;const p=aicP(),st=AIC.st,awan=aicMesin()!=='hp',pakai=aicSiapId();let h='';
  if(!window.Capacitor)h+='<div class="aick">Di versi web, AI memakai <b>AI server</b> (gratis, jatah harian terbatas). AI yang jalan di HP tanpa internet tersedia di aplikasi Android (APK).</div>';
  else if(!p)h+='<div class="aick"><b>AI di HP butuh APK versi baru.</b><div class="mu">APK yang terpasang belum punya mesin AI. Sementara ini dipakai AI server (jatah harian terbatas). Pasang APK terbaru untuk AI yang jalan di HP, gratis tanpa batas.</div></div>';
  else{h+='<div class="mu" style="font-size:13px">AI di HP: gratis, tanpa batas, jalan tanpa internet. Model diunduh sekali lewat internet (sebaiknya Wi-Fi).'+(st?' RAM HP ini '+aicGB(st.ram)+', ruang kosong '+aicGB(st.ruang)+'.':'')+'</div>';
@@ -2451,7 +2457,8 @@ function aicAturDraw(){const a=$('#aica');if(!a)return;a.hidden=!AIC.atur;$('#ai
      :ok?'<div class="r">'+(pakai===m.id&&!awan?'':'<button type="button" class="on" data-aic="pakai" data-id="'+m.id+'">Pakai</button>')+'<button type="button" data-aic="hapus" data-id="'+m.id+'">'+(AIC.cf===m.id?'Ketuk lagi untuk hapus':'Hapus ('+aicGB(f.ukuran)+')')+'</button></div>'
      :'<div class="r"><button type="button" class="on" data-aic="unduh" data-id="'+m.id+'"'+(AIC.dl||sempit?' disabled':'')+'>'+(f?'Lanjutkan unduhan ('+aicGB(f.ukuran)+' sudah ada)':'Unduh '+String(m.gb).replace('.',',')+' GB')+'</button>'+(f?'<button type="button" data-aic="hapus" data-id="'+m.id+'">'+(AIC.cf===m.id?'Ketuk lagi untuk hapus':'Buang')+'</button>':'')+'</div>'+(sempit?'<div class="mu" style="font-size:13px;color:var(--aic-salah)">Ruang penyimpanan HP tidak cukup.</div>':''))
     +'</div>'}
-  h+='<div class="aick"><b>AI server</b>'+(awan||!pakai?' <span style="color:#1f9d55;font-weight:700;font-size:12px">dipakai</span>':'')+'<div class="mu" style="font-size:13px">Tanpa unduhan, butuh internet, jatah harian terbatas dan dipakai bersama semua pengguna.</div>'+(pakai?'<div class="r"><button type="button" data-aic="mode" data-id="'+(awan?'auto':'awan')+'">'+(awan?'Kembali pakai AI di HP':'Pakai AI server saja')+'</button></div>':'')+'</div>'}
+  const md=aicLs('cs_ai_mode','auto');
+  h+='<div class="aick"><b>AI server</b>'+(md!=='hp'||!pakai?' <span style="color:#1f9d55;font-weight:700;font-size:12px">'+(pakai&&md==='auto'?'utama':'dipakai')+'</span>':'')+'<div class="mu" style="font-size:13px">Lebih teliti dan cepat (Groq / Gemini / Cloudflare), butuh internet, jatah harian dipakai bersama.'+(pakai&&md==='auto'?' Kalau offline atau jatah habis, otomatis pindah ke AI di HP.':'')+'</div>'+(pakai?'<div class="r"><button type="button" data-aic="mode" data-id="'+(md==='hp'?'auto':'hp')+'">'+(md==='hp'?'Pakai AI server lagi (utama)':'Pakai AI di HP saja')+'</button></div>':'')+'</div>'}
  a.innerHTML=h;if(AIC.dl)aicDl()}
 function aicDraw(){if(!AIC.open)return;aicHead();aicAturDraw();aicList();const k=$('[data-aic="kirim"]');if(k){k.innerHTML=AIC.busy?AIC_IK.stop:AIC_IK.kirim;k.setAttribute('aria-label',AIC.busy?'Hentikan':'Kirim')}}
 async function aicAct(a,id,el){const p=aicP();
@@ -2491,11 +2498,14 @@ async function aicKirim(){if(AIC.busy)return;const ta=$('#aict'),foto=AIC.foto||
     catch(e){if(foto&&!jw.t&&/TANPA_VISI|image|vision|gambar/i.test(String(e&&e.message||e))){hp=false;AIC.viaHp=false;if(AIC.st){AIC.st.visi=false;AIC.st.visiGagal=true}}else throw e}
     if(r&&!jw.t)jw.t=r.teks||''}}
   if(!hp){
-  {AIC.abort=true;const j=await csPost('/app/ai',Object.assign({sistem:aicSistem(Object.assign({},k,{peta:aicPeta()}),!!foto),pesan:hist.map(m=>({role:m.r==='a'?'assistant':'user',content:m.t})).concat([{role:'user',content:q}])},foto?{gambar:foto}:{}));AIC.abort=false;if(!AIC.batal)jw.t=j.teks||'';else jw.t='(dihentikan)';if(foto&&aicMesin()==='hp')jw.sb='Foto dibaca oleh AI server (model AI di HP ini tidak bisa membaca foto)';if(j.sisa!=null&&j.sisa<=3)AIC.err='Sisa jatah AI server hari ini: '+j.sisa+' pertanyaan.'}}
+  {AIC.abort=true;const j=await csPost('/app/ai',Object.assign({sistem:aicSistem(Object.assign({},k,{peta:aicPeta()}),!!foto),pesan:hist.map(m=>({role:m.r==='a'?'assistant':'user',content:m.t})).concat([{role:'user',content:q}])},foto?{gambar:foto}:{}));AIC.abort=false;if(!AIC.batal)jw.t=j.teks||'';else jw.t='(dihentikan)';{const md=String(j.model||'');jw.ai=/^groq/.test(md)?'Groq':/^gemini/.test(md)?'Gemini':md?'Cloudflare':''}if(foto&&aicMesin()==='hp')jw.sb='Foto dibaca oleh AI server (model AI di HP ini tidak bisa membaca foto)';if(j.sisa!=null&&j.sisa<=3)AIC.err='Sisa jatah AI server hari ini: '+j.sisa+' pertanyaan.'}}
   if(k.lainLab&&k.lainLab.length&&!jw.sb)jw.sb='Ikut membaca: '+k.lainLab.map(x=>x==='gainerL'?'Top Loser':((aicMenu().find(y=>y[0]===x)||[0,x])[1])).join(', ');
-  if(!jw.t)jw.t='(AI tidak memberi jawaban. Coba tanyakan dengan kalimat lain.)'}
- catch(e){const s=String((e&&e.message)||e);if(jw.t){/* dihentikan di tengah: simpan yang sudah ada */}else{AIC.msgs.pop();AIC.msgs.pop();ta.value=q;if(foto){AIC.foto=foto;aicFotoDraw()}AIC.err=/Failed to fetch|NetworkError|Load failed/i.test(s)?'AI server tidak terjangkau. Periksa internet'+(aicP()&&!foto?', atau unduh AI di HP lewat tombol Atur.':'.'):s}}
- finally{AIC.busy=false;AIC.abort=false;jw.done=true;aicDraw()}}
+  if(AIC.viaHp)jw.ai='AI di HP';if(jw.ai)jw.sb='AI: '+jw.ai+(jw.sb?' · '+jw.sb:'');
+  if(!jw.t)jw.t='(AI tidak memberi jawaban. Coba tanyakan dengan kalimat lain.)'
+  else if(!foto&&!AIC.batal){const sal=aicCekAngka(jw.t,k.teks+'\n'+q+'\n'+hist.map(m=>m.t).join('\n'));if(sal.length)jw.sb=(jw.sb?jw.sb+' · ':'')+'⚠️ Angka ini tidak ada di data halaman: '+sal.slice(0,6).join('; ')+(sal.length>6?' …':'')+'. Bisa salah salin atau hasil hitungan AI — cek lagi di halaman.'}}
+ catch(e){const s=String((e&&e.message)||e);if(jw.t){/* dihentikan di tengah: simpan yang sudah ada */}else{AIC.msgs.pop();AIC.msgs.pop();ta.value=q;if(foto){AIC.foto=foto;aicFotoDraw()}AIC.err=/Failed to fetch|NetworkError|Load failed/i.test(s)?'AI server tidak terjangkau. Periksa internet'+(aicP()&&!foto?', atau unduh AI di HP lewat tombol Atur.':'.'):s;
+   if(!hp&&!AIC.batal&&aicHpSiap()&&/jatah|habis|terjangkau|bermasalah|Failed to fetch|NetworkError|Load failed/i.test(s)){if(/jatah|habis/i.test(s))aicSet('cs_ai_srv_habis',aicHari());else AIC.srvGagal=Date.now();AIC.err='';AIC.ulang=true}}}
+ finally{AIC.busy=false;AIC.abort=false;jw.done=true;aicDraw();if(AIC.ulang){AIC.ulang=false;setTimeout(aicKirim,50)}}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',aicInit);else setTimeout(aicInit,0);
 /* ===== Hub Saham: satu halaman per emiten (tab) ===== */
 const HV=['q','bmq','cq','aq','pq','lq','ft','rt'];

@@ -2086,6 +2086,11 @@ ${pages>1?`<div class="ffpg"><button class="btn" data-k="pmpg" data-v="${pg-1}"$
  const A=[];for(const r of (d?PMG.d1[d]:[])||[])if(String(r[1]).toUpperCase().includes(iq))A.push([r[0],r[1],r[7],'≥1% '+fd(d)]);
  for(const x of d5?pm5Rows(d5):[])if(String(x.h).toUpperCase().includes(iq)&&!A.some(a=>a[0]===x.t&&a[1]===x.h))A.push([x.t,x.h,x.p1,'≥5% '+fd(d5)]);
  return h+`<div class="mu">${A.length} kepemilikan ditemukan</div>`+(tbl(['Saham','Investor','%','Sumber'],A.sort((a,b)=>(b[2]||0)-(a[2]||0)).slice(0,300).map(a=>`<tr><td>${tk(a[0])}</td><td style="white-space:normal">${esc(a[1])}</td><td>${pmPct(a[2])}</td><td style="font-size:12px">${a[3]}</td></tr>`))||'')}
+/* Cari investor (dipakai juga oleh Tanya AI): semua emiten tempat nama itu tercatat di data ≥1% terakhir dan ≥5% terakhir. */
+function pmCari(iq){iq=String(iq||'').toUpperCase().trim();if(iq.length<3)return[];const d=Object.keys(PMG.d1||{}).sort().at(-1),d5=PMG.full,A=[];
+ for(const r of (d?PMG.d1[d]:[])||[])if(String(r[1]).toUpperCase().includes(iq))A.push([r[0],r[1],r[7],'≥1% '+fd(d)]);
+ for(const x of d5?pm5Rows(d5):[])if(String(x.h).toUpperCase().includes(iq)&&!A.some(a=>a[0]===x.t&&a[1]===x.h))A.push([x.t,x.h,x.p1,'≥5% '+fd(d5)]);
+ return A.sort((a,b)=>(b[2]||0)-(a[2]||0))}
 document.addEventListener('change',e=>{const t=e.target;if(!t)return;if(t.id==='pmf'){pmRun(Array.from(t.files));t.value=''}else if(t.id==='pmi'){S.pmi=t.value;render()}else if(t.id==='pmq'){S.pmq=t.value.toUpperCase().trim();S.pmpg=0;render()}});
 document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='pmq'){const v=t.value.toUpperCase().trim();if(/^[A-Z]{4}$/.test(v)&&v!==S.pmq){S.pmq=v;render()}}});
 document.addEventListener('click',e=>{const d=e.target.closest&&e.target.closest('[data-pmdel]');if(d)pmDel(d.dataset.pmdel)});
@@ -2288,6 +2293,11 @@ function aicLabel(){try{const mn=MENU.flatMap(g=>g[1]).find(x=>x[0]===S.p);if(S.
 /* Halaman yang datanya dimuat belakangan (Bandarmologi, AMB, …) mula-mula hanya berisi "Memuat…": tunggu sampai terisi (maks ±6 detik). */
 async function aicTungguHalaman(q,hp){const ks=aicCariHalaman(q||'').slice(0,hp?1:2);
  for(const k of ks){for(let i=0;i<15;i++){let R=null;try{R=aicRakit(k)}catch(e){}if(!R||!/Memuat|memuat data|class="ld"/.test(R.t))break;await new Promise(r=>setTimeout(r,400))}}}
+/* Nama investor di pertanyaan ("Andry Hakim ada di saham apa") → hasil Cari investor dari data pemegang saham ≥1%/≥5%. */
+const AIC_BUKAN_NAMA=new Set('KAMU KM TAU TAHU NGGAK NGGK GAK ENGGAK ADA DI KE DARI SAHAM SAHAMNYA APA AJA SAJA YANG YG DONG CARIKAN CARI KLIK GITU GITUU MILIK PUNYA PEGANG DIPEGANG MEMEGANG INVESTOR PEMEGANG KEPEMILIKAN BERAPA MANA DAN ATAU ITU INI SIAPA TOLONG COBA LIHAT LIAT EMITEN PERUSAHAAN NAMA ORANG MILIKNYA BISA KAH SAYA AKU MAU INGIN JUGA LAGI TBK PT'.split(' '));
+function aicInvestor(teks){if(typeof pmCari!=='function')return null;const w=String(teks||'').toUpperCase().replace(/[^A-Z0-9 .&-]/g,' ').split(/\s+/).filter(x=>x.length>=2&&!AIC_BUKAN_NAMA.has(x)&&!/^[A-Z]{4}$/.test(x)&&!/^\d/.test(x));
+ for(let n=Math.min(3,w.length);n>=1;n--)for(let i=0;i+n<=w.length;i++){const nm=w.slice(i,i+n).join(' ');if(nm.replace(/\s/g,'').length<(n===1?5:4))continue;const A=pmCari(nm);if(A.length&&A.length<=80)return{nm,A}}return null}
+const aicNamaDisebut=t=>/(ada di|di saham|saham apa|pegang|punya|milik|investor|pemegang|kepemilikan|portofolio)/i.test(t||'');
 function aicKonteks(maks,hp,q,tanpaLain){const lab=aicLabel();let kop='';
  if(S.p==='saham'){try{kop=aicRingkasSaham(hubSync())}catch(e){}}
  for(const c of aicKodeDisebut(q||''))if(!kop.includes('Saham '+c+' '))kop+=(kop?'\n':'')+aicRingkasSaham(c);
@@ -2301,7 +2311,8 @@ function aicKonteks(maks,hp,q,tanpaLain){const lab=aicLabel();let kop='';
  const jatahTabel=Math.max(800,maks-kop.length-Math.min(teks.replace(/⟦TABEL \d+⟧/g,'').length,Math.round(maks/3))),perTabel=H.tabel.length?Math.floor(jatahTabel/H.tabel.length):0;
  teks=teks.replace(/⟦TABEL (\d+)⟧/g,(_,i)=>{const T=H.tabel[i-1];return T?'[Tabel '+i+']\n'+aicTabelTeks(T,Math.max(perTabel,600),hp?5:0):''});
  if(kop.length+teks.length>maks)teks=teks.slice(0,Math.max(500,maks-kop.length))+'\n…(halaman dipotong)';
- return{lab,teks:(kop?kop+'\nIsi halaman:\n':'')+teks+lain,tabel:H.tabel,tabelLain,lainLab:hl}}
+ let inv='';if(!tanpaLain&&aicNamaDisebut(AIC.qInv||q)){const R=aicInvestor(AIC.qInv||q);if(R){inv='\n=== Hasil "Cari investor" untuk "'+R.nm+'" (data Pemegang Saham ≥1% & ≥5%, '+R.A.length+' kepemilikan) ===\nKode | Investor | % | Sumber\n'+R.A.slice(0,hp?15:60).map(a=>a[0]+' | '+a[1]+' | '+(a[2]==null?'—':String(a[2]).replace('.',','))+'% | '+a[3]).join('\n')+'\n';hl.push('pmgi')}}
+ return{lab,teks:(kop?kop+'\nIsi halaman:\n':'')+teks+lain+inv,tabel:H.tabel,tabelLain,lainLab:hl}}
 /* model kecil di HP: aturan pendek dan tegas (aturan panjang justru membuatnya bingung) */
 /* Kamus istilah Catatan Saham untuk AI (dari keterangan aplikasi & dokumen rumus); jangan sebut nama sumber data pihak lain. */
 const AIC_KAMUS='KAMUS ISTILAH CATATAN SAHAM (pakai arti ini, jangan menebak arti istilah):\n'+
@@ -2519,7 +2530,8 @@ async function aicKirim(){if(AIC.busy)return;const ta=$('#aict'),foto=AIC.foto||
  const mHp=AICM.find(x=>x.id===aicSiapId());
  let hp=aicMesin()==='hp'&&!(foto&&((mHp&&mHp.visi===false)||(AIC.st&&AIC.st.visiGagal&&AIC.st.siap===aicSiapId())));
  /* data dikumpulkan SAAT bertanya: halaman yang dibuka sekarang + halaman lain yang disebut + saham yang disebut */
- if(!foto&&typeof pmBase==='function'&&(S.p==='pmg'||aicCariHalaman(q).includes('pmg'))){try{await pmBase()}catch(e){}}
+ AIC.qInv=q+' '+hist.filter(m=>m.r==='u').slice(-2).map(m=>m.t).join(' ');
+ if(!foto&&typeof pmBase==='function'&&(S.p==='pmg'||aicCariHalaman(q).includes('pmg')||aicNamaDisebut(AIC.qInv))){try{await pmBase()}catch(e){}}
  if(!foto){AIC.muat='Membaca data halaman…';aicList();try{await aicTungguHalaman(q,hp)}finally{AIC.muat=''}}
  const k=aicKonteks(hp?(foto?2200:3600):(foto?5000:10500),hp,q,!!foto);AIC.ctxLab=k.lab;
  const histHp=hist.slice(-4).map(m=>({r:m.r,t:m.t.slice(0,500)}));
@@ -2536,7 +2548,7 @@ async function aicKirim(){if(AIC.busy)return;const ta=$('#aict'),foto=AIC.foto||
     if(r&&!jw.t)jw.t=r.teks||''}}
   if(!hp){
   {AIC.abort=true;const j=await csPost('/app/ai',Object.assign({sistem:aicSistem(Object.assign({},k,{peta:aicPeta()}),!!foto),pesan:hist.map(m=>({role:m.r==='a'?'assistant':'user',content:m.t})).concat([{role:'user',content:q}])},foto?{gambar:foto}:{}));AIC.abort=false;if(!AIC.batal)jw.t=j.teks||'';else jw.t='(dihentikan)';{const md=String(j.model||'');jw.ai=/^groq/.test(md)?'Groq':/^gemini/.test(md)?'Gemini':md?'Cloudflare':''}if(foto&&aicMesin()==='hp')jw.sb='Foto dibaca oleh AI server (model AI di HP ini tidak bisa membaca foto)';if(j.sisa!=null&&j.sisa<=3)AIC.err='Sisa jatah AI server hari ini: '+j.sisa+' pertanyaan.'}}
-  if(k.lainLab&&k.lainLab.length&&!jw.sb)jw.sb='Ikut membaca: '+k.lainLab.map(x=>x==='gainerL'?'Top Loser':((aicMenu().find(y=>y[0]===x)||[0,x])[1])).join(', ');
+  if(k.lainLab&&k.lainLab.length&&!jw.sb)jw.sb='Ikut membaca: '+k.lainLab.map(x=>x==='pmgi'?'Cari investor':x==='gainerL'?'Top Loser':((aicMenu().find(y=>y[0]===x)||[0,x])[1])).join(', ');
   if(AIC.viaHp)jw.ai='AI di HP';if(jw.ai)jw.sb='AI: '+jw.ai+(jw.sb?' · '+jw.sb:'');
   if(!jw.t)jw.t='(AI tidak memberi jawaban. Coba tanyakan dengan kalimat lain.)'
   else if(!foto&&!AIC.batal){const sal=aicCekAngka(jw.t,k.teks+'\n'+q+'\n'+hist.map(m=>m.t).join('\n'));if(sal.length)jw.sb=(jw.sb?jw.sb+' · ':'')+'⚠️ Angka ini tidak ada di data halaman: '+sal.slice(0,6).join('; ')+(sal.length>6?' …':'')+'. Bisa salah salin atau hasil hitungan AI — cek lagi di halaman.'}}

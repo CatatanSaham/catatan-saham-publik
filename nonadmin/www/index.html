@@ -1450,7 +1450,7 @@ const BXV=[1,5,10,20];
 const bxI=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('id-ID');
 const bxYD=s=>s.slice(2,4)+'/'+s.slice(4,6)+'/'+s.slice(6);
 const BXD={};
-function bxDc(id,lab,raw,mode){
+function bxDc(id,lab,raw,mode,pxs){
 const n=Math.min(raw.length,30),o=raw.length-n,H=raw.slice(o),Lb=lab.slice(o);let c=0;const C=H.map(v=>c+=v);
 const sma=H.map((_,i)=>{const w=H.slice(Math.max(0,i-4),i+1);return w.reduce((a,b)=>a+b,0)/w.length});
 const W=360,Ht=250,x0=8,x1=352,lt=12,lb=150,bt=170,bb=228,bw=Math.max(3,(x1-x0)/n*.7),step=n>1?(x1-x0-bw)/(n-1):0,x=i=>x0+bw/2+i*step;
@@ -1462,15 +1462,16 @@ for(let i=0;i<n;i+=5){const xx=x(i).toFixed(1);g+=`<line x1="${xx}" x2="${xx}" y
 g+=`<line x1="${x0}" x2="${x0}" y1="${lt}" y2="${bb}" class="bgv"/><line x1="${x0}" x2="${x1}" y1="${bb}" y2="${bb}" class="bgv"/>`;
 H.forEach((v,i)=>{const y=yb(v),z=yb(0);g+=`<rect x="${(x(i)-bw/2).toFixed(1)}" y="${Math.min(y,z).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(.6,Math.abs(y-z)).toFixed(1)}" style="fill:var(${v>=0?'--up':'--dn'});opacity:.85"/>`});
 const sp=sma.map((v,i)=>v==null?null:x(i).toFixed(1)+','+yb(v).toFixed(1)).filter(Boolean);if(sp.length>1)g+=`<polyline fill="none" style="stroke:var(--gold)" stroke-width="1.4" stroke-dasharray="4 3" points="${sp.join(' ')}"/>`;
+let P=null;if(pxs){P=pxs.slice(o);const pv=P.filter(v=>v>0);if(pv.length>1){const p0=Math.min(...pv),p1=Math.max(...pv),yp=v=>lt+(lb-lt)*(1-(v-p0)/((p1-p0)||1));let seg=[];const out=()=>{if(seg.length>1)g+=`<polyline fill="none" style="stroke:#ff9a3c" stroke-width="1.8" stroke-linejoin="round" points="${seg.join(' ')}"/>`;seg=[]};P.forEach((v,i)=>{if(v>0)seg.push(x(i).toFixed(1)+','+yp(v).toFixed(1));else out()});out();g+=`<text x="${x1-2}" y="${lt+9}" text-anchor="end" font-size="10" style="fill:#ff9a3c">${N(p1)}</text><text x="${x1-2}" y="${lb-4}" text-anchor="end" font-size="10" style="fill:#ff9a3c">${N(p0)}</text>`}else P=null}
 g+=`<polyline fill="none" style="stroke:#2f6fd0" stroke-width="2" stroke-linejoin="round" points="${C.map((v,i)=>x(i).toFixed(1)+','+yl(v).toFixed(1)).join(' ')}"/>`;
 C.forEach((v,i)=>g+=`<circle cx="${x(i).toFixed(1)}" cy="${yl(v).toFixed(1)}" r="2.4" style="fill:#2f6fd0"/>`);
 g+=`<line id="${id}v" x1="-9" x2="-9" y1="${lt}" y2="${bb}" class="bcx"/><line id="${id}h" x1="${x0}" x2="${x1}" y1="-9" y2="-9" class="bcx"/>`;
-BXD[id]={n,W,Ht,x0,bw,step,Lb,H,C,sma,mode,yl};
+BXD[id]={n,W,Ht,x0,bw,step,Lb,H,C,sma,mode,yl,P};
 return `<div class="bxp"><svg class="bxc" id="${id}" viewBox="0 0 ${W} ${Ht}" role="img" aria-label="Grafik ${mode==='n'?'arus asing':'arus Top 5 broker'}">${g}</svg><div class="bxtip" id="${id}tip" hidden></div></div>`}
 function bxBind(){document.querySelectorAll('svg.bxc').forEach(sv=>{const c=BXD[sv.id];if(!c)return;const tip=$('#'+sv.id+'tip');
 const hideT=()=>{tip.hidden=true;sv._i=-1;['v','h'].forEach(k=>{const e=$('#'+sv.id+k);if(e){e.setAttribute(k==='v'?'x1':'y1',-9);e.setAttribute(k==='v'?'x2':'y2',-9)}})};sv._hide=hideT;const mv=(ev,tg)=>{const r=sv.getBoundingClientRect(),xv=(ev.clientX-r.left)/r.width*c.W;let i=Math.round((xv-c.x0-c.bw/2)/(c.step||1));i=Math.max(0,Math.min(c.n-1,i));if(tg&&!tip.hidden&&sv._i===i){hideT();return}sv._i=i;const xx=c.x0+c.bw/2+i*c.step,yy=c.yl(c.C[i]),k=c.mode==='n';
 const a=$('#'+sv.id+'v'),b=$('#'+sv.id+'h');a.setAttribute('x1',xx);a.setAttribute('x2',xx);b.setAttribute('y1',yy);b.setAttribute('y2',yy);
-tip.innerHTML=bxYD(c.Lb[i])+'<br>Net: '+bxI(c.H[i])+'<br>Kumulatif: '+bxI(c.C[i])+'<br>Rata-rata 5: '+(c.sma[i]==null?'—':bxI(c.sma[i]))+'<br><small style="opacity:.7">ketuk lagi untuk tutup</small>';
+tip.innerHTML=bxYD(c.Lb[i])+'<br>Net: '+bxI(c.H[i])+'<br>Kumulatif: '+bxI(c.C[i])+'<br>Rata-rata 5: '+(c.sma[i]==null?'—':bxI(c.sma[i]))+(c.P?'<br>Harga: '+(c.P[i]>0?N(c.P[i]):'—'):'')+'<br><small style="opacity:.7">ketuk lagi untuk tutup</small>';
 tip.hidden=false;const px=xx/c.W*r.width,py=Math.min(yy/c.Ht*r.height+10,r.height*.6)+8;tip.style.top=py+'px';
 if(i<c.n/2){tip.style.left=(px+8)+'px';tip.style.transform='none'}else{tip.style.left=(px-8)+'px';tip.style.transform='translateX(-100%)'}};
 sv.onpointermove=ev=>{if(ev.pointerType==='mouse'||ev.buttons)mv(ev,false)};sv.onpointerdown=ev=>mv(ev,true);sv.onpointerleave=ev=>{if(ev.pointerType==='mouse')hideT()};tip.onclick=hideT})}
@@ -1491,8 +1492,8 @@ const mk=(net,buy,sell)=>`<div class="bmx"><div class="bmxh"><span>${tf==='w'?'M
 const mx=X.top.length,nn=Math.min(30,X.lab.length),lg=`<div class="mu" style="font-size:11px;padding:0 14px 4px"><span style="color:#2f6fd0">━</span> kumulatif · <span class="up">▮</span><span class="dn">▮</span> net per ${unit} · <span style="color:var(--gold)">╌</span> rata-rata 5</div>`;
 return `<div class="brand">BROKER INTELLIGENCE</div><h1 style="font-size:22px;margin:2px 0 8px">Bandarmologi</h1>
 <div class="bmh">${hd}${tabs}
-${ttl(1,'Arus Top 5 Broker')}<div class="bxn" id="bmi1" hidden>Beli = jumlah net lot 5 broker pembeli terbesar; Jual = jumlah net lot 5 broker penjual terbesar; keduanya dikali 100 lembar × harga rata-rata, dalam Rp. Net = Beli − Jual. Grafik: batang = net per ${unit}, garis putus-putus = rata-rata 5, garis biru = kumulatif. Tabel = jumlah N ${unit} terakhir.</div>
-${bxDc('bmc1',X.lab,X.tr,'t')}${lg}${mk(X.top,X.tb,X.ts)}
+${ttl(1,'Arus Top 5 Broker')}<div class="bxn" id="bmi1" hidden>Beli = jumlah net lot 5 broker pembeli terbesar; Jual = jumlah net lot 5 broker penjual terbesar; keduanya dikali 100 lembar × harga rata-rata, dalam Rp. Net = Beli − Jual. Grafik: batang = net per ${unit}, garis putus-putus = rata-rata 5, garis biru = kumulatif, garis oranye = harga penutupan (skala sendiri, angka di kanan = tertinggi/terendah di grafik). Tabel = jumlah N ${unit} terakhir.</div>
+${bxDc('bmc1',X.lab,X.tr,'t',X.lab.map(d=>{const day=D.days[d];if(!day)return null;const k=day.t.indexOf(q);return k>=0?day.c[k]:null}))}${lg.replace('rata-rata 5</div>','rata-rata 5 · <span style="color:#ff9a3c">━</span> harga '+(tf==='w'?'(penutupan minggu)':'penutupan')+'</div>')}${mk(X.top,X.tb,X.ts)}
 ${ttl(2,'Arus Asing (NBSA)')}<div class="bxn" id="bmi2" hidden>Beli dan Jual = nilai beli dan jual asing (lembar × harga rata-rata, estimasi), Net = Beli − Jual. Grafik: batang = net asing per ${unit}, garis putus-putus = rata-rata 5, garis biru = kumulatif. Tabel = jumlah N ${unit} terakhir.</div>
 ${bxDc('bmc2',X.lab,X.nr,'n')}${lg}${mk(X.nb,X.fb,X.fs)}
 ${ttl(3,'Arus Lokal')}<div class="bxn" id="bmi3" hidden>Lokal = semua pembeli dan penjual selain asing. Beli lokal = volume − beli asing, Jual lokal = volume − jual asing (lembar × harga rata-rata, estimasi). Karena setiap lot yang dibeli pasti ada penjualnya, Net lokal selalu kebalikan persis Net asing; yang berbeda adalah besarnya beli dan jual. Grafik: batang = net lokal per ${unit}, garis putus-putus = rata-rata 5, garis biru = kumulatif.</div>
@@ -3023,6 +3024,8 @@ agInit().then(()=>{AG.chk=true;render();vlStart();vaStart()},()=>{AG.chk=true;re
 /* Pengganti bagian admin yang dipakai udApply (file 13): Non Admin tidak punya unggahan/hitung ulang. */
 const UDS={saved:{},msg:''},UDK={cb1:'Clean Buy 1',cb2:'Clean Buy 2',cb3:'Clean Buy 3',acc:'Accum 1vs5',b10:'Buy >10K Lot',rs:'Ringkasan Saham',ri:'Ringkasan Indeks'},MDX={};
 function vzMergeAll(){}
+// Daftar kode broker untuk Cari Broker (di admin berasal dari file 08 yang tidak ikut Non Admin). Sama dengan daftar broker di cabang api-data.
+const VZMED=Object.fromEntries('AD AF AG AH AI AK AO AP AR AT AZ BB BF BK BQ BR BS CC CD CP DD DH DP DR DU DX EL EP ES FO FS FZ GA GI GR HD HP IC ID IF IH II IN IT IU JB KI KK KZ LG LS MG MI MU NI OD OK PC PD PF PG PI PO PP QA RB RF RG RO RS RX SA SF SH SQ SS TF TP TS XA XC XL YB YJ YO YP YU ZP ZR'.split(' ').map(b=>[b,0]));
 (function(){
 const API=CSW+'/app/api/',NA={dates:null,t:{},b:{},bm:{},busy:{},err:'',pm:{},br:{},ba:{},hm:0,bmAll:0,md:0};
 const naGet=async p=>{const r=await fetch(API+p,{headers:{'X-CS-Device':csDev()}});let j=null;try{j=await r.json()}catch(e){}
@@ -3107,8 +3110,14 @@ bdTab=function(g){
   if(!naBaR(from,to))return '<div class="bdin">'+muat('Menghitung Broker Action '+fd(from)+(from===to?'':' – '+fd(to))+'…')+'</div>'}
  else if(g==='smart'||g==='awal'){if(!naModul())return '<div class="bdin">'+muat(g==='smart'?'Memuat Matrix…':'Memuat Akumulasi Awal…')+'</div>';return naEks(oTab(g))}
  return oTab(g)};
-P.bbroker=function(){if(!naDates())return wait('Cari Broker','Memuat tanggal data broker…');const h=bbH(),sel=bbSel();let ok=true;sel.forEach(B=>{if(/^[A-Z0-9]{2}$/.test(B)&&!naBroker(B,h))ok=false});
- if(!ok)return wait('Cari Broker','Memuat data broker '+esc(sel.join(' + '))+'…');S.bbe=0;return naNote()+oBbroker()};
+// Cari Broker: tiap broker = 1 permintaan ke server, jadi maks BBNA broker sekaligus (tombol "Semua" = 89 permintaan, kena batas).
+const BBNA=10;
+P.bbroker=function(){if(!naDates())return wait('Cari Broker','Memuat tanggal data broker…');let cap='';if(S.bbs&&S.bbs.length>BBNA){S.bbs=S.bbs.slice(-BBNA);cap=`<div class="note">Maksimal ${BBNA} broker sekaligus. Yang dipakai ${BBNA} broker terakhir dipilih.</div>`}
+ const h=bbH(),sel=bbSel();let ok=true;const tamp=x=>x.replace('<button class="btn" data-bba="all">Semua</button>','').replace(/(<div class="bbg">)/,cap+'$1');sel.forEach(B=>{if(/^[A-Z0-9]{2}$/.test(B)&&!naBroker(B,h))ok=false});
+ if(!ok)return wait('Cari Broker','Memuat data broker '+esc(sel.join(' + '))+'…');// bbEnsure Non Admin selalu gagal (data di luar jendela server) → tanpa penahan ini bbroker memanggilnya berulang tanpa henti
+ // (render → gagal → render …, HP macet). Jadi bbEnsure tidak dipanggil; sesi yang tidak ada diberi keterangan.
+ S.bbl=1;S.bbe=1;let h2;try{h2=oBbroker()}finally{S.bbl=0;S.bbe=0}
+ return naNote()+tamp(h2.replace('Gagal memuat data broker. Coba buka ulang halaman.','Periode ini di luar '+h+' sesi terakhir yang dimuat dari server. Pilih periode yang lebih baru.'))};
 P.bdm=function(){if(S.bmv==='k'){if(!naBmAll())return wait('Bandarmologi','Memuat bandarmologi seluruh pasar…');return naNote()+oBdm()}
  const q=(S.bmq||'BBCA').toUpperCase();if(!naBandar(q))return wait('Bandarmologi','Memuat bandarmologi '+esc(q)+'…');return naNote()+oBdm()};
 for(const g of ['smart','awal'])if(P[g]){const o=P[g];P[g]=function(){if(!naModul())return wait(g==='smart'?'Matrix':'Akumulasi Awal','Memuat…');return naNote()+naEks(o())}}
@@ -3151,8 +3160,30 @@ async function izCek(manual){try{const c=new AbortController(),t=setTimeout(()=>
  if(j.boleh){lsS(IZ.k,'');izBuka()}else{lsS(IZ.k,JSON.stringify({p:j.pesan||''}));izKunci(j.pesan)}}catch(e){if(manual&&typeof vaToast==='function')vaToast('Server tidak bisa dihubungi. Coba lagi nanti.')}}
 try{const z=lsG(IZ.k,'');if(z)izKunci((JSON.parse(z)||{}).p)}catch(e){}
 izCek();setInterval(()=>{if(navigator.onLine)izCek()},6*36e5);window.addEventListener('online',()=>izCek());
-// Status data Non Admin: hanya sumber publik (harga, indeks, Clean Buy 1–3); broksum ada di server, bukan di HP.
-dataPct=function(){const L=dates.at(-1),cbs={};D.cb.forEach(([d,t,sc])=>{if(!cbs[sc]||d>cbs[sc])cbs[sc]=d});const S5=[dates.at(-1),ixd.at(-1),...['Clean Buy 1','Clean Buy 2','Clean Buy 3'].map(k=>cbs[k])],ok=S5.filter(x=>x&&x>=L).length;return{pct:Math.round(ok/S5.length*100),ok,n:S5.length}};
+// Status data Non Admin: harga, indeks, Clean Buy 1–3 (repo publik) + tanggal broker terakhir di server (setelah daftar tanggal termuat).
+dataPct=function(){const L=dates.at(-1),cbs={};D.cb.forEach(([d,t,sc])=>{if(!cbs[sc]||d>cbs[sc])cbs[sc]=d});const S5=[dates.at(-1),ixd.at(-1),...['Clean Buy 1','Clean Buy 2','Clean Buy 3'].map(k=>cbs[k])];if(NA.dates)S5.push(NA.dates.at(-1));const ok=S5.filter(x=>x&&x>=L).length;return{pct:Math.round(ok/S5.length*100),ok,n:S5.length}};
+// Tabel "Apa yang diperbarui": di Non Admin broksum dan ringkasan broker ada di SERVER, bukan tertanam (RBD = tanggal rakit 2 Nov).
+// Kedua baris memakai tanggal broker terakhir dari server (daftar/status).
+const oUpd=upd;
+upd=function(){naDates();const L=NA.dates&&NA.dates.at(-1),last=dates.at(-1),row=n=>{if(!NA.dates)return `<tr><td>${n}</td><td>${NA.err?'Server tidak terjangkau':'Memuat…'}</td><td class="na">${NA.err?'○ Belum tersedia':'…'}</td></tr>`;
+  const tl=L&&last&&L<last;return `<tr><td>${n}</td><td>${L?ld(L):'Belum tersedia'}</td><td class="${tl?'':L?'ok':'na'}" style="${tl?'color:#c9a23a;font-weight:700':''}">${tl?'◐ Tertinggal':L?'● Ada':'○ Belum tersedia'}</td></tr>`};
+ return oUpd().replace(/<tr><td>Broksum \(transaksi broker\)<\/td>[\s\S]*?<\/tr>/,()=>row('Broksum (transaksi broker, di server)')).replace(/<tr><td>Ringkasan Broker BEI<\/td>[\s\S]*?<\/tr>/,()=>row('Ringkasan Broker (di server)'))};
+// Popup kode saham (ketuk kode di daftar, mis. Market Overview): net broker top-4 dari ringkasan broker server (BR per bulan)
+// dan bandarmologi saham itu (broksum lengkap dari server). Dulu BR/bd kosong di Non Admin → selalu "Tidak masuk top-4 broker".
+const oTk=tkOpen;
+tkOpen=function(el,t,coba){const pend=[];
+ if(!naDates())pend.push(NA.busy.dates);
+ else{const ds=bd.slice(-20);if(naPasar(ds))naUseBR(ds);else[...new Set(ds.map(d=>d.slice(0,6)))].forEach(m=>{if(NA.busy['p'+m])pend.push(NA.busy['p'+m])})}
+ if(!naBandar(t)&&NA.busy['t'+t])pend.push(NA.busy['t'+t]);
+ oTk(el,t);const p=$('#tkp');if(!p)return;
+ const tunggu=pend.filter(Boolean);
+ if(!tunggu.length){if(coba&&NA.err)p.querySelector('table').insertAdjacentHTML('beforebegin',naNote());return}
+ p.querySelectorAll('td.mu[colspan]').forEach(td=>td.textContent='Memuat data broker…');const bm=$('#tkbm');if(bm)bm.innerHTML='<span class="mu">Memuat bandarmologi…</span>';
+ Promise.allSettled(tunggu).then(r=>{const q=$('#tkp');if(!q||q.getAttribute('aria-label')!=='Detail '+t)return;
+  if(r.some(x=>x.status==='rejected')||(coba||0)>=4){oTk(el,t);const z=$('#tkp');if(z&&NA.err)z.querySelector('table').insertAdjacentHTML('beforebegin',naNote());return}
+  tkOpen(el,t,(coba||0)+1)})};
+// Tanggal broker server dimuat saat aplikasi dibuka, supaya Beranda & indikator atas langsung benar.
+naDates();if(NA.busy.dates)NA.busy.dates.then(()=>{if(!['bdet','bbroker','bdm','bdk','bactd','saham','smart','awal'].includes(S.p))render()},()=>{render()});
 if(['bdet','bbroker','bdm','saham'].includes(S.p))render();
 })();
 </script></body></html>

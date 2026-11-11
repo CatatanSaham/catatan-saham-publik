@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-10 22:18 WIB",
- "baru": 2,
+ "upd": "2026-11-11 17:35 WIB",
+ "baru": 7,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -10,13 +10,62 @@
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
   "Google Berita: 10",
-  "Google Berita: 7",
-  "Google Berita: 22",
-  "Google Berita: 39",
+  "Google Berita: 8",
+  "Google Berita: 24",
+  "Google Berita: 45",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Hanya ganti pengendali / tender offer dan backdoor / inbreng / akuisisi. Judul media, perlu verifikasi.",
  "items": [
+  {
+   "t": "Usai Caplok Bayan, Haji Isam Kini Bidik Tambang Nikel Weda Bay Milik Eramet",
+   "link": "https://katadata.co.id/berita/energi/6af43eadbe822/usai-caplok-bayan-haji-isam-kini-bidik-tambang-nikel-weda-bay-milik-eramet",
+   "src": "Katadata",
+   "ts": 1794391680,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-11 17:35"
+  },
+  {
+   "t": "Garuda Indonesia Siapkan Rights Issue Rp 6,21 Triliun, Danantara Inbreng Saham GMFI",
+   "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPRWlGUUpsQjZoU3pzVFVrcW9GVFBRRW9USE5sdjFta09tcF9YbWJQTzFBT3BiM2tjazhMOXlfTDVtamxlZEdldjVUMkhoXy1oWlhDMUM3Z2RLX0Q0V25ZY2Q1Y3RJRFhERFE4V0pZbFcyUTBDZzFZcm9iZUtsVjVnNVdlTlBuRTc2VlRXSlF1RV84Z09ucVozeGNOU3gtd3R0MnZBQk1vRUJra2Y1V1NVOVk5TTh3NnA30gGwAUFVX3lxTE5FRzU2RHFFVGZzR0NfaUVFV0REOTQzSjJEM0pHMUd4M3lnMWRaTzdlLXRIZTd2WXlJeW9JMjhJNkp4Z010cGcyZ1NQY3EtQWMtazlfa2dzZE5mQ0pGV3ZxZllzbk1yRjZoOEE2cEVIdXhoWmx0eVQ5RTQ3SlJheG1Qajk0dXU3ZFpBOGZ6Tm1QMTVyZHhLZlFONTJnTlUtQjFmbVgtOEZFNHhOZHU0bmJJ?oc=5",
+   "src": "kontan.co.id",
+   "ts": 1794385683,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "GMFI"
+   ],
+   "found": "2026-11-11 17:35"
+  },
+  {
+   "t": "Wacana Koperasi Akuisisi KB Bank Bergulir, Manajemen Buka Suara",
+   "link": "https://www.cnbcindonesia.com/market/20261111133219-17-784259/wacana-koperasi-akuisisi-kb-bank-bergulir-manajemen-buka-suara",
+   "src": "CNBC Indonesia",
+   "ts": 1794380726,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "found": "2026-11-11 17:35"
+  },
+  {
+   "t": "Berita dengan Tags \"Rumor Ganti Pengendali\"",
+   "link": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE40d2J2QzBXSUpYY2tPYWRkcmZRMkZqLXk0c1NnMXdiMUd3N3BUdEsxOW5veDJZNXE0U1gtUmJsZk94a3FERldMRHpibDVpa3ZfYTZUT3VxYnExSWIzanc?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794379862,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "found": "2026-11-11 17:35"
+  },
+  {
+   "t": "Sahamnya ARA Usai Kabarkan PPJBS, HRME Mau Ganti Pengendali?",
+   "link": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNemhtN2ZUbmo3V2Rpc3FKVm1jNXdWcEZoS1BPWXRuLThVQkpnSmtvUUlEbWRzOHMyV3ZOcE1fVDNORlVIR3p0VDZaaWJhemdoN0YtODZZQm9wOXJNVzdPb1FnQ2xZWG1nQjQza1BCZHd6M25uZzR0RnNHeFNUUXBzZnNoTjdZN1lYLXJxMVEyelViRy05?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794376380,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "HRME"
+   ],
+   "found": "2026-11-11 17:35"
+  },
   {
    "t": "Nawa Capital Akuisisi Idea Indonesia Akademi (IDEA), Kantongi 66,58% Saham",
    "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPUEMweUNZaGJ2UFpPSnFBNnJKOUJtT0pKNTR5NjcyUERTVUhZdFVKQ1VGZ2kzbTB6XzlZa2t2eG96bFJYRHJUWHA2c3lSMHlZZG1TMnlUbGttajVGa0wxdms0QzNMX0dLT0lmbnJ0ei1NRWNsVXJEdUp6TGkxeVlRdmljemE2eERCY291dW1OanM5UXhhNVNQY0dRRkIzeDBh?oc=5",
@@ -27,6 +76,18 @@
     "IDEA"
    ],
    "found": "2026-11-10 22:18"
+  },
+  {
+   "t": "DOOH Mau Caplok 29,88% Saham INET, Rogoh Modal Hingga Rp5 T",
+   "link": "https://www.cnbcindonesia.com/market/20261110224208-17-784067/dooh-mau-caplok-2988-saham-inet-rogoh-modal-hingga-rp5-t",
+   "src": "CNBC Indonesia",
+   "ts": 1794306600,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "DOOH",
+    "INET"
+   ],
+   "found": "2026-11-11 17:35"
   },
   {
    "t": "CIMB Niaga (BNGA) Suntik Modal SLCapital Rp365,28 Miliar Lewat inbreng Aset",
@@ -133,6 +194,17 @@
    "cat": "Backdoor / akuisisi",
    "k": [],
    "found": "2026-11-10 17:29"
+  },
+  {
+   "t": "Mulai Hari Ini, Visionary Capital Gelar Tender Wajib Saham TGUK Rp56 per Saham",
+   "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxORy1KMERIc1Vsd0hsNnFxZm1uZGljUjk1VlZsV0MwUFpqYlRKb0JobEhBYzBYM19OUVJnVzFTVTJNcG9mSXZxNTNoSU9GUDM1WVZzVUJrcVgwc1I4alUyeV9FczlIb3d5eTJhMlprcUljd0pvdTVKYkJ5dk5GT0F5V0h1SDJoUTZYVFhZNURzbXdib0JGbGg0SEl0MWdWNDJLcU9EclpEOA?oc=5",
+   "src": "Berita Moneter",
+   "ts": 1794221940,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "TGUK"
+   ],
+   "found": "2026-11-11 17:35"
   },
   {
    "t": "Garuda (GIAA) Rights Issue 248,7 Miliar Saham, Ambil Alih GMFI Lagi?",

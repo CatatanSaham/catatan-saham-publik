@@ -1486,7 +1486,15 @@ const MD={d:null,busy:false,tried:false,err:''};
 
 
 
-const ADMP=new Set(['mm','visit','smart','smb','amb','stealth','awal','dvg','dna','mdna','abot','aint','admin','mtfs','tunda','aud','vzip','pmgu','rencana','riset','akc','pelacak']);
+
+
+
+const fsdPilih=r=>r.nh>=-.02&&r.r20>-.20&&r.r5>-.10&&r.r1<.10&&r.vv<3,fsdBuang=r=>r.r20<=-.20||r.r5<=-.10,fsdHindari=r=>r.r1>=.10||r.vv>=3;
+
+
+
+
+const ADMP=new Set(['fsd','mm','visit','smart','smb','amb','stealth','awal','dvg','dna','mdna','abot','aint','admin','mtfs','tunda','aud','vzip','pmgu','rencana','riset','akc','pelacak']);
 ADMP.delete('smart');ADMP.delete('awal');
 const HUBH=new Set(['chart','achart','ai','profil','agambar']);const MENUX=()=>{const adm=[];const pub=MENU.map(([g,l])=>[g,l.filter(x=>{if(HUBH.has(x[0]))return false;if(ADMP.has(x[0])){adm.push([x[0],x[1].replace(/ · admin$/,'')]);return false}return true})]).filter(([g,l])=>l.length||g==='Rencana & Evaluasi');return AG.admin&&adm.length?[...pub,['Admin · Riset',adm]]:pub};
 /* ===== Bandarmologi: Top 5 Broker Accumulation + NBSA ===== */

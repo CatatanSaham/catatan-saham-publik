@@ -4,6 +4,7 @@ name: Radar BEI sore
 on:
   schedule:
     - cron: "37 9 * * 1-5"   # 16.37 WIB, Senin–Jumat
+    - cron: "15 10 * * 1-5"  # 17.15 WIB: kirim hasil Radar AI (tugas Claude 16.10 WIB) ke Telegram
   workflow_dispatch:
     inputs:
       tes:
@@ -36,11 +37,18 @@ jobs:
         with:
           python-version: "3.12"
       - name: Saring berita
+        if: github.event.schedule != '15 10 * * 1-5'
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT: ${{ secrets.TELEGRAM_CHAT }}
           RADAR_TEST: ${{ inputs.tes && '1' || '' }}
         run: python main/radar/radar.py main/universe.json data/apk-data/radar.json
+      - name: Kirim Radar AI ke Telegram
+        if: github.event.schedule == '15 10 * * 1-5' || github.event_name == 'workflow_dispatch'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT: ${{ secrets.TELEGRAM_CHAT }}
+        run: python main/radar/radar.py --kirim-ai data/apk-data/radar.json
       - name: Simpan ke cabang apk-data
         run: |
           cd data

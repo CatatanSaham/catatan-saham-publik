@@ -1,5 +1,5 @@
 {
- "upd": "2026-11-11 17:35 WIB",
+ "upd": "2026-11-12 17:36 WIB",
  "baru": 7,
  "sumber": [
   "IDX Channel: 10",
@@ -10,13 +10,92 @@
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
   "Google Berita: 10",
+  "Google Berita: 12",
+  "Google Berita: 30",
+  "Google Berita: 100",
   "Google Berita: 8",
-  "Google Berita: 24",
-  "Google Berita: 45",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
- "aturan": "Hanya ganti pengendali / tender offer dan backdoor / inbreng / akuisisi. Judul media, perlu verifikasi.",
+ "aturan": "Hanya berefek material tinggi: ganti pengendali / tender offer, backdoor / inbreng / akuisisi, private placement (>=10% atau >=Rp500 miliar). Judul media, perlu verifikasi.",
  "items": [
+  {
+   "t": "VIVA Mau Konversi Utang PKPU Rp1,72 Triliun Jadi Saham Lewat PMTHMETD",
+   "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNMFgza2ZIcmNwZ2dKMUl6RkxyYmtVUTBPdjJrMkxISnpYc0thOERqMWx0eERhQ2xIZjYxWGJHc2VwYkd0ald2OGxJRjF3eUpmNXhWS1R5THdCNUlIZVVDR0w0ZTJUWm9RRVRzUGtWREVyaFJJY2hwcUNmcEE5OGlxajJfZ0FmcUJwMVpobDBmMDBseGRBbjY5VFY1RXc?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794469380,
+   "cat": "Private placement",
+   "k": [
+    "VIVA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-12 17:36"
+  },
+  {
+   "t": "IMBS Kuasai 35 Persen Saham KETR dan Jadi Pengendali Baru",
+   "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTFBVd1pyTmZDZ3o1V3B1VDRFVXZfUkV3Z2RQdnJ2bFlRZWhjWU03SVpEZ2pVU21JVkV0TXNDNTBrOTJocXBqZ1I2enN4Rll3MHRzVXZYUkdCOA?oc=5",
+   "src": "Koridor.co.id",
+   "ts": 1794468819,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "KETR"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-12 17:36"
+  },
+  {
+   "t": "Grup Sinar Mas Jadi Pengendali Baru",
+   "link": "https://news.google.com/rss/articles/CBMieEFVX3lxTE5xMGxZYllYZ0ZRWVJBYjVhN2FYWEdWTXg0WlJsY1MyMEhicHR2dldfNXdteHF1UHpvc2RKbGlGMWN4djRfS3NrRTROUFJVd0w5X0dUUm5SZTluVm5jM3pXRGJxcFl6UmF0Y2k4cVI5ZlBWcTBvdUFKVA?oc=5",
+   "src": "investor.id",
+   "ts": 1794468735,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-12 17:36"
+  },
+  {
+   "t": "Roth/MKM turunkan peringkat saham DoubleDown karena kemungkinan tender offer",
+   "link": "https://news.google.com/rss/articles/CBMizwFBVV95cUxNRmctaDdBM1FVckZtS3Iza1JIbEYxRkpTMGhDNURIclV2RU9yUFJKX3NMd1M5alNjRVlQcUNTdFNndDFabWR3MW4yUk9RR1haeDQ2d3A3dGVKbGl4cks0SW9qZ3pYWUVEX3BrMHBldmRoZGFKOG1EWVJ4UTN3VFlRQVpPUUplT2hvSUtGMzd5WjBmS0Z3YTVKRnBKU2J6SFVZRWpjM2V6S0V5Ny1pZWNYaVF2R29yQkptV185NFNtdGR5MnRNUUN4cVFQQVJ4VXM?oc=5",
+   "src": "Investing.com Indonesia",
+   "ts": 1794463528,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-12 17:36"
+  },
+  {
+   "t": "Berita dengan Tags \"Tender Offer ULTJ\"",
+   "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTFBnREZCLW0tQW9CRkFma1YxS3p2X2RQTHh0dGZGNTQwWk9VWjZ2WDdrZGZGTUkta3NLSDR4Ymh0MVRDS2FITVNsZ29icHEzZTltWm9aWFY1UnNGdzZv?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794459650,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "ULTJ"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-12 17:36"
+  },
+  {
+   "t": "Berita dengan Tags \"Inbreng ULTJ\"",
+   "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5rVFJ3bU9qNmwwMGJKZDNqejFZcjE2d1lxZDBCa1RnY3ROdlZuZUFZV2VLSHhYVDFHc2kycklPcHhxaHh3WkpaTGh5b2J0UVl6WGUyaXh3?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794459650,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "ULTJ"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-12 17:36"
+  },
+  {
+   "t": "Keluarga pendiri Vinasun akan mengambil alih kendali perusahaan taksi tersebut.",
+   "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOVU16SldZcUxVNjhManlGSTQzR2V4SW40aDBrWDhDd0ZhdEs4MWRfQWxRTDVtUHRHNzJyZkN0Y2xZQTlGQUZ3dE5OSjlYUmFjbFM1SUE2TVFNWWhmLTFDeDVpdWMySm9lY1FfMUNJM3htdTRhSnAzY0d6ejI1QndiRXVhTFp0dC1ZaUJMR2paZ2FsQQ?oc=5",
+   "src": "Vietnam.vn",
+   "ts": 1794416125,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-12 17:36"
+  },
   {
    "t": "Usai Caplok Bayan, Haji Isam Kini Bidik Tambang Nikel Weda Bay Milik Eramet",
    "link": "https://katadata.co.id/berita/energi/6af43eadbe822/usai-caplok-bayan-haji-isam-kini-bidik-tambang-nikel-weda-bay-milik-eramet",

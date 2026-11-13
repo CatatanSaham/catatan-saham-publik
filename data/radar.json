@@ -1,23 +1,109 @@
 {
- "upd": "2026-11-12 17:36 WIB",
- "baru": 7,
+ "upd": "2026-11-13 17:35 WIB",
+ "baru": 14,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
   "StockWatch: 12",
   "Katadata: 25",
   "CNBC Indonesia: 100",
-  "Kontan: gagal (HTTP Error 403: Forbidden)",
+  "Kontan: 25",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 10",
-  "Google Berita: 12",
-  "Google Berita: 30",
-  "Google Berita: 100",
   "Google Berita: 8",
+  "Google Berita: 12",
+  "Google Berita: 21",
+  "Google Berita: 78",
+  "Google Berita: 7",
+  "Google Berita: 11",
+  "Google Berita: 25",
+  "Google Berita: 28",
+  "Google Berita: 15",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
- "aturan": "Hanya berefek material tinggi: ganti pengendali / tender offer, backdoor / inbreng / akuisisi, private placement (>=10% atau >=Rp500 miliar). Judul media, perlu verifikasi.",
+ "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "GMFI Siapkan Rights Issue 22 Miliar Saham, Bidik Dana US$ 59,41 Juta",
+   "link": "https://investasi.kontan.co.id/news/gmfi-siapkan-rights-issue-22-miliar-saham-bidik-dana-us-5941-juta",
+   "src": "Kontan",
+   "ts": 1794565685,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "GMFI"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "Tender Wajib HOKI Terserap 193,93 Juta Saham, Saiko Kuasai 37,02%",
+   "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxQSk9aVWhYMC1tU3Q5MzhDX1hGZGtGQmRNZlRwVkdEWU9ReDltMEg4RXY3NFZna1ViM18zWXJMMm1WVnNRQnRMbWdVdFZhaFZIOUZpLXk3Uk9fYWk0Y3pfbk5XdlZSQ1V0NUJ5M0VMMU5zdXBURVZPcjBIeWxOX1FYSHBJVF9DakV3NlhjRw?oc=5",
+   "src": "StockWatch.id",
+   "ts": 1794561623,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "HOKI"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "Resmi Pailit! Nasib Totalindo Eka Persada (TOPS), di Ujung Tanduk",
+   "link": "https://www.cnbcindonesia.com/market/20261113103350-17-784928/resmi-pailit-nasib-totalindo-eka-persada--tops--di-ujung-tanduk",
+   "src": "CNBC Indonesia",
+   "ts": 1794541431,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "TOPS"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "Emiten Dicaplok, Saham Melejit 278%, Muncul Nama Dimas Beck",
+   "link": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNdGV6bDkwTm4yeWdRUC1QSEZtcG5kTWxpNERFRi1rZ0RPR05STjdBT3EwcWtsRi02Y2xlZ3AxZWF2OEY4NEItU0d3VHVOdE9rREpLenAyYm1HeWp3VzZ3ZEtZYkxmWV9GZUN4RzFZTmkzMjA5c3RKVGw3c2hBT2xTWnFVY2RIWHZTVno2am54VGZSaHl6?oc=5",
+   "src": "investor.id",
+   "ts": 1794539163,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "GIAA Right Issue Rp6,21 Triliun, Intip Profil, Lini Bisnis, dan Kinerja Terkini",
+   "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNSjlCWGwxdmN0bE1Uam5ZdmhmWlZIaWg2S1pNNjVzNFp0RkgxM3B6aklzQmJ1aXU4NXNsUkFUUHFjV2UwYW05ODJMYkNUMHNBeWQ1VEVSWmRzYVBuM3Jlamg1ZXQtT1o3YWJCbnpoUUdjQnJDMHZPc0M1cnNCWkZTMXdYUlgzNTRkTlhmMmNYemVnVzhoN2NqSHJqbjdZZjl1ZlpyTWRzXzJmNmUzVVdwZmdB?oc=5",
+   "src": "KONTAN",
+   "ts": 1794537651,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "GIAA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "Nawasena Nugra Investama Resmi Ambil Alih Mayoritas Saham IDEA",
+   "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxOVmREenVoc2cwZ3piQk9lVVQ1MVBnZGdKX0pRcDhFaklDT2dhMXk0aEtmX0hZS3VFVFBOZE9SaW1tNnpzWTR4eVBvbzUtTFpCbVJUcHk0cG02THNkR1JVVlZhR3NqTzJfTjFKdHJmQmtYemNGb1BPVENBdS1FYTBMU1NTMGxUSzBsa3NUeWgyYUdSVUc4SXF3?oc=5",
+   "src": "www.suaralandak.co.id",
+   "ts": 1794535385,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "IDEA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "KEEN Disetrum Proyek Listrik PLN Rp 21,9 Triliun",
+   "link": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQVUtDV25TcmoxMFRuMFRuSzdlNnZsMmdiWkJPRm82bTFqSWJaSHR2MVFuUlhpclN2SzFUd3Q4SzhNaFlPdnp2NW9qRVFoU2hmYTluNWJ2d2pWa0gyTUlSVjc2YkNjeV8yOHVEOWliUWJkZ1pQR3BHV0hUNHNyR3hjTGctYjNzYnJm?oc=5",
+   "src": "investor.id",
+   "ts": 1794477900,
+   "cat": "Kontrak / proyek",
+   "k": [
+    "KEEN"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
   {
    "t": "VIVA Mau Konversi Utang PKPU Rp1,72 Triliun Jadi Saham Lewat PMTHMETD",
    "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNMFgza2ZIcmNwZ2dKMUl6RkxyYmtVUTBPdjJrMkxISnpYc0thOERqMWx0eERhQ2xIZjYxWGJHc2VwYkd0ald2OGxJRjF3eUpmNXhWS1R5THdCNUlIZVVDR0w0ZTJUWm9RRVRzUGtWREVyaFJJY2hwcUNmcEE5OGlxajJfZ0FmcUJwMVpobDBmMDBseGRBbjY5VFY1RXc?oc=5",
@@ -87,6 +173,68 @@
    "found": "2026-11-12 17:36"
   },
   {
+   "t": "Petrosea (PTRO) Kantongi Kontrak Baru Rp15,79 Triliun, Backlog Naik 24% ke US$5,36 Miliar",
+   "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNajQ5TG5vRzM4bkdwMkljRHhoMHRGMzlfbHd3bDNzUi1nWGpHTl85WEN5ZHRzSTBRS1FSZTFrWU9uR1FYMzZ3MmtXeldUSTJaZlhOR3d0MHFTTjdsUWpCTUkzdnZOOWRLY05jY0Q2Y0ZFTWNuMEg4TlhZWHB6MVRXN05QTmZfMHpRSHNZdVJMZUlCbHk5S1NpcHhRZ3NKbWlPbWt1TWRmV0s2Qmp1TzI2Ym5TMkdYWDl0NTFobzNaNWhrQk9NS2g5Uw?oc=5",
+   "src": "Digivestasi",
+   "ts": 1794453521,
+   "cat": "Kontrak / proyek",
+   "k": [
+    "PTRO"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "Smart (SMAR) Siapkan Dividen Interim Rp1,4 Triliun, Investor Berpeluang Kantongi Rp490 per Saham",
+   "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxObzJZcEl1Ym1DNWtXVHFoMXJsVHdGUGVfV0FRV3hpZHd4LU5jeWVtX0V0c196YnNBblR6NWl1TmlORlZwNnFtUnlMSlM2MFNhbE45bXdpZUZObEtQX2NYb0xidkVpd05NcHp3b1NUdHBZU2pnRUNPcHdSemVzUVBtMVJ4ZzYzbEpzUE10bmlvOWFhWkZlVF9ZRFlqaTAyRlNLSVF5YlR6bWFUSG5LbDg0QlN6Yw?oc=5",
+   "src": "TOPIK.ID",
+   "ts": 1794449429,
+   "cat": "Buyback / dividen",
+   "k": [
+    "SMAR"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "VIVA Terbitkan 86,17 Miliar Saham untuk Konversi Utang",
+   "link": "https://news.google.com/rss/articles/CBMickFVX3lxTFBWTHN5UlJ2cDRXSEhWNWtiVkduLUFQOUlkT2kwRHpkRUFISlRPMW5HLVpFN3BtdndIOTRQVFd0WVRhSzBNbTdndzJfOEYxMFBNRDd2djZTSnJkYmFDbjh3d216RHAzejlyaTNfTTZrMnY2QQ?oc=5",
+   "src": "Cirebon Times",
+   "ts": 1794440100,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "VIVA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "BEI Buka Suspensi Saham UDNG SEMA ALKA Simak Analisisnya",
+   "link": "https://news.google.com/rss/articles/CBMirwFBVV95cUxQTVVLSFVadHIwdFdtNU9EdEEwa1BEQ2hUQ0Y5Z2xITUQ1YmNtTjd3YUtZR25KMGpRcnlEcE5KUEdybThlVk1hQUYzSmFUc280MXRIVjUwN3VPcWplRVdyY0MzdV9aZ0h1V3VTYlN5eVo3NVN0b0pkRk9TT3ZSS3lyNTJ4Qi1zQk9rUmJEZVppT0FVN0lnTHJ1RWQwT2VCeE4yVkhoVUgyWWdHdnM1UWpZ?oc=5",
+   "src": "https://cetro.or.id/",
+   "ts": 1794428464,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "UDNG",
+    "SEMA",
+    "ALKA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "BTPN Syariah Ajukan Buyback Saham Rp1 Triliun dalam RUPSLB",
+   "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE9ZVHpKdW9CMS1FN0lBLW9jR0VIWVk5VlBYeDJlLUJRX2g5QVJTVExHMnNZRTdYTko3YXNrZ0t4SnlPWDlGQUNUQ1FoSF83cmxLTDYtUURrU3laN1BNTG13?oc=5",
+   "src": "Lensa Hukum",
+   "ts": 1794418860,
+   "cat": "Buyback / dividen",
+   "k": [
+    "BTPN"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
    "t": "Keluarga pendiri Vinasun akan mengambil alih kendali perusahaan taksi tersebut.",
    "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOVU16SldZcUxVNjhManlGSTQzR2V4SW40aDBrWDhDd0ZhdEs4MWRfQWxRTDVtUHRHNzJyZkN0Y2xZQTlGQUZ3dE5OSjlYUmFjbFM1SUE2TVFNWWhmLTFDeDVpdWMySm9lY1FfMUNJM3htdTRhSnAzY0d6ejI1QndiRXVhTFp0dC1ZaUJMR2paZ2FsQQ?oc=5",
    "src": "Vietnam.vn",
@@ -95,6 +243,30 @@
    "k": [],
    "impact": "Tinggi",
    "found": "2026-11-12 17:36"
+  },
+  {
+   "t": "Japfa (JPFA) Tabur Dividen Rp1,05 Triliun, Cair 12 November 2026!",
+   "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxQYWNXcE10QjR5bXhKWlpZLWt3MUhnNmhnY2NMVm41NjBoNHdOZFlQZUtGd0Vsb3d0Y2ZZc0VWeHdxWGZna3JqSnBYWWxQWlVDb0haNDRvaXRHVEQyalJJT3h5Q3VEd0VJR1JWTGlBcVRabkNaNnhwT0hJaEJFSkllME9pWXFqdGxQNS1KVWNZSzhjZw?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794411270,
+   "cat": "Buyback / dividen",
+   "k": [
+    "JPFA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
+  },
+  {
+   "t": "UNTR Siapkan Dana Rp2 Triliun untuk Aksi Buyback Saham",
+   "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNMF9MYlVIMEg4bXp1ak9TYWN6LUlwbS1hNGtTc3Eyb2l0RnBFRlVxcDU1QV9sbFpqYUlQV3RXSjFZQUtsWmNIQllMXzVHTEhibEZ5S3VFN2liX09MNG9EYmhTTk5Td0dsTnhmN1pPcjExOERJRWs2YnlNc2t6Uzc4WWZaS0JZWWJWSjBBQ1l1TTVTRE5Zakp2RC1fVjl6NFpI?oc=5",
+   "src": "https://cetro.or.id/",
+   "ts": 1794402107,
+   "cat": "Buyback / dividen",
+   "k": [
+    "UNTR"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-13 17:35"
   },
   {
    "t": "Usai Caplok Bayan, Haji Isam Kini Bidik Tambang Nikel Weda Bay Milik Eramet",

@@ -1,10 +1,10 @@
-# BARU (16 Nov 2026): isi-mundur broksum harian 2 Jan - 30 Jun 2026 dari IDX Edge (stock.arjum.com).
+# BARU (16 Nov 2026): isi-mundur broksum harian 2 Jan - 29 Jun 2026 dari IDX Edge (stock.arjum.com).
 # Kode: repo privat catatan-saham-mtf tools/backfill/broksum_backfill.py (diambil saat jalan memakai PRIVAT_TOKEN).
 # Hasil ditulis ke cabang privat `broksum-backfill` repo privat (BUKAN apk-data/apk-next/api-data, BUKAN repo ini).
 # Log repo ini publik: skrip hanya mencetak jumlah dan tanggal, tidak pernah data broker.
 name: Isi mundur broksum (IDX Edge)
 # Dijalankan tepat setelah kuota harian IDX Edge reset (00.00 WIB). Memakai maks. 850 dari 1.000 panggilan,
-# sisanya dicadangkan untuk pemakaian lain dengan key yang sama. Satu hari bursa (semua saham) per run, mundur dari 30 Jun.
+# sisanya dicadangkan untuk pemakaian lain dengan key yang sama. Satu hari bursa (semua saham) per run, mundur dari 29 Jun (30 Jun sudah diunggah pemilik).
 on:
   schedule:
     - cron: "10 17 * * *"   # 00.10 WIB (setiap hari; kuota reset harian)
@@ -54,7 +54,7 @@ jobs:
         run: python main/tools/backfill/broksum_backfill.py --shards next/apk/www/shards --out out --selftest
       - name: Isi mundur
         if: github.event.inputs.mode != 'selftest'
-        run: python main/tools/backfill/broksum_backfill.py --shards next/apk/www/shards --out out --maks "${{ github.event.inputs.maks || '850' }}"
+        run: python main/tools/backfill/broksum_backfill.py --shards next/apk/www/shards --out out --mulai 2026-06-29 --sampai 2026-01-02 --maks "${{ github.event.inputs.maks || '850' }}"
       - name: Simpan ke broksum-backfill (hanya bila berubah)
         if: always() && github.event.inputs.mode != 'selftest'
         run: |

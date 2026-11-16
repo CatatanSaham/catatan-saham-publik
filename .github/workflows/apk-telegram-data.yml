@@ -154,6 +154,11 @@ jobs:
                   if not rows or not isinstance(rows[-1], list):
                       continue
                   market["stocks"][ticker] = dict(zip(MA_FIELDS, rows[-1]))
+                  # MA9 dihitung dari 9 penutupan terakhir (tail); hanya bila tail sejalan dengan close terakhir
+                  tail9 = [v for v in (ma.get("tail", {}).get(ticker) or []) if isinstance(v, (int, float))]
+                  if len(tail9) >= 9 and tail9[-1] == rows[-1][0]:
+                      market["stocks"][ticker]["ma9"] = math.floor(sum(tail9[-9:]) / 9 * 10 + 0.5) / 10
+              market["fields"] = MA_FIELDS + ["ma9"]
           
               legacy_fields = fund.get("f", [])
               stocks = {}

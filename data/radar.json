@@ -1,27 +1,85 @@
 {
- "upd": "2026-11-13 17:35 WIB",
- "baru": 14,
+ "upd": "2026-11-16 17:59 WIB",
+ "baru": 5,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
   "StockWatch: 12",
   "Katadata: 25",
   "CNBC Indonesia: 100",
-  "Kontan: 25",
+  "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 8",
-  "Google Berita: 12",
-  "Google Berita: 21",
-  "Google Berita: 78",
-  "Google Berita: 7",
-  "Google Berita: 11",
-  "Google Berita: 25",
-  "Google Berita: 28",
   "Google Berita: 15",
+  "Google Berita: 3",
+  "Google Berita: 12",
+  "Google Berita: 16",
+  "Google Berita: 1",
+  "Google Berita: 7",
+  "Google Berita: 20",
+  "Google Berita: 22",
+  "Google Berita: 10",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "RUPSLB Setujui Nawasena Ambil Alih 66,58 Persen Saham Idea Indonesia Akademi",
+   "link": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQekhSMWlrUXIwOWJUNGFtU0JFZ0lxYzVrV0NMUF9GOE1vN3BMa0RDMDN4bUYwODROZWNuZmpsVFVGZWx4eHBFQ3d6UjE3bzlrY3VxVGF4eHdub0ZDSVRiNGZMREY4X0RCWXhBUmNEd2VFU1J3cnR5VndGX1FnMEZ2T3oxQWN3dVJGZHU4bWJMR1BFU3ZRdDZ5a0lFV2Jld2tpcU5jMGxwaC1WajJ2RXJHSWxIQkhUVGtzNzNTMUVad0x3ZGFp?oc=5",
+   "src": "Kompas.com",
+   "ts": 1794826320,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-16 17:59"
+  },
+  {
+   "t": "VCG Tawarkan Tender Wajib TGUK Rp56 per Saham",
+   "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPSC1QMmxqWUlLQTQ4QTl1dEd3a1ZvU3I5aGNQYVpndlhUNmM2SVJCeVVoQnJxTjEwU1Bnc3dsMWlwbVhzeTVveEpaZUNLZDRsOEhfd0RzamlxTldRT0VtZzZWVm5mUUxQTUFQSXo2NS00Z0FCVVJUVVJfNDdscGozQzV1MUhiUHdDYWFwUDQxb1ljMkRDSDRkdFM2cWFzbGZrM1FF?oc=5",
+   "src": "RCTI+",
+   "ts": 1794819605,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "TGUK"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-16 17:59"
+  },
+  {
+   "t": "BEI Suspensi Saham TRUK Usai Kenaikan Harga Signifikan",
+   "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9xekM0eHVsS3NlMlctSTMybzd6MEN5TXE0aDFiakZjdzZTWHNsMnM3TW04S1h2MFU4eDdWVzJyVlZzZFJkWFJwZWhhTXM0OWc2cEhUZFdrLUtFa0dp?oc=5",
+   "src": "Demokratis.co.id",
+   "ts": 1794812007,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "TRUK"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-16 17:59"
+  },
+  {
+   "t": "JP Morgan Soroti Prospek Saham ICBP, Pertumbuhan Laba dan Buyback Rp1,75 Triliun Jadi Katalis Investor - Hallo Emiten",
+   "link": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxOb3MtTmYwdC1TQktyS2JWMU5kaUVSRGNKQmlrVzBzM3hDTHBlazUxMFpxWWY2QVc0RldRY2Q4QUdib2c3N242UGtYRVozT2F5S1VMb09qQ3dmRi1kVmQ1T3dOaDEyclc4aGxNcEdiRWR1UkIxbS1XTm42LXlqTjF1eUlzWG5uTEVWZFRBS1FfdXNqVW5KQWVmTmVjWGNaUW5kcHF1QUJWVFBOcVd6X2JtNzFwZklqU01OdzZySWxmS3hHb0plX1JWeUxrWGdGQU5xZmJyWUdsOXVwRVJ6ZVVON1B1TnAwM0h50gHoAUFVX3lxTE5vcy1OZjB0LVNCS3JLYlYxTmRpRVJEY0pCaWtXMHMzeENMcGVrNTEwWnFZZjZBVzRGV1FjZDhBR2JvZzc3bjZQa1hFWjNPYXlLVUxvT2pDd2ZGLWRWZDVPd05oMTJyVzhobE1wR2JFZHVSQjFtLVdObjYteWpOMXV5SXNYbm5MRVZkVEFLUV91c2pVbkpBZWZOZWNYY1pRbmRwcXVBQlZUUE5xV3pfYm03MXBmSWpTTU53NnJJbGZLeEdvSmVfUlZ5TGtYZ0ZBTnFmYnJZR2w5dXBFUnplVU43UHVOcDAzSHk?oc=5",
+   "src": "Hallo.id",
+   "ts": 1794720120,
+   "cat": "Buyback / dividen",
+   "k": [
+    "ICBP"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-16 17:59"
+  },
+  {
+   "t": "GMFI Rights Issue 22 Miliar Saham, Ini Alasan dan Penggunaan Dananya",
+   "link": "https://www.cnbcindonesia.com/market/20261113164308-17-785122/gmfi-rights-issue-22-miliar-saham-ini-alasan-dan-penggunaan-dananya",
+   "src": "CNBC Indonesia",
+   "ts": 1794567934,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "GMFI"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-16 17:59"
+  },
   {
    "t": "GMFI Siapkan Rights Issue 22 Miliar Saham, Bidik Dana US$ 59,41 Juta",
    "link": "https://investasi.kontan.co.id/news/gmfi-siapkan-rights-issue-22-miliar-saham-bidik-dana-us-5941-juta",

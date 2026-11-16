@@ -1,0 +1,80 @@
+# BARU (16 Nov 2026): robot broksum harian IDX Edge -> ZIP 89 file .xls (format unduhan pemilik).
+# Kode: repo privat catatan-saham-mtf tools/broksum/ (diambil saat jalan memakai PRIVAT_TOKEN).
+# Hasil ke cabang privat `broksum-harian`. Log publik: hanya jumlah dan jam.
+name: Robot broksum harian (IDX Edge)
+on:
+  schedule:
+    - cron: "25 10 * * 1-5"   # 17.25 WIB Sen-Jum (IDX Edge memperbarui ±17.15 WIB)
+    - cron: "30 23 * * 0-5"   # 06.30 WIB Sen-Sab: susulan, unduh hari kerja kemarin bila belum ada (data kemarin harus ada sebelum 09.00)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "selftest = 1 panggilan uji lalu berhenti; isi = unduh"
+        type: choice
+        options: [selftest, isi]
+        default: selftest
+      tanggal:
+        description: "YYYY-MM-DD, kosong = hari ini (WIB)"
+        default: ""
+      tunggu:
+        description: "Menit maksimal menunggu data muncul"
+        default: "240"
+      cadangan:
+        description: "Berhenti bila sisa kuota <= angka ini"
+        default: "1000"
+permissions:
+  contents: read
+concurrency:
+  group: broksum-harian
+  cancel-in-progress: false
+jobs:
+  ambil:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
+      REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+          sparse-checkout: |
+            tools/backfill
+            tools/broksum
+            universe.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -q xlwt
+      - name: Ambil cabang broksum-harian (buat baru bila belum ada)
+        run: |
+          if git ls-remote --exit-code "$REPO_PRIVAT" refs/heads/broksum-harian >/dev/null; then
+            git clone -q --depth 1 --branch broksum-harian "$REPO_PRIVAT" out
+          else
+            mkdir out && cd out && git init -q -b broksum-harian && git remote add origin "$REPO_PRIVAT"
+          fi
+      - name: Uji awal
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'selftest'
+        run: python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --selftest
+      - name: Unduh broksum
+        if: github.event_name == 'schedule' || github.event.inputs.mode == 'isi'
+        run: |
+          if [ "${{ github.event.schedule }}" = "30 23 * * 0-5" ]; then
+            python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --kemarin --tunggu 30 --cadangan 1000
+          else
+            python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --tanggal "${{ github.event.inputs.tanggal || '' }}" --tunggu "${{ github.event.inputs.tunggu || '240' }}" --cadangan "${{ github.event.inputs.cadangan || '1000' }}"
+          fi
+      - name: Simpan ke broksum-harian (hanya bila berubah)
+        if: always() && (github.event_name == 'schedule' || github.event.inputs.mode == 'isi')
+        run: |
+          cd out
+          [ -f README.md ] || cp ../main/tools/broksum/README.md README.md
+          git config user.name "Robot Broksum Harian"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "broksum-harian $(date -u +%Y-%m-%d)"
+          git push -q origin HEAD:broksum-harian

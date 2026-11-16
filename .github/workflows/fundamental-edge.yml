@@ -49,7 +49,7 @@ jobs:
         with: {python-version: "3.12"}
       - name: Ambil cabang fundamental-edge (buat baru bila belum ada)
         run: |
-          if git ls-remote --exit-code "$REPO_PRIVAT" fundamental-edge >/dev/null; then
+          if git ls-remote --exit-code "$REPO_PRIVAT" refs/heads/fundamental-edge >/dev/null; then
             git clone -q --depth 1 --branch fundamental-edge "$REPO_PRIVAT" out
           else
             mkdir out && cd out && git init -q -b fundamental-edge && git remote add origin "$REPO_PRIVAT"

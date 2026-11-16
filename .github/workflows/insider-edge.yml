@@ -1,0 +1,72 @@
+# BARU (16 Nov 2026): robot transaksi insider IDX Edge (15 transaksi terbaru per emiten).
+# Kode: repo privat catatan-saham-mtf tools/insider/insider_edge.py (diambil saat jalan memakai PRIVAT_TOKEN).
+# Hasil ke cabang privat `insider-edge` (BUKAN apk-data/apk-next/api-data). Log publik: hanya jumlah dan kode.
+name: Robot insider (IDX Edge)
+on:
+  schedule:
+    - cron: "30 11 * * 1-5"   # 18.30 WIB Sen-Jum
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "selftest = 1 panggilan uji lalu berhenti; isi = jalan normal"
+        type: choice
+        options: [selftest, isi]
+        default: selftest
+      maks:
+        description: "Batas panggilan API run ini"
+        default: "1100"
+      cadangan:
+        description: "Berhenti bila sisa kuota di header <= angka ini"
+        default: "3000"
+      kode:
+        description: "Batasi ke kode ini (pisah koma), kosong = semua"
+        default: ""
+permissions:
+  contents: read
+concurrency:
+  group: insider-edge
+  cancel-in-progress: false
+jobs:
+  ambil:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
+      REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+          sparse-checkout: |
+            tools/insider
+            universe.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Ambil cabang insider-edge (buat baru bila belum ada)
+        run: |
+          if git ls-remote --exit-code "$REPO_PRIVAT" refs/heads/insider-edge >/dev/null; then
+            git clone -q --depth 1 --branch insider-edge "$REPO_PRIVAT" out
+          else
+            mkdir out && cd out && git init -q -b insider-edge && git remote add origin "$REPO_PRIVAT"
+          fi
+      - name: Uji awal
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'selftest'
+        run: python main/tools/insider/insider_edge.py --universe main/universe.json --out out --selftest
+      - name: Ambil insider
+        if: github.event_name == 'schedule' || github.event.inputs.mode == 'isi'
+        run: python main/tools/insider/insider_edge.py --universe main/universe.json --out out --maks "${{ github.event.inputs.maks || '1100' }}" --cadangan "${{ github.event.inputs.cadangan || '3000' }}" --kode "${{ github.event.inputs.kode || '' }}"
+      - name: Simpan ke insider-edge (hanya bila berubah)
+        if: always() && (github.event_name == 'schedule' || github.event.inputs.mode == 'isi')
+        run: |
+          cd out
+          [ -f README.md ] || cp ../main/tools/insider/README.md README.md
+          git config user.name "Robot Insider"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "insider-edge $(date -u +%Y-%m-%d)"
+          git push -q origin HEAD:insider-edge

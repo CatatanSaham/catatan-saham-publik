@@ -19,6 +19,11 @@ on:
       cadangan:
         description: "Berhenti bila sisa kuota di header <= angka ini (sisakan untuk chat)"
         default: "500"
+      tahun:
+        description: "2026 = jalan normal; 2025 = unduh pembanding tahun lalu (4 kuartal, ke folder fund25)"
+        type: choice
+        options: ["2026", "2025"]
+        default: "2026"
       kode:
         description: "Batasi ke kode ini (pisah koma), kosong = semua. Untuk uji kecil, mis. BBCA,BBRI"
         default: ""
@@ -59,7 +64,13 @@ jobs:
         run: python main/tools/fundamental/fundamental_edge.py --universe main/universe.json --out out --selftest
       - name: Ambil laporan
         if: github.event_name == 'schedule' || github.event.inputs.mode == 'isi'
-        run: python main/tools/fundamental/fundamental_edge.py --universe main/universe.json --out out --maks "${{ github.event.inputs.maks || '3000' }}" --cadangan "${{ github.event.inputs.cadangan || '500' }}" --kode "${{ github.event.inputs.kode || '' }}"
+        run: |
+          EXTRA=""
+          if [ "${{ github.event.inputs.tahun }}" = "2025" ]; then EXTRA="--tahun 2025 --limit 4 --target 4 --folder fund25"; fi
+          python main/tools/fundamental/fundamental_edge.py --universe main/universe.json --out out $EXTRA --maks "${{ github.event.inputs.maks || '3000' }}" --cadangan "${{ github.event.inputs.cadangan || '500' }}" --kode "${{ github.event.inputs.kode || '' }}"
+      - name: Susun q3_edge.json (format aplikasi)
+        if: always() && (github.event_name == 'schedule' || github.event.inputs.mode == 'isi')
+        run: python main/tools/fundamental/build_fund_edge.py --data out
       - name: Simpan ke fundamental-edge (hanya bila berubah)
         if: always() && (github.event_name == 'schedule' || github.event.inputs.mode == 'isi')
         run: |

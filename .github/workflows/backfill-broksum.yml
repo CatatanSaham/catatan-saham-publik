@@ -29,7 +29,7 @@ concurrency:
 jobs:
   isi:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 240
     env:
       IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
       REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git

@@ -1,0 +1,36 @@
+# BARU (16 Nov 2026): mencatat JAM berapa IDX Edge mulai punya broksum hari bursa terbaru.
+# 1 panggilan per cek (BBCA, tanggal hari ini WIB), tiap 30 menit. Log publik hanya berisi jam, tanggal, dan jumlah broker (bukan data broker).
+name: Cek waktu update broksum (IDX Edge)
+on:
+  schedule:
+    - cron: "5,35 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cek-waktu-broksum
+  cancel-in-progress: false
+jobs:
+  cek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
+    steps:
+      - name: Cek ketersediaan broksum hari ini
+        shell: python
+        run: |
+          import os, json, urllib.request, urllib.error, datetime
+          UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 CatatanSaham-Cek/1.0"
+          wib = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
+          tgl = wib.strftime("%Y-%m-%d")
+          url = f"https://stock.arjum.com/api/broker-summary/BBCA?start_date={tgl}&end_date={tgl}&flow=all&broker_limit=200&level_limit=1"
+          req = urllib.request.Request(url, headers={"X-API-Key": os.environ["IDX_EDGE_KEY"].strip(), "Accept": "application/json", "User-Agent": UA})
+          try:
+              with urllib.request.urlopen(req, timeout=40) as r:
+                  d = json.loads(r.read().decode("utf-8"))
+                  sisa = r.headers.get("x-ratelimit-remaining")
+              n = len(d.get("brokers") or [])
+              print(f"CEK jam WIB {wib:%H:%M} tgl {tgl}: broker hari ini={n}, tanggal broksum terbaru di IDX Edge={d.get('broker_date_max')}, sisa kuota={sisa}")
+          except urllib.error.HTTPError as e:
+              print(f"CEK jam WIB {wib:%H:%M} tgl {tgl}: HTTP {e.code} (404 = belum ada data hari ini)")

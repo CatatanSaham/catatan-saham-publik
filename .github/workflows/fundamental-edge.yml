@@ -1,0 +1,73 @@
+# BARU (16 Nov 2026): robot fundamental IDX Edge (laba rugi, neraca, arus kas kuartal 2026, semua emiten).
+# Kode: repo privat catatan-saham-mtf tools/fundamental/fundamental_edge.py (diambil saat jalan memakai PRIVAT_TOKEN).
+# Hasil ditulis ke cabang privat `fundamental-edge` repo privat (BUKAN apk-data/apk-next/api-data, BUKAN repo ini).
+# Log repo ini publik: skrip hanya mencetak jumlah dan kode, tidak pernah angka laporan.
+name: Robot fundamental (IDX Edge)
+on:
+  schedule:
+    - cron: "20 18 * * *"   # 01.20 WIB, setelah isi-mundur broksum (00.10)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "selftest = baca openapi (gratis) + 1 panggilan uji lalu berhenti; isi = jalan normal"
+        type: choice
+        options: [selftest, isi]
+        default: selftest
+      maks:
+        description: "Batas panggilan API run ini"
+        default: "3000"
+      cadangan:
+        description: "Berhenti bila sisa kuota di header <= angka ini (sisakan untuk chat)"
+        default: "500"
+      kode:
+        description: "Batasi ke kode ini (pisah koma), kosong = semua. Untuk uji kecil, mis. BBCA,BBRI"
+        default: ""
+permissions:
+  contents: read
+concurrency:
+  group: fundamental-edge
+  cancel-in-progress: false
+jobs:
+  ambil:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
+      REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+          sparse-checkout: |
+            tools/fundamental
+            universe.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Ambil cabang fundamental-edge (buat baru bila belum ada)
+        run: |
+          if git ls-remote --exit-code "$REPO_PRIVAT" fundamental-edge >/dev/null; then
+            git clone -q --depth 1 --branch fundamental-edge "$REPO_PRIVAT" out
+          else
+            mkdir out && cd out && git init -q -b fundamental-edge && git remote add origin "$REPO_PRIVAT"
+          fi
+      - name: Uji awal (gratis + 1 panggilan, bandingkan dengan acuan BBCA)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'selftest'
+        run: python main/tools/fundamental/fundamental_edge.py --universe main/universe.json --out out --selftest
+      - name: Ambil laporan
+        if: github.event_name == 'schedule' || github.event.inputs.mode == 'isi'
+        run: python main/tools/fundamental/fundamental_edge.py --universe main/universe.json --out out --maks "${{ github.event.inputs.maks || '3000' }}" --cadangan "${{ github.event.inputs.cadangan || '500' }}" --kode "${{ github.event.inputs.kode || '' }}"
+      - name: Simpan ke fundamental-edge (hanya bila berubah)
+        if: always() && (github.event_name == 'schedule' || github.event.inputs.mode == 'isi')
+        run: |
+          cd out
+          [ -f README.md ] || cp ../main/tools/fundamental/README.md README.md
+          git config user.name "Robot Fundamental"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "fundamental-edge $(python -c "import json;d=json.load(open('status.json'));print(d['emiten'],'emiten, Q3:',d['punya_q3'])")"
+          git push -q origin HEAD:fundamental-edge

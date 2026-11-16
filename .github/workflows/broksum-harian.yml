@@ -17,7 +17,7 @@ on:
         default: ""
       tunggu:
         description: "Menit maksimal menunggu data muncul"
-        default: "60"
+        default: "240"
       cadangan:
         description: "Berhenti bila sisa kuota <= angka ini"
         default: "1000"
@@ -29,7 +29,7 @@ concurrency:
 jobs:
   ambil:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 300
     env:
       IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
       REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
@@ -60,7 +60,7 @@ jobs:
         run: python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --selftest
       - name: Unduh broksum
         if: github.event_name == 'schedule' || github.event.inputs.mode == 'isi'
-        run: python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --tanggal "${{ github.event.inputs.tanggal || '' }}" --tunggu "${{ github.event.inputs.tunggu || '60' }}" --cadangan "${{ github.event.inputs.cadangan || '1000' }}"
+        run: python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --tanggal "${{ github.event.inputs.tanggal || '' }}" --tunggu "${{ github.event.inputs.tunggu || '240' }}" --cadangan "${{ github.event.inputs.cadangan || '1000' }}"
       - name: Simpan ke broksum-harian (hanya bila berubah)
         if: always() && (github.event_name == 'schedule' || github.event.inputs.mode == 'isi')
         run: |

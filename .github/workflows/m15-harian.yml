@@ -1,0 +1,68 @@
+# BARU (16 Nov 2026): robot candlestick 15 menit IDX Edge (format apk-data/m15).
+# Kode: repo privat catatan-saham-mtf tools/m15/ (diambil saat jalan memakai PRIVAT_TOKEN).
+# Hasil ke cabang privat `m15-harian`. Log publik: hanya jumlah dan jam.
+name: Robot 15 menit (IDX Edge)
+on:
+  schedule:
+    - cron: "40 10 * * 1-5"   # 17.40 WIB Sen-Jum (sesudah penutupan)
+    - cron: "40 23 * * 0-5"   # 06.40 WIB Sen-Sab: susulan, sesi kemarin masih tersimpan sampai sesi berikutnya dibuka
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "selftest = 3 panggilan uji (termasuk uji parameter tanggal) lalu berhenti; isi = unduh"
+        type: choice
+        options: [selftest, isi]
+        default: selftest
+      cadangan:
+        description: "Berhenti bila sisa kuota <= angka ini"
+        default: "1000"
+permissions:
+  contents: read
+concurrency:
+  group: m15-harian
+  cancel-in-progress: false
+jobs:
+  ambil:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
+      REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+          sparse-checkout: |
+            tools/backfill
+            tools/broksum
+            universe.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Ambil cabang m15-harian (buat baru bila belum ada)
+        run: |
+          if git ls-remote --exit-code "$REPO_PRIVAT" refs/heads/m15-harian >/dev/null; then
+            git clone -q --depth 1 --branch m15-harian "$REPO_PRIVAT" out
+          else
+            mkdir out && cd out && git init -q -b m15-harian && git remote add origin "$REPO_PRIVAT"
+          fi
+      - name: Uji awal
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'selftest'
+        run: python main/tools/m15/m15_edge.py --universe main/universe.json --out out --selftest
+      - name: Unduh bar 15 menit
+        if: github.event_name == 'schedule' || github.event.inputs.mode == 'isi'
+        run: python main/tools/m15/m15_edge.py --universe main/universe.json --out out --cadangan "${{ github.event.inputs.cadangan || '1000' }}"
+      - name: Simpan ke m15-harian (hanya bila berubah)
+        if: always() && (github.event_name == 'schedule' || github.event.inputs.mode == 'isi')
+        run: |
+          cd out
+          [ -f README.md ] || cp ../main/tools/m15/README.md README.md
+          git config user.name "Robot M15"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "m15-harian $(date -u +%Y-%m-%d)"
+          git push -q origin HEAD:m15-harian

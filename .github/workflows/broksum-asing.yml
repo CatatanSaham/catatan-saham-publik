@@ -2,8 +2,15 @@
 # Kode: repo privat catatan-saham-mtf tools/backfill/broksum_backfill.py (diambil memakai PRIVAT_TOKEN).
 # Daftar saham per tanggal dari ZIP harian pemilik (cabang privat apk-data). Hasil ke cabang privat `broksum-asing`.
 # Log repo ini publik: skrip hanya mencetak jumlah dan tanggal, tidak pernah data broker.
+# 17 Nov 2026: jalan otomatis setelah robot broksum harian selesai. Daftar saham dari hasil robot broksum harian (cabang broksum-harian)
+# digabung ZIP pemilik, jadi tetap jalan walau pemilik berhenti unggah. Hanya hari yang belum ada (10 hari terakhir).
 name: Broksum asing per broker (IDX Edge)
 on:
+  # Langsung setelah robot broksum harian selesai (sore ±18.10 WIB dan susulan pagi 06.30 WIB),
+  # supaya asing per broker sejalan dengan broksum harian.
+  workflow_run:
+    workflows: ["Robot broksum harian (IDX Edge)"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       mode:
@@ -45,6 +52,13 @@ jobs:
           ref: apk-data
           path: data
           sparse-checkout: apk-data/harian
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: broksum-harian
+          path: robot
+          sparse-checkout: harian
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - name: Ambil cabang broksum-asing (buat baru bila belum ada)
@@ -55,12 +69,16 @@ jobs:
             mkdir out && cd out && git init -q -b broksum-asing && git remote add origin "$REPO_PRIVAT"
           fi
       - name: Uji awal (1 panggilan, acuan BBCA 16 Nov)
+        if: github.event_name == 'workflow_dispatch'
         run: python main/tools/backfill/broksum_backfill.py --flow F --out out --harian data/apk-data/harian --selftest
+      - name: Ambil asing per broker (jadwal harian)
+        if: github.event_name == 'workflow_run'
+        run: python main/tools/backfill/broksum_backfill.py --flow F --folder bfa --harian data/apk-data/harian --robot robot/harian --out out --hari-mundur 10 --maks 2000 --cadangan 1500
       - name: Ambil asing per broker
-        if: github.event.inputs.mode != 'selftest'
-        run: python main/tools/backfill/broksum_backfill.py --flow F --folder bfa --harian data/apk-data/harian --out out --mulai "${{ github.event.inputs.mulai }}" --sampai "${{ github.event.inputs.sampai }}" --maks "${{ github.event.inputs.maks }}" --cadangan "${{ github.event.inputs.cadangan }}"
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode != 'selftest'
+        run: python main/tools/backfill/broksum_backfill.py --flow F --folder bfa --harian data/apk-data/harian --robot robot/harian --out out --mulai "${{ github.event.inputs.mulai }}" --sampai "${{ github.event.inputs.sampai }}" --maks "${{ github.event.inputs.maks }}" --cadangan "${{ github.event.inputs.cadangan }}"
       - name: Simpan ke broksum-asing (hanya bila berubah)
-        if: always() && github.event.inputs.mode != 'selftest'
+        if: always() && (github.event_name == 'workflow_run' || github.event.inputs.mode != 'selftest')
         run: |
           cd out
           git config user.name "Broksum Asing"

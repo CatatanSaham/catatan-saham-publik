@@ -4,8 +4,7 @@
 # Log repo ini publik: skrip hanya mencetak jumlah dan kode, tidak pernah angka laporan.
 name: Robot fundamental (IDX Edge)
 on:
-  schedule:
-    - cron: "20 18 * * *"   # 01.20 WIB, setelah isi-mundur broksum (00.10)
+  # Jadwal otomatis dimatikan 18 Nov 2026 atas permintaan pemilik (hemat kuota IDX Edge). Jalankan manual bila perlu.
   workflow_dispatch:
     inputs:
       mode:

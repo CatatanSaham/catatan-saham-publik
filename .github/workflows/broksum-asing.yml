@@ -59,6 +59,14 @@ jobs:
           ref: broksum-harian
           path: robot
           sparse-checkout: harian
+      - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-next
+          path: next
+          sparse-checkout: apk/www/shards
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - name: Ambil cabang broksum-asing (buat baru bila belum ada)
@@ -76,7 +84,7 @@ jobs:
         run: python main/tools/backfill/broksum_backfill.py --flow F --folder bfa --harian data/apk-data/harian --robot robot/harian --out out --hari-mundur 10 --maks 2000 --cadangan 1500
       - name: Ambil asing per broker
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode != 'selftest'
-        run: python main/tools/backfill/broksum_backfill.py --flow F --folder bfa --harian data/apk-data/harian --robot robot/harian --out out --mulai "${{ github.event.inputs.mulai }}" --sampai "${{ github.event.inputs.sampai }}" --maks "${{ github.event.inputs.maks }}" --cadangan "${{ github.event.inputs.cadangan }}"
+        run: python main/tools/backfill/broksum_backfill.py --flow F --folder bfa --harian data/apk-data/harian --robot robot/harian --shards next/apk/www/shards --out out --mulai "${{ github.event.inputs.mulai }}" --sampai "${{ github.event.inputs.sampai }}" --maks "${{ github.event.inputs.maks }}" --cadangan "${{ github.event.inputs.cadangan }}"
       - name: Simpan ke broksum-asing (hanya bila berubah)
         if: always() && (github.event_name == 'workflow_run' || github.event.inputs.mode != 'selftest')
         run: |

@@ -4015,17 +4015,17 @@ try{P.insider=insider;const g=MENU.find(x=>x[0]==='Berita & Katalis');if(g)g[1].
    Permintaan pemilik 17 Nov 2026. Sumber: IDX Edge per kuartal (shards/qk.json, dibuat tools/fundamental/build_kuartal.py),
    HANYA emiten yang Q1+Q2+Q3-nya sama dengan angka 9 bulan PDF pemilik (selisih <= 2%). Rp miliar. */
 (function(){
-let QK=null,QKL=null,RS=null,RSL=null;
+let QK=null,QKL=null,RS=null,RSL=null,TR=null,TRL=null;
 const muat=()=>QKL||(QKL=fetch('shards/qk.json').then(r=>r.json()).then(j=>{QK=j}).catch(()=>{QK={d:{}}}));
 const fm=v=>{const a=Math.abs(v),s=v<0?'−':'';return s+(a>=1000?(a/1000).toLocaleString('id-ID',{maximumFractionDigits:2})+' T':a.toLocaleString('id-ID',{maximumFractionDigits:a>=100?0:1})+' M')};
-function bar(judul,v,lab,pisah){
+function bar(judul,v,lab,pisah,fmt){const F=fmt||fm;
  const n=v.length,W=340,H=170,top=24,bot=30,ada=v.filter(x=>x!=null),mx=Math.max(0,...ada),mn=Math.min(0,...ada),rg=(mx-mn)||1,y=x=>top+(mx-x)/rg*(H-top-bot),slot=W/n,bw=Math.min(52,slot*.72);
  let g=`<line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line)"/>`;
  if(pisah>0&&pisah<n)g+=`<line x1="${slot*pisah}" x2="${slot*pisah}" y1="4" y2="${H-bot+4}" stroke="var(--line)" stroke-dasharray="3 3"/>`;
  v.forEach((x,i)=>{const X=slot*i+(slot-bw)/2,cx=X+bw/2,lama=i<pisah;
   if(x==null){g+=`<text x="${cx}" y="${y(0)-4}" text-anchor="middle" font-size="10" fill="var(--mute)">—</text>`}
   else{const y0=y(0),y1=y(x),c=x>=0?'var(--up)':'var(--dn)';
-   g+=`<rect x="${X}" y="${Math.min(y0,y1)}" width="${bw}" height="${Math.max(1,Math.abs(y1-y0))}" rx="3" fill="${c}" opacity="${lama?.45:.9}"/><text x="${cx}" y="${x>=0?y1-4:y1+11}" text-anchor="middle" font-size="${n>4?8.5:11}" font-weight="700" fill="var(--ink)">${fm(x)}</text>`}
+   g+=`<rect x="${X}" y="${Math.min(y0,y1)}" width="${bw}" height="${Math.max(1,Math.abs(y1-y0))}" rx="3" fill="${c}" opacity="${lama?.45:.9}"/><text x="${cx}" y="${x>=0?y1-4:y1+11}" text-anchor="middle" font-size="${n>4?8.5:11}" font-weight="700" fill="var(--ink)">${F(x)}</text>`}
   g+=`<text x="${cx}" y="${H-16}" text-anchor="middle" font-size="10" fill="var(--mute)">${lab[i][0]}</text><text x="${cx}" y="${H-5}" text-anchor="middle" font-size="9" fill="var(--mute)">${lab[i][1]}</text>`});
  const pr=(a,b)=>a==null||b==null||a===0?null:(a<0&&b<0?null:(b-a)/Math.abs(a)*100);
  const t=p=>p==null?'—':`<span class="${p>=0?'up':'dn'}">${p>=0?'+':''}${p.toLocaleString('id-ID',{maximumFractionDigits:1})}%</span>`;
@@ -4039,6 +4039,21 @@ function isi(id,c){const el=document.getElementById(id);if(!el)return;const r=QK
  const P=seri(0),Lb=seri(1);
  el.innerHTML=`<div class="card"><b>Per kuartal 2025–2026</b><div class="mu" style="font-size:12px">Pendapatan dan laba tiap kuartal (bukan kumulatif), Rp miliar (M) / triliun (T). Batang pudar = 2025. Angka hanya tampil bila jumlah kuartalnya cocok dengan laporan 9 bulan/tahunan; "—" = tidak lolos atau tidak ada.</div>${P?bar('Pendapatan',P.v,P.lab,4):''}${Lb?bar('Laba bersih (pemilik induk)',Lb.v,Lb.lab,4):''}</div>`}
 const muatR=()=>RSL||(RSL=fetch('shards/rasio.json').then(r=>r.json()).then(j=>{RS=j}).catch(()=>{RS={d:{}}}));
+const muatT=()=>TRL||(TRL=fetch('shards/trend.json').then(r=>r.json()).then(j=>{TR=j}).catch(()=>{TR={d:{}}}));
+/* Tren per kuartal (17 Nov 2026): EPS kuartal, ROE/ROA (laba kuartal x 4), NPM, DER; dibuat tools/fundamental/build_trend.py. */
+function trendKartu(c){const t=TR&&TR.d&&TR.d[c];if(!t)return'';
+ const lab=[['Q1','2025'],['Q2','2025'],['Q3','2025'],['Q4','2025'],['Q1','2026'],['Q2','2026'],['Q3','2026']],S=(v,d=1)=>v==null?'—':v.toLocaleString('id-ID',{maximumFractionDigits:d,minimumFractionDigits:d});
+ const fe=v=>v.toLocaleString('id-ID',{maximumFractionDigits:Math.abs(v)>=100?0:1});
+ const sel=(a,b)=>a==null||b==null?null:b-a;
+ const dl=(x,u)=>x==null?'—':`<span class="${x>=0?'up':'dn'}">${x>=0?'+':'−'}${Math.abs(x).toLocaleString('id-ID',{maximumFractionDigits:2})}${u}</span>`;
+ let h='';
+ if(t.eps&&t.eps.some(x=>x!=null)){const e=t.eps,pr=(a,b)=>a==null||b==null||a<=0||b<=0?null:(b-a)/a*100,pc=p=>p==null?'—':`<span class="${p>=0?'up':'dn'}">${p>=0?'+':''}${p.toLocaleString('id-ID',{maximumFractionDigits:1})}%</span>`;
+  h+=bar('EPS per kuartal (Rp/saham)',e,lab,4,fe).replace(/<div class="mu"[^>]*>.*?<\/div><\/div>$/,`<div class="mu" style="font-size:12px">Q3 2026 vs Q2 2026 ${pc(pr(e[5],e[6]))} · vs Q3 2025 ${pc(pr(e[2],e[6]))}</div></div>`)}
+ const R=[['roe','ROE (×4)',1,'%'],['roa','ROA (×4)',1,'%'],['npm','NPM',1,'%'],['der','DER',2,'×']].filter(r=>t[r[0]]&&t[r[0]].some(x=>x!=null));
+ if(R.length){h+=`<div style="margin-top:10px"><b>Rasio per kuartal</b><div style="overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:10.5px;margin-top:4px"><tr><th style="text-align:left;width:19%;background:none"></th>${lab.map(l=>`<th style="font-weight:600;color:var(--mute);padding:2px 0;background:none">${l[0]}<br>${l[1].slice(2)}</th>`).join('')}</tr>${R.map(r=>`<tr style="border-top:1px solid var(--line)"><td style="padding:5px 2px 5px 0"><b>${r[1]}</b></td>${t[r[0]].map((x,i)=>`<td style="text-align:center;padding:5px 0;${i>3?'font-weight:700':'opacity:.8'}">${S(x,r[2])}</td>`).join('')}</tr>`).join('')}</table></div>
+  <div class="mu" style="font-size:12px;margin-top:6px">${R.map(r=>`${r[1].replace(' (×4)','')}: vs Q2 ${dl(sel(t[r[0]][5],t[r[0]][6]),r[3]==='%'?' poin':'×')} · vs Q3 2025 ${dl(sel(t[r[0]][2],t[r[0]][6]),r[3]==='%'?' poin':'×')}`).join('<br>')}</div></div>`}
+ if(!h)return'';
+ return `<div class="card"><b>Tren per kuartal</b><div class="mu" style="font-size:12px">EPS kuartal = laba induk kuartal ÷ jumlah saham. ROE dan ROA = laba kuartal × 4 ÷ ekuitas induk / aset akhir kuartal (bukan rata-rata). DER = utang ÷ ekuitas. Batang/kolom pudar = 2025; "—" = datanya belum ada atau tidak lolos pengecekan. Catatan analisis, bukan rekomendasi.</div>${h}</div>`}
 /* Rasio tambahan (17 Nov 2026): dihitung tools/fundamental/build_rasio.py dari laporan keuangan; harga dari kartu Q3 (harga terbaru). */
 function rasioKartu(c,q){const r=RS&&RS.d&&RS.d[c];if(!r)return'';const px=q&&q.px>0?q.px:null,x=(v,d=2)=>v==null?'—':v.toLocaleString('id-ID',{maximumFractionDigits:d});
  const per=px&&r.eps_ttm>0?px/r.eps_ttm:null,psr=px&&r.sps_ttm>0?px/r.sps_ttm:null,yl=px&&r.dps>=0&&r.dps!=null?r.dps/px*100:null;
@@ -4056,7 +4071,7 @@ window.qkSiap=()=>muat();
 window.qkTeks=function(c){const a=QK&&QK.d25&&QK.d25[c],b=QK&&QK.d&&QK.d[c];if(!a&&!b)return QK?'=== Per kuartal '+c+' ===\nTidak ditampilkan (data kuartal tidak ada atau tidak cocok dengan laporan 9 bulan/tahunan).\n':'';
  const f=(L,lab)=>L?L.map((v,i)=>lab[i]+' '+(v==null?'—':fm(v))).join(', '):'—',L5=['Q1 2025','Q2 2025','Q3 2025','Q4 2025'],L6=['Q1 2026','Q2 2026','Q3 2026'];
  return '=== Per kuartal '+c+' (tiap kuartal, bukan kumulatif; M = miliar, T = triliun; "—" = tidak lolos pengecekan) ===\nPendapatan: '+f(a&&a[0],L5)+'; '+f(b&&b[0],L6)+'\nLaba bersih pemilik induk: '+f(a&&a[1],L5)+'; '+f(b&&b[1],L6)+'\n'};
-window.fdKw=function(c,q){const id='fdkw'+Math.random().toString(36).slice(2,8),id2=id+'r',go=()=>{isi(id,c);const e=document.getElementById(id2);if(e)e.innerHTML=rasioKartu(c,q)};Promise.all([QK?0:muat(),RS?0:muatR()]).then(()=>setTimeout(go,0));return `<div id="${id}"></div><div id="${id2}"></div>`};
+window.fdKw=function(c,q){const id='fdkw'+Math.random().toString(36).slice(2,8),id2=id+'r',go=()=>{isi(id,c);const e=document.getElementById(id2);if(e)e.innerHTML=trendKartu(c)+rasioKartu(c,q)};Promise.all([QK?0:muat(),RS?0:muatR(),TR?0:muatT()]).then(()=>setTimeout(go,0));return `<div id="${id}"></div><div id="${id2}"></div>`};
 })();
 </script>
 <script>

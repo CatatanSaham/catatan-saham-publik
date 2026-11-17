@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-16 17:59 WIB",
- "baru": 5,
+ "upd": "2026-11-17 17:36 WIB",
+ "baru": 8,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -9,19 +9,79 @@
   "CNBC Indonesia: 100",
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 15",
-  "Google Berita: 3",
   "Google Berita: 12",
-  "Google Berita: 16",
-  "Google Berita: 1",
+  "Google Berita: 5",
+  "Google Berita: 28",
+  "Google Berita: 24",
   "Google Berita: 7",
-  "Google Berita: 20",
-  "Google Berita: 22",
-  "Google Berita: 10",
+  "Google Berita: 18",
+  "Google Berita: 25",
+  "Google Berita: 27",
+  "Google Berita: 15",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "Cakrawala Nexus Akuisisi 29,87% Saham INET Senilai Rp 2 Triliun",
+   "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxPejZ1dWtZNF9SWWJzbW1saE5XSWMzcTFHcFNyRmJ1X1BTa1QwMTBxOHVNOEs3T1cxaGI1NVZOeVFqRWJ0eDZvbFd5dF9mRkVHSjZGamtxNGZvOVc2TWM3aVpxRG5rVFdDb21haVBYT0ZpdWlZZUZ2UG8xcUV2aUZCWXk5UU9BOFRTUW5pWEZzWHdqVTFockdjdkI0Y202QdIBlgFBVV95cUxPQmJ5eER6RzUxNjhMRS0wcl9IRnlJbWMyVTZVaE5ueGlRXzNaaUQ0OGxCUmtxbmdTN18xWnJUdU96c1A3NFdiS0JtRThhN3U5NGMtRkdEQVIwUW9RVGlreGxkcmxrcEVrRk5zSDJyTDVQc1k4UWYyT1EtbERrVU16dXFjUXhmUUVzSldhZnVXOTFzTXRpZkE?oc=5",
+   "src": "kontan.co.id",
+   "ts": 1794906357,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "INET"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-17 17:36"
+  },
+  {
+   "t": "Bank Kasikorn (BMAS) Rights Issue 2,87 Miliar Saham, Incar Dana Rp1T",
+   "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQSFFTeS1QSUlBaW5fc2tWOE9sZWhTdEVHdXRvYm1rNExlWkVYS3JIWVhVX0FwMlpYVUl4aVI3dU9DcVF0bU1kbkhleVhZNFdYVXZCUkJZR04zamlIQkJaM0tHZS1TUmE1bUFvTTZodDRETG0tVlJZMnFxdUx4NHktd1l1MmkxUjZrY2gyWEZSc2NtTUJGVnNYR1ZCa1A?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794901860,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "BMAS"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-17 17:36"
+  },
+  {
+   "t": "IGAR Gelar RUPSLB 9 Desember 2026, Minta Restu Delisting Saham - Bisnis.com",
+   "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOMkdRTGRPbGVkWk5YdlpmSEJJbHF4RC1lUm1RdEg1dDAyNXBWVU9uQ3Q2RnQycmpQYnB0aURzeG9pclliNUI2amhfRHJWR0lVYWk1SHhNY2w3RWNud1BXS3J4ZVpmYk9Dc0l1ZE04aG9NM2F3Q1lVM2NOUG82azJKOHhWSmtLWFRxZzNOTG5ZQ0s4QmpHVkFPT2RwZU1nUVdxLUJRMktZX1Q5RTZjcVVCWjl1Yw?oc=5",
+   "src": "Bisnis.com - Market",
+   "ts": 1794897397,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "IGAR"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-17 17:36"
+  },
+  {
+   "t": "Right Issue 22,02 Miliar Saham, Aset GMFI Bakal Meledak Signifikan",
+   "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPNVRyQUJMejJVaWJQVlJhVklYUldFSVhwaWRmUzZKMDk3ZlhXM1FaVzNCc1RfNEJ3b2tkTDBWbkJVMFFvRGVDeGE4dkJtRFZSUXo4WkJqbG9BUzdlTlRsYUptdXh2MW1yMVB0OVNTZ3VzbEdFWmx1aXlYUGs1cUdyWDkyZFpPMU5ldTFna2xhMTcxR05NVjF3?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1794870000,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "GMFI"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-17 17:36"
+  },
+  {
+   "t": "Nawasena Ambil Alih 66,58 Persen Saham IDEA",
+   "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE1WT2VOUExTYmNWWmJzckNGeks0bTM1amxJYzdEcUYyY2lham1Jc29nRjZnMzN4Y2duNmZpSkUzclIzTlhLbHM4MWN4dU9KQk1QS0picmI3UGNfN1p3VU51VDBkUWo?oc=5",
+   "src": "Limapagi",
+   "ts": 1794826648,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "IDEA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-17 17:36"
+  },
   {
    "t": "RUPSLB Setujui Nawasena Ambil Alih 66,58 Persen Saham Idea Indonesia Akademi",
    "link": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQekhSMWlrUXIwOWJUNGFtU0JFZ0lxYzVrV0NMUF9GOE1vN3BMa0RDMDN4bUYwODROZWNuZmpsVFVGZWx4eHBFQ3d6UjE3bzlrY3VxVGF4eHdub0ZDSVRiNGZMREY4X0RCWXhBUmNEd2VFU1J3cnR5VndGX1FnMEZ2T3oxQWN3dVJGZHU4bWJMR1BFU3ZRdDZ5a0lFV2Jld2tpcU5jMGxwaC1WajJ2RXJHSWxIQkhUVGtzNzNTMUVad0x3ZGFp?oc=5",
@@ -55,6 +115,40 @@
    ],
    "impact": "Tinggi",
    "found": "2026-11-16 17:59"
+  },
+  {
+   "t": "Dividen Interim DMAS Rp1,39 Triliun Cair Hari Ini, Rp29 per Saham Masuk ke RDN",
+   "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNOWZNV3pGSFFFaEk4aXJ1YWpaR0ZPUVoxTEhBRkRPampHLWxlRmZ0RGpoQmxTdTR5NjZ2WHFZV0FtQWZoQU5EN2NoMHFJTEI0TVJvRGFXLTdHdDNkLTk5VGhLamR2cklxZHp6ZG5rWjA3dks3VEtvVGstaTNOUE1TZmYyQVhORjl0blVUWW5DYmxSX1dZeHkyM2tQRzE0X1YwUkJTRVhpRHRyUHJKV0pvdVVOMA?oc=5",
+   "src": "NNC Netralnews",
+   "ts": 1794808800,
+   "cat": "Buyback / dividen",
+   "k": [
+    "DMAS"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-17 17:36"
+  },
+  {
+   "t": "Hassana Boga (NAYZ) Tender Offer Wajib Terserap 193,93 Juta Saham",
+   "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNZm1fOHhabFBCSzJTVzBNdW40aFphY1dNZjNwLWhLR0YxSXJRd2JLcU9nWXFoVXpTZTdTVmNhMmswa0pUNDZqNGMyenZRY0FGdDRQMEFyeGhPQ3hpQzFXSlNpbFQzcXZjYVA0aFFNRTJqVVVvM3BHd0lWZFpNZjBBOXhiNi02Y2xiNG5F?oc=5",
+   "src": "Periskop.id",
+   "ts": 1794808200,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "NAYZ"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-17 17:36"
+  },
+  {
+   "t": "Franky Widjaja Jadi Beneficial Owner, Akhirnya Ketrosden Triasmitra Resmi Punya Pengendali Baru",
+   "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOMWkwdXhITEsyX0lhNDNlYWVlTHlTMmx2bS0xVHUxSlpSZEFwUmlPOU1vRUFFNnJ0SnBFV3I0ekVDZHJpLWgwRUx6eThuRlBlM19vVnBJUkVqSnFKRDhmN09LMDd3NTVWMnBlODkwbjBWMkhrOGh0TUkzbE5iWFpwamtHdFVmVWxjZlh6dGlVMVdSaVRpSTdxMXcwQlZqZFZkU3RiaTNDTU01bnFfc0hrcjRLVmY?oc=5",
+   "src": "EGINDO",
+   "ts": 1794800277,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-17 17:36"
   },
   {
    "t": "JP Morgan Soroti Prospek Saham ICBP, Pertumbuhan Laba dan Buyback Rp1,75 Triliun Jadi Katalis Investor - Hallo Emiten",

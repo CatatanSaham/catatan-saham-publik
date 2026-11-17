@@ -501,7 +501,7 @@ return `<div class="brand">CATATAN SAHAM · TRANSAKSI ASING</div><h1>Foreign Flo
 <div class="g2"><div class="st"><span class="mu">Net 5 tanggal terakhir</span><b class="${cl(l5)}" style="font-size:22px">${l5>=0?'+':'−'}${lot(Math.abs(l5))}</b></div><div class="st"><span class="mu">Net 20 tanggal terakhir</span><b class="${cl(l20)}" style="font-size:22px">${l20>=0?'+':'−'}${lot(Math.abs(l20))}</b></div><div class="st"><span class="mu">Tanggal net beli / net jual</span><b style="font-size:22px">${nb} / ${ns}</b></div><div class="st"><span class="mu">Porsi beli dari beli + jual asing</span><b style="font-size:22px">${N(porsi,1)}%</b></div><div class="st"><span class="mu">Harga terakhir</span><b style="font-size:22px">Rp${N(p1||0)}</b></div><div class="st"><span class="mu">Perubahan harga periode</span><b class="${cl(ch)}" style="font-size:22px">${sg(ch)}%</b></div></div>
 <div class="note"><b>${head}</b><br>Net periode ${net>=0?'beli':'jual'} ${lot(Math.abs(net))}; 5 tanggal terakhir ${l5>=0?'net beli':'net jual'} ${lot(Math.abs(l5))}, 20 tanggal terakhir ${l20>=0?'net beli':'net jual'} ${lot(Math.abs(l20))}. Harga ${ch>=0?'naik':'turun'} ${N(Math.abs(ch),2)}% (Rp${N(p0||0)} → Rp${N(p1||0)}).<br><small class="mu">Kesimpulan ini khusus dukungan foreign, bukan kepastian harga berikutnya. Riwayat asing perlu dibaca bersama harga, broker, dan katalis emiten.</small></div>
 <svg viewBox="0 0 ${W} ${Hh}" style="width:100%"><line x1="34" x2="${W-34}" y1="${8+(mx-0)/((mx-mn)||1)*(Hh-26)}" y2="${8+(mx-0)/((mx-mn)||1)*(Hh-26)}" stroke="var(--line)"/><polyline points="${pxy}" fill="none" stroke="var(--up)" stroke-width="1.8"/><polyline points="${xy}" fill="none" stroke="#c0527a" stroke-width="2"/><text x="${W-32}" y="14" font-size="9" fill="var(--up)">${N(pmx)}</text><text x="${W-32}" y="${Hh-14}" font-size="9" fill="var(--up)">${N(pmn)}</text><text x="2" y="14" font-size="9" fill="var(--mute)">${lot(mx)}</text><text x="2" y="${Hh-14}" font-size="9" fill="var(--mute)">${lot(mn)}</text><text x="34" y="${Hh-2}" font-size="9" fill="var(--mute)">${fd(rng[0]).slice(0,5)}</text><text x="${W-70}" y="${Hh-2}" font-size="9" fill="var(--mute)">${fd(rng.at(-1)).slice(0,5)}</text></svg><div class="mu"><b style="color:#c0527a">━ Net asing kumulatif (lot, sumbu kiri)</b> · <b style="color:var(--up)">━ Harga close (sumbu kanan)</b>. Kumulatif dimulai dari nol sebelum tanggal awal periode; bukan total kepemilikan asing; data harian bukan transaksi intraday.</div>
-${alBlk}<details class="det"><summary>Rincian beli / jual per bulan</summary>${tbl(['Bulan','Beli asing','Jual asing','Net asing','Tanggal beli/jual','Harga %'],Object.entries(mo).map(([k,o])=>`<tr><td>${BLs[+k.slice(4)-1]} ${k.slice(0,4)}<br><small class="mu">${fd(o.a).slice(0,5)} – ${fd(o.z).slice(0,5)}</small></td><td class="up">${lot(o.b)}</td><td class="dn">${lot(o.s)}</td><td class="${cl(o.n)}">${lot(o.n)}</td><td>${o.nb}/${o.ns}</td><td class="${cl(o.c1-o.c0)}">${o.c0?sg((o.c1/o.c0-1)*100)+'%':'—'}</td></tr>`))}</details>
+${window.asingBlk?window.asingBlk(tkr,f0,f1):''}${alBlk}<details class="det"><summary>Rincian beli / jual per bulan</summary>${tbl(['Bulan','Beli asing','Jual asing','Net asing','Tanggal beli/jual','Harga %'],Object.entries(mo).map(([k,o])=>`<tr><td>${BLs[+k.slice(4)-1]} ${k.slice(0,4)}<br><small class="mu">${fd(o.a).slice(0,5)} – ${fd(o.z).slice(0,5)}</small></td><td class="up">${lot(o.b)}</td><td class="dn">${lot(o.s)}</td><td class="${cl(o.n)}">${lot(o.n)}</td><td>${o.nb}/${o.ns}</td><td class="${cl(o.c1-o.c0)}">${o.c0?sg((o.c1/o.c0-1)*100)+'%':'—'}</td></tr>`))}</details>
 <details class="det"><summary>Rincian transaksi harian · tanggal terbaru di atas</summary>${tbl(['Tanggal','Asing beli','Asing jual','Asing net','Lokal beli','Lokal jual','Lokal net','Close'],ser.slice().reverse().map(r=>`<tr><td>${ld(r.d)}</td><td class="up">${N(r.b)}</td><td class="dn">${N(r.b-r.n)}</td><td class="${cl(r.n)}">${N(r.n)}</td>${r.ok?`<td class="up">${N(r.lb)}</td><td class="dn">${N(r.ls)}</td><td class="${cl(r.lb-r.ls)}">${N(r.lb-r.ls)}</td>`:'<td colspan="3" class="na">Belum tersedia</td>'}<td>${N(r.c)}</td></tr>`))}</details></div>
 <div class="card" id="fflist"><div style="display:flex;gap:8px"><input class="sel" id="qfs" value="${q}" placeholder="Cari kode / nama perusahaan" style="margin:0"><select class="sel" data-sk="ff" style="margin:0;width:46%">${['Semua','Net beli asing','Net jual asing','Net nol'].map(o=>`<option${o===flt?' selected':''}>${o}</option>`).join('')}</select></div><select class="sel" data-sk="fo">${['Net asing terbesar','Net asing terendah','Kenaikan harga terbesar','Kode saham A–Z'].map(o=>`<option${o===srt?' selected':''}>${o}</option>`).join('')}</select><div class="mu">${M.length} dari ${L.length} saham · ${M.length?`urutan ${S.fpg*PGN+1}–${Math.min(M.length,(S.fpg+1)*PGN)}`:'tidak ada hasil'} · satuan lot</div>
 <div class="clist">${M.slice(S.fpg*PGN,(S.fpg+1)*PGN).map(x=>`<div class="cr"><div class="c1"><span class="tk">${x.t}</span><span class="c2" style="margin:0">${esc((NM[x.t]||'').slice(0,22))}</span><b class="${cl(x.n)}" style="margin-left:auto;font-size:16px">${x.n>0?'+':''}${N(x.n)}</b></div><div class="c2">Beli <span class="up">${N(x.b)}</span> · Jual <span class="dn">${N(x.s)}</span> lot</div></div>`).join('')}</div><div class="ffpg"><button class="btn" data-fpg="-1"${S.fpg<=0?' disabled':''}>‹ Sebelumnya</button><span class="mu">Hal ${S.fpg+1} / ${NP}</span><button class="btn" data-fpg="1"${S.fpg>=NP-1?' disabled':''}>Berikutnya ›</button></div></div>`}
@@ -2781,9 +2781,9 @@ const pts=v.map((a,i)=>x(i).toFixed(1)+','+y(a).toFixed(1)).join(' ');
 return `<svg viewBox="0 0 ${W} ${H}" style="width:100%"><polygon points="${x(0)},${H-B} ${pts} ${x(s.length-1)},${H-B}" style="fill:${col};opacity:.12"/><polyline fill="none" style="stroke:${col}" stroke-width="2" points="${pts}"/>
 <text x="${W-R+4}" y="${y(mx)+3}" font-size="9" fill="var(--mute)">${N(mx)}</text><text x="${W-R+4}" y="${y(mn)+3}" font-size="9" fill="var(--mute)">${N(mn)}</text><text x="${L}" y="${H-5}" font-size="9" fill="var(--mute)">${fd(s[0].d).slice(0,5)}</text><text x="${W-R}" y="${H-5}" font-size="9" text-anchor="end" fill="var(--mute)">${fd(s.at(-1).d).slice(0,5)}</text></svg>`}
 function hub(){const c=hubSync();setTimeout(()=>{const e=$('#hq');if(e)e.onchange=ev=>{const v=ev.target.value.trim().toUpperCase();if(v){S.hq=v;S.hs=null;render()}}},0);
-const t=['r','b','a','d','f','n','p'].includes(S.ht)?S.ht:'r',SR=hubSer(c),la=SR.at(-1),pv=SR.length>1?SR.at(-2).c:(la?la.p:null),ch=la&&pv?la.c-pv:null,pc=ch!=null&&pv?ch/pv*100:null;
+const t=['r','b','a','i','d','f','n','p'].includes(S.ht)?S.ht:'r',SR=hubSer(c),la=SR.at(-1),pv=SR.length>1?SR.at(-2).c:(la?la.p:null),ch=la&&pv?la.c-pv:null,pc=ch!=null&&pv?ch/pv*100:null;
 const hd=`<div class="brand">SAHAM</div><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><input id="hq" class="sel" value="${esc(c)}" maxlength="6" autocapitalize="characters" aria-label="Kode saham" style="font-size:20px;font-weight:700;width:130px;margin:0"><div class="mu" style="margin-top:4px">${esc(NM[c]||'')}</div>${SEC[c]?`<div class="mu" style="font-size:12px">${esc(SEC[c])}</div>`:''}</div>${la?`<div style="text-align:right"><div style="font-size:24px;font-weight:700">${N(la.c)}</div><div class="${cl(ch)}">${ch>0?'+':''}${N(ch||0)} (${pc>0?'+':''}${N(pc||0,2)}%)</div><div class="mu" style="font-size:11px">${fd(la.d)}</div></div>`:''}</div>`;
-const tabs=chips([['r','Ringkasan'],['b','Broker'],['a','Asing'],['d','Data'],['f','Fundamental'],['n','Analisa'],['p','Profil']],t,'ht');
+const tabs=chips([['r','Ringkasan'],['b','Broker'],['a','Asing'],['i','Insider'],['d','Data'],['f','Fundamental'],['n','Analisa'],['p','Profil']],t,'ht');
 if(!SR.length)return hd+tabs+`<div class="card">Kode ${esc(c)} tidak ditemukan di data harian.</div>`;
 let body='';
 if(t==='r'){const rg=['21','63','all'].includes(String(S.hr))?String(S.hr):'63',s=rg==='all'?SR:SR.slice(-(+rg)),hi=Math.max(...s.map(r=>r.c)),lo=Math.min(...s.map(r=>r.c)),pcg=s.length>1?(s.at(-1).c/s[0].c-1)*100:null;
@@ -2792,6 +2792,7 @@ body=`<div class="card">${hubLine(SR,rg==='all'?'all':+rg)}${chips([['21','1 bln
 <div class="row"><button class="btn on" data-go="chart">Buka chart lengkap</button><button class="btn" data-go="agambar">Analisa Gambar</button></div><div class="mu" style="font-size:12px">Chart lengkap berisi candlestick, MA/EMA, RSI, dan MACD. Tombol Kembali membawa Anda ke halaman ini.</div>`}
 else if(t==='b'){const sb=['b','j','s'].includes(S.hbs)?S.hbs:'b';body=chips([['b','Bandarmologi'],['j','Jejak Broker'],['s','Net per Broker']],sb,'hbs')+'<div class="hubin">'+hubStrip(sb==='b'?bdmStock():sb==='j'?jejak():bsaham())+'</div>'}
 else if(t==='a')body=hubStrip(fnb());
+else if(t==='i')body=window.insiderBlk?insiderBlk(c):'';
 else if(t==='d'){const m=['d','w','m'].includes(S.hdm)?S.hdm:'d',R=hubAgg(SR,m).slice(0,60);body=chips([['d','Harian'],['w','Mingguan'],['m','Bulanan']],m,'hdm')+tbl(['Tanggal','Close','Ubah','Nilai'],R.map(r=>`<tr><td>${m==='d'?r.d:(m==='w'?'Mgg ':'')+r.d}</td><td>${N(r.c)}</td><td class="${cl(r.g)}">${r.g==null?'—':sg(r.g)+'%'}</td><td>${rp(r.a*1e6)}</td></tr>`))+'<div class="mu" style="font-size:12px">Mingguan dan bulanan: close terakhir periode, ubah terhadap harga sebelumnya periode itu, nilai = jumlah nilai transaksi.</div>'}
 else if(t==='f')body=fdStock(c);
 else if(t==='n')body=hubStrip(ai());
@@ -3884,6 +3885,98 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script></body></html>
 
+<script>
+/* ===== Asing per Broker di halaman Foreign Flow Harian (admin + Non Admin, APK + web) =====
+   Permintaan pemilik 17 Nov 2026: broker asing (robot IDX Edge, flow=F) tampil di Foreign Flow Harian, di atas "Asing vs Lokal",
+   dan juga di Non Admin tanpa menambah ukuran APK. Data TIDAK tertanam: diminta per saham ke Worker
+   (CSW + /app/api/asing/KODE?dari=&sampai=), yang membaca cabang privat broksum-asing. Server mengirim hanya hasil 15 broker teratas.
+   Menyediakan window.asingBlk(kode,dari,sampai) -> HTML (dipanggil fnb() di 01-script1.js). */
+(function(){
+const HS={},tgl=d=>d?d.slice(6,8)+'/'+d.slice(4,6)+'/'+d.slice(0,4):'';
+const rp=v=>{const a=Math.abs(v),s=v<0?'−':'';const f=(x,k)=>x.toLocaleString('id-ID',{maximumFractionDigits:k,minimumFractionDigits:k});return s+(a>=1e12?'Rp '+f(a/1e12,2)+' T':a>=1e9?'Rp '+f(a/1e9,2)+' M':'Rp '+f(a/1e6,1)+' jt')};
+const nf=v=>Math.round(v).toLocaleString('id-ID');
+const segar=()=>{if(typeof S!=='undefined'&&(S.p==='fnb'||S.p==='own'||S.p==='saham'))render()};
+async function ambil(kode,f0,f1,k){try{const r=await fetch(CSW+'/app/api/asing/'+encodeURIComponent(kode)+'?dari='+f0+'&sampai='+f1,{headers:{'X-CS-Device':csDev()}});let j=null;try{j=await r.json()}catch(e){}
+  if(!r.ok||!j||!j.ok)throw new Error(r.status===429?'Batas permintaan tercapai. '+((j&&j.error)||'Coba lagi nanti.'):(j&&j.error)||'Server data tidak bisa dihubungi.');HS[k]=j}
+ catch(e){HS[k]={err:e.message||String(e)};setTimeout(()=>{if(HS[k]&&HS[k].err)delete HS[k]},3e4)}
+ segar()}
+function tabel(judul,kelas,L,n,sisiBeli){const rows=L.map(([b,bv,sv,bl,sl])=>{const net=bv-sv,lot=sisiBeli?bl:sl,avg=lot?(sisiBeli?bv:sv)/(lot*100):0;
+  return `<tr><td><b>${esc(b)}</b></td><td class="${kelas}">${rp(sisiBeli?net:-net)}</td><td>${nf(lot)}</td><td>${nf(avg)}</td></tr>`}).join('');
+ return `<div class="card"><b class="${kelas}">${judul}</b><div class="mu" style="font-size:12px">${n} broker${n>L.length?' · '+L.length+' teratas':''}</div><table style="width:100%;font-size:13px"><tr style="text-align:left"><th>Broker</th><th>Net</th><th>Lot ${sisiBeli?'beli':'jual'}</th><th>AVG</th></tr>${rows||'<tr><td colspan="4" class="mu">Tidak ada.</td></tr>'}</table></div>`}
+window.asingBlk=function(kode,f0,f1){
+ const kar=h=>`<div class="card" style="margin:12px 0"><b style="font-size:17px">Asing per Broker · ${esc(kode)}</b>${h}</div>`;
+ if(typeof CSW==='undefined'||typeof csDev!=='function')return'';
+ const k=kode+'|'+f0+'|'+f1,j=HS[k];
+ if(!j){HS[k]={muat:1};ambil(kode,f0,f1,k);return kar('<div class="mu">Memuat broker asing…</div>')}
+ if(j.muat)return kar('<div class="mu">Memuat broker asing…</div>');
+ if(j.err)return kar('<div class="note">'+esc(j.err)+'</div>');
+ const ds=j.hari||[];
+ if(!ds.length)return kar('<div class="mu" style="font-size:12px">Data asing per broker baru ada sejak '+(j.tersedia?tgl(j.tersedia[0]):'2 Nov 2026')+'; tidak ada tanggal yang cocok dengan rentang ini.</div>');
+ if(!j.netBeli.length&&!j.netJual.length)return kar('<div class="mu" style="font-size:12px">Tidak ada transaksi asing '+esc(kode)+' pada periode ini.</div>');
+ const net=j.beli-j.jual;
+ return `<div class="card" style="margin:12px 0"><b style="font-size:17px">Asing per Broker · ${esc(kode)}</b><div class="mu" style="font-size:12px">${ds.length} hari data broker (${tgl(ds[0])} – ${tgl(ds.at(-1))})${j.terpotong?'; dibatasi '+ds.length+' hari terakhir':''}. Beli asing ${rp(j.beli)} · jual asing ${rp(j.jual)}. Hanya transaksi nasabah asing, per broker; bukan rekomendasi.</div><div class="${net>=0?'up':'dn'}" style="font-size:20px;font-weight:800;margin-top:6px">Net asing ${net>=0?'+':''}${rp(net)}</div></div>${tabel('NET BELI ASING','up',j.netBeli,j.nb,true)}${tabel('NET JUAL ASING','dn',j.netJual,j.ns,false)}`};
+})();
+</script>
+<script>
+/* ===== Transaksi Insider (admin + Non Admin, APK + web) =====
+   Permintaan pemilik 17 Nov 2026: data insider robot IDX Edge (direksi, komisaris, pengendali, pemegang besar) masuk aplikasi.
+   Data TIDAK tertanam: diminta ke Worker (CSW) yang membaca cabang privat insider-edge.
+     /app/api/insider/KODE           -> 15 transaksi terbaru satu emiten (tab Insider di halaman Saham)
+     /app/api/insider/_pasar?hari=N  -> seluruh pasar N hari (halaman Transaksi Insider)
+   Angka apa adanya dari laporan; estimasi Rp = |perubahan lembar| x harga transaksi bila harga tercantum. Bukan rekomendasi. */
+(function(){
+const IS={},JN={buy:'Beli',sell:'Jual',transfer:'Pengalihan',cross:'Crossing',right_issue:'Rights issue',warrant_exercise:'Konversi waran',stock_split:'Stock split',mesop_option:'MESOP',msop_option:'MESOP',private_placement:'Private placement',bond_conversion:'Konversi obligasi',capital_reduction:'Pengurangan modal',reverse_split:'Reverse split',stock_dividend:'Dividen saham',stock_bonus:'Saham bonus',merger:'Merger',tender_offer:'Tender offer',unspecified:'Lainnya'};
+const tgl=d=>d?d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4):'';
+const ang=x=>{const t=String(x==null?'':x).replace(/,/g,'').replace('+','').trim();const v=t===''?null:Number(t);return v==null||isNaN(v)?null:v};
+const nf=v=>Math.round(v).toLocaleString('id-ID');
+const rpk=v=>{const a=Math.abs(v);return a>=1e12?'Rp '+(a/1e12).toLocaleString('id-ID',{maximumFractionDigits:2})+' T':a>=1e9?'Rp '+(a/1e9).toLocaleString('id-ID',{maximumFractionDigits:2})+' M':'Rp '+(a/1e6).toLocaleString('id-ID',{maximumFractionDigits:1})+' jt'};
+const kls=j=>j==='buy'?'up':j==='sell'?'dn':'';
+const segar=()=>{if(typeof S!=='undefined'&&(S.p==='saham'||S.p==='insider'))render()};
+async function ambil(path,k){try{const r=await fetch(CSW+'/app/api/insider/'+path,{headers:{'X-CS-Device':csDev()}});let j=null;try{j=await r.json()}catch(e){}
+  if(!r.ok||!j||!j.ok)throw new Error(r.status===429?'Batas permintaan tercapai. '+((j&&j.error)||'Coba lagi nanti.'):(j&&j.error)||'Server data tidak bisa dihubungi.');IS[k]=j}
+ catch(e){IS[k]={err:e.message||String(e)};setTimeout(()=>{if(IS[k]&&IS[k].err)delete IS[k]},3e4)}
+ segar()}
+function dapat(path,k){const j=IS[k];if(!j){IS[k]={muat:1};ambil(path,k);return null}return j.muat?null:j}
+const siap=()=>typeof CSW!=='undefined'&&typeof csDev==='function';
+/* satu baris transaksi: jenis, nama, jabatan, lembar, harga, kepemilikan */
+function kartuTx(it,kode){const j=it.action_type,lb=ang(it.changes_value),px=ang(it.price_formatted),est=lb!=null&&px?Math.abs(lb)*px:null,jb=(it.badges||[]).join(' / ');
+ return `<div class="card" style="padding:10px 12px;margin:8px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b class="${kls(j)}">${esc(JN[j]||j)}${kode?` · <span data-go="saham" onclick="S.hq='${esc(kode)}';S.ht='i';S.hs=null" style="cursor:pointer;text-decoration:underline">${esc(kode)}</span>`:''}</b><span class="mu">${tgl(it.date)}</span></div>
+<div style="margin-top:2px"><b>${esc(it.name||'')}</b>${jb?` <small class="mu">· ${esc(jb)}</small>`:''}${it.nationality==='foreign'?' <small class="mu">· asing</small>':''}</div>
+<div class="mu" style="font-size:13px;margin-top:2px">${lb!=null?`<span class="${lb>0?'up':lb<0?'dn':''}">${lb>0?'+':''}${nf(lb)} lembar</span>`:''}${px?' @ Rp'+nf(px):''}${est?' ≈ '+rpk(est):''} · kepemilikan ${esc(String(it.previous_percentage||'?'))}% → <b>${esc(String(it.current_percentage||'?'))}%</b>${it.broker_code?' · broker '+esc(it.broker_code):''}</div></div>`}
+/* tab Insider di halaman Saham */
+window.insiderBlk=function(kode){if(!siap())return'';
+ const j=dapat(encodeURIComponent(kode),'k|'+kode);
+ const head=`<div class="card"><b style="font-size:17px">Transaksi Insider · ${esc(kode)}</b><div class="mu" style="font-size:12px">Direksi, komisaris, pengendali, dan pemegang ≥5% yang melapor perubahan kepemilikan. 15 laporan terbaru. Bukan rekomendasi.</div></div>`;
+ if(!j)return head+'<div class="card mu">Memuat transaksi insider…</div>';
+ if(j.err)return head+'<div class="note">'+esc(j.err)+'</div>';
+ if(!j.items.length)return head+'<div class="card mu">Belum ada transaksi insider tercatat untuk '+esc(kode)+'.</div>';
+ const it=j.items.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+ return head+it.map(x=>kartuTx(x,'')).join('')+(j.diambil?`<div class="mu" style="font-size:12px">Diperbarui robot ${esc(String(j.diambil).slice(0,10))}.</div>`:'')};
+/* halaman pasar */
+function insider(){
+ const hd=`<div class="brand">BERITA & KATALIS</div><h1>Transaksi Insider</h1><div class="mu">Laporan perubahan kepemilikan direksi, komisaris, pengendali, dan pemegang besar di seluruh pasar. Ketuk kode untuk buka saham.</div>`;
+ if(!siap())return hd+'<div class="card mu">Tidak tersedia di sini.</div>';
+ const h=['7','30','90','c'].includes(String(S.ish))?String(S.ish):'7',jn=['b','s','a'].includes(S.isj)?S.isj:'a',jb=['a','d','k','p'].includes(S.isb)?S.isb:'a';
+ const ctl=chips([['7','7 hari'],['30','30 hari'],['90','90 hari'],['c','Pilih tanggal']],h,'ish')+chips([['a','Semua'],['b','Beli'],['s','Jual']],jn,'isj')+chips([['a','Semua pelapor'],['d','Direktur'],['k','Komisaris'],['p','Pengendali']],jb,'isb');
+ const hr=d=>new Date(Date.now()+7*36e5-d*864e5).toISOString().slice(0,10);
+ if(h==='c'){if(!/^\d{4}-\d{2}-\d{2}$/.test(S.isd||''))S.isd=hr(30);if(!/^\d{4}-\d{2}-\d{2}$/.test(S.isz||''))S.isz=hr(0);if(S.isd>S.isz)[S.isd,S.isz]=[S.isz,S.isd]}
+ const pil=h==='c'?`<div style="display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;margin:8px 0"><span>Dari</span><input type="date" class="sel" id="isd" value="${S.isd}" min="${hr(120)}" max="${hr(0)}" style="margin:0"><span>Sampai</span><input type="date" class="sel" id="isz" value="${S.isz}" min="${hr(120)}" max="${hr(0)}" style="margin:0"></div><div class="mu" style="font-size:12px">Data pasar tersedia ±120 hari terakhir.</div>`:'';
+ const q=h==='c'?'dari='+S.isd.replace(/-/g,'')+'&sampai='+S.isz.replace(/-/g,''):'hari='+h;
+ const j=dapat('_pasar?'+q,'p|'+q);
+ if(!j)return hd+ctl+pil+'<div class="card mu">Memuat…</div>';
+ if(j.err)return hd+ctl+pil+'<div class="note">'+esc(j.err)+'</div>';
+ const JB={d:'DIREKTUR',k:'KOMISARIS',p:'PENGENDALI'};
+ let L=j.baris.filter(r=>(jn==='a'||(jn==='b'?r[3]==='buy':r[3]==='sell'))&&(jb==='a'||String(r[4]).includes(JB[jb])));
+ const nb=L.filter(r=>r[3]==='buy').length,ns=L.filter(r=>r[3]==='sell').length,ke=new Set(L.map(r=>r[0])).size;
+ const N0=200,more=L.length>N0;L=L.slice(0,N0);
+ const it=r=>({action_type:r[3],date:r[1],name:r[2],badges:r[4]?String(r[4]).split('/'):[],nationality:r[5]?'foreign':'local',changes_value:r[6],price_formatted:r[9],current_percentage:r[8],previous_percentage:(()=>{const a=parseFloat(r[8]),b=parseFloat(String(r[7]).replace('+',''));return isNaN(a)||isNaN(b)?'?':(Math.round((a-b)*1e4)/1e4).toString()})(),broker_code:r[10]});
+ return hd+ctl+pil+`<div class="g2" style="grid-template-columns:repeat(3,1fr)"><div class="st"><span class="mu">Laporan beli</span><b class="up">${nb}</b></div><div class="st"><span class="mu">Laporan jual</span><b class="dn">${ns}</b></div><div class="st"><span class="mu">Emiten</span><b>${ke}</b></div></div>`+
+  (L.length?L.map(r=>kartuTx(it(r),r[0])).join(''):'<div class="card mu">Tidak ada transaksi pada pilihan ini.</div>')+
+  `<div class="mu" style="font-size:12px">${more?'Ditampilkan '+N0+' terbaru. ':''}Sumber: robot IDX Edge, diperbarui ${esc(String(j.dibuat||'').slice(0,10))}. Estimasi Rp hanya bila harga tercantum di laporan.</div>`}
+document.addEventListener('change',e=>{const t=e.target;if(!t||(t.id!=='isd'&&t.id!=='isz')||!/^\d{4}-\d{2}-\d{2}$/.test(t.value))return;S[t.id]=t.value;if(typeof render==='function')render()});
+try{P.insider=insider;const g=MENU.find(x=>x[0]==='Berita & Katalis');if(g)g[1].push(['insider','Transaksi Insider'])}catch(e){}
+})();
+</script>
 <script>
 /* ===== APK Non Admin: pembaruan otomatis (OTA) dari repo PUBLIK catatan-saham-publik (tanpa kunci GitHub) ===== */
 (function(){

@@ -2416,7 +2416,7 @@ function aicKodeDisebut(q){const ada=new Set(),kecil=/saham|emiten|kode/i.test(q
    Tiap halaman dibuat oleh fungsi P[kunci](). Bila pertanyaan menyebut halaman lain (mis. "clean buy" saat membuka
    Top Gainer), halaman itu dirakit diam-diam di wadah tak terlihat, dibaca tabelnya, lalu dibuang.
    Layar pengguna tidak berubah. Halaman admin tidak dibaca di edisi Non Admin / tanpa izin admin. */
-const AIC_ALIAS={gainer:['top gainer','gainer','naik paling','paling naik','kenaikan tertinggi'],gainerL:['top loser','loser','turun paling','paling turun','penurunan terbesar'],cleanbuy:['clean buy','cleanbuy','cb1','cb2','cb3'],market:['market overview','kondisi pasar','ihsg','pasar hari ini'],sektor:['sektor','heatmap sektor'],own:['foreign','asing','kepemilikan asing'],pmg:['kepemilikan','pemegang saham','pemegang','lima persen','satu persen'],bdm:['bandarmologi','bandar'],radar:['radar','berita','keterbukaan','aksi korporasi'],fund:['fundamental','laporan keuangan','pbv'],htp:['harta terpendam'],ma:['moving average',' ma ','ema'],dna:['dna 90','ranking dna'],rencana:['rencana trading'],smart:['smart accumulation','matrix','accum','akumulasi'],amb:['amb','akumulasi momentum'],stealth:['stealth'],smb:['momentum terkonsentrasi','bottom pilihan'],awal:['akumulasi awal'],bdet:['broker action','radar akumulasi','broker detector'],dup:['dupont'],siklus:['siklus ekonomi']};
+const AIC_ALIAS={gainer:['top gainer','gainer','naik paling','paling naik','kenaikan tertinggi'],gainerL:['top loser','loser','turun paling','paling turun','penurunan terbesar'],cleanbuy:['clean buy','cleanbuy','cb1','cb2','cb3'],insider:['insider','orang dalam','transaksi direksi','transaksi komisaris'],market:['market overview','kondisi pasar','ihsg','pasar hari ini'],sektor:['sektor','heatmap sektor'],own:['foreign','asing','kepemilikan asing'],pmg:['kepemilikan','pemegang saham','pemegang','lima persen','satu persen'],bdm:['bandarmologi','bandar'],radar:['radar','berita','keterbukaan','aksi korporasi'],fund:['fundamental','laporan keuangan','pbv'],htp:['harta terpendam'],ma:['moving average',' ma ','ema'],dna:['dna 90','ranking dna'],rencana:['rencana trading'],smart:['smart accumulation','matrix','accum','akumulasi'],amb:['amb','akumulasi momentum'],stealth:['stealth'],smb:['momentum terkonsentrasi','bottom pilihan'],awal:['akumulasi awal'],bdet:['broker action','radar akumulasi','broker detector'],dup:['dupont'],siklus:['siklus ekonomi']};
 function aicMenu(){try{return MENU.flatMap(g=>g[1]).filter(x=>P[x[0]]&&!(ADMP.has(x[0])&&!AG.admin))}catch(e){return[]}}
 function aicPeta(){const g=[];try{for(const[gr,it]of MENU){const n=it.filter(x=>P[x[0]]&&!(ADMP.has(x[0])&&!AG.admin)).map(x=>x[1].replace(/ ·.*$/,''));if(n.length)g.push(gr+': '+n.join(', '))}}catch(e){}return g.join('\n')}
 /* halaman alat/admin yang tidak berisi data untuk dibaca AI */
@@ -2433,7 +2433,21 @@ function aicRakit(k){const prev=/@prev$/.test(k);k=k.replace(/@prev$/,'');const 
 function aicLabel(){try{const mn=MENU.flatMap(g=>g[1]).find(x=>x[0]===S.p);if(S.p==='saham')return'Saham '+hubSync();return S.p==='home'?'Beranda':(mn?mn[1]:S.p)}catch(e){return String(S.p||'')}}
 /* maks = jumlah huruf yang boleh dikirim; hp = AI di HP (ingatan kecil: tabel dibatasi 5 kolom pertama) */
 /* Halaman yang datanya dimuat belakangan (Bandarmologi, AMB, …) mula-mula hanya berisi "Memuat…": tunggu sampai terisi (maks ±6 detik). */
-async function aicTungguHalaman(q,hp){const ks=aicCariHalaman(q||'').slice(0,hp?1:2);
+/* Fitur baru (17 Nov 2026): insider, asing per broker, per kuartal. Datanya dimuat dari server/berkas, jadi disiapkan dulu
+   lalu ditempel ringkasannya ke konteks bila pertanyaan menyinggung topiknya. */
+const AIC_RE_INS=/insider|orang dalam|direksi|direktur|komisaris|pengendali/i,AIC_RE_ASG=/asing|foreign/i,AIC_RE_KW=/kuartal|quarter|\bq[1-4]\b|laba|pendapatan|penjualan|kinerja|laporan keuangan/i;
+function aicKodeFitur(q){const ks=aicKodeDisebut(q||'');if(!ks.length&&S.p==='saham'){try{ks.push(hubSync())}catch(e){}}return ks.slice(0,2)}
+async function aicSiapBaru(q){const ks=aicKodeFitur(q),J=[];
+ if(AIC_RE_INS.test(q||'')&&window.insiderSiap){if(ks.length)ks.forEach(k=>J.push(insiderSiap(k)));else J.push(insiderSiap(''))}
+ if(AIC_RE_ASG.test(q||'')&&window.asingSiap)ks.forEach(k=>J.push(asingSiap(k)));
+ if(AIC_RE_KW.test(q||'')&&ks.length&&window.qkSiap)J.push(qkSiap());
+ if(J.length)await Promise.race([Promise.all(J.map(p=>Promise.resolve(p).catch(()=>{}))),new Promise(r=>setTimeout(r,7000))])}
+function aicTeksBaru(q){const ks=aicKodeFitur(q);let t='';
+ try{if(AIC_RE_INS.test(q||'')&&window.insiderTeks){if(ks.length)ks.forEach(k=>t+=insiderTeks(k));else t+=insiderTeks('')}
+ if(AIC_RE_ASG.test(q||'')&&window.asingTeks)ks.forEach(k=>t+=asingTeks(k));
+ if(AIC_RE_KW.test(q||'')&&window.qkTeks)ks.forEach(k=>t+=qkTeks(k))}catch(e){}
+ return t?'\n'+t:''}
+async function aicTungguHalaman(q,hp){try{await aicSiapBaru(q)}catch(e){}const ks=aicCariHalaman(q||'').slice(0,hp?1:2);
  for(const k of ks){for(let i=0;i<15;i++){let R=null;try{R=aicRakit(k)}catch(e){}if(!R||!/Memuat|memuat data|class="ld"/.test(R.t))break;await new Promise(r=>setTimeout(r,400))}}}
 /* Nama investor di pertanyaan ("Andry Hakim ada di saham apa") → hasil Cari investor dari data pemegang saham ≥1%/≥5%. */
 const AIC_BUKAN_NAMA=new Set('KAMU KM TAU TAHU NGGAK NGGK GAK ENGGAK ADA DI KE DARI SAHAM SAHAMNYA APA AJA SAJA YANG YG DONG CARIKAN CARI KLIK GITU GITUU MILIK PUNYA PEGANG DIPEGANG MEMEGANG INVESTOR PEMEGANG KEPEMILIKAN BERAPA MANA DAN ATAU ITU INI SIAPA TOLONG COBA LIHAT LIAT EMITEN PERUSAHAAN NAMA ORANG MILIKNYA BISA KAH SAYA AKU MAU INGIN JUGA LAGI TBK PT'.split(' '));
@@ -2456,7 +2470,8 @@ function aicKonteks(maks,hp,q,tanpaLain){const lab=aicLabel();let kop='';
  teks=teks.replace(/⟦TABEL (\d+)⟧/g,(_,i)=>{const T=H.tabel[i-1];return T?'[Tabel '+i+']\n'+aicTabelTeks(T,Math.max(perTabel,600),hp?5:0):''});
  if(kop.length+teks.length>maks)teks=teks.slice(0,Math.max(500,maks-kop.length))+'\n…(halaman dipotong)';
  let inv='';if(!tanpaLain&&aicNamaDisebut(AIC.qInv||q)){const R=aicInvestor(AIC.qInv||q);if(R){inv='\n=== Hasil "Cari investor" untuk "'+R.nm+'" (data Pemegang Saham ≥1% & ≥5%, '+R.A.length+' kepemilikan) ===\nKode | Investor | % | Sumber\n'+R.A.slice(0,hp?15:60).map(a=>a[0]+' | '+a[1]+' | '+(a[2]==null?'—':String(a[2]).replace('.',','))+'% | '+a[3]).join('\n')+'\n';hl.push('pmgi')}}
- return{lab,teks:(kop?kop+'\nIsi halaman:\n':'')+teks+lain+inv,tabel:H.tabel,tabelLain,lainLab:hl}}
+ const baru=tanpaLain?'':aicTeksBaru(AIC.qInv||q);
+ return{lab,teks:(kop?kop+'\nIsi halaman:\n':'')+teks+lain+inv+baru,tabel:H.tabel,tabelLain,lainLab:hl}}
 /* model kecil di HP: aturan pendek dan tegas (aturan panjang justru membuatnya bingung) */
 /* Kamus istilah Catatan Saham untuk AI (dari keterangan aplikasi & dokumen rumus); jangan sebut nama sumber data pihak lain. */
 const AIC_KAMUS='KAMUS ISTILAH CATATAN SAHAM (pakai arti ini, jangan menebak arti istilah):\n'+
@@ -2470,8 +2485,11 @@ const AIC_KAMUS='KAMUS ISTILAH CATATAN SAHAM (pakai arti ini, jangan menebak art
 '- Broker Action: skor net/bruto Top N broker; ≥40 akumulasi besar, ≥10 akumulasi, −10 s.d. 10 netral, ≤−10 distribusi, ≤−40 distribusi besar.\n'+
 '- Smart Accumulation Matrix: jendela 1/2/5/10/20 sesi, kanal Top5 broker dan NBSA, hijau bila net > 0; "Matrix 5/5" berbeda dari "Clean Buy 5/5".\n'+
 '- MA n = rata-rata harga penutupan n sesi; EMA = rata-rata berbobot (lebih peka ke harga terbaru).\n'+
+'- Transaksi Insider = laporan perubahan kepemilikan direksi, komisaris, pengendali, pemegang besar (beli/jual, lembar, harga, kepemilikan sebelum → sesudah); menu Berita & Katalis dan tab Insider di halaman Saham. Insider beli bukan jaminan harga naik.\n'+
+'- Asing per Broker = beli/jual nasabah asing yang lewat tiap broker (data sejak 2 Nov 2026), di Foreign Ownership → Foreign Buy/Sell harian, di atas Asing vs Lokal.\n'+
+'- Per kuartal 2025–2026 = pendapatan & laba tiap kuartal (bukan kumulatif) di tab Fundamental; hanya tampil bila jumlahnya cocok dengan laporan 9 bulan/tahunan, "—" = tidak lolos pengecekan.\n'+
 '- Semua hasil adalah catatan analisis, bukan rekomendasi beli/jual.';
-const AIC_KAMUS_HP='ISTILAH: lot = 100 lembar. "x/5" Clean Buy = muncul di x dari 5 screener (CB1, CB2, CB3, Accum 1vs5, Buy >10K Lot) pada tanggal itu, bukan jumlah hari. "poin" kepemilikan = selisih persen. NBSA = net beli/jual asing (Rp).';
+const AIC_KAMUS_HP='ISTILAH: lot = 100 lembar. "x/5" Clean Buy = muncul di x dari 5 screener (CB1, CB2, CB3, Accum 1vs5, Buy >10K Lot) pada tanggal itu, bukan jumlah hari. "poin" kepemilikan = selisih persen. NBSA = net beli/jual asing (Rp). Insider = transaksi direksi/komisaris/pengendali. Asing per broker = broker yang dipakai nasabah asing. Per kuartal = laba/pendapatan tiap kuartal, bukan kumulatif.';
 const aicSistemHp=(k,foto)=>'Kamu asisten aplikasi saham Catatan Saham. Jawab bahasa Indonesia sederhana.\nATURAN: (1) Ambil angka dan kode saham HANYA dari DATA'+(foto?' atau foto':'')+'. Jangan mengarang. (2) Kalau tidak ada di DATA, bilang tidak ada. (3) Di DATA, tabel ditulis per baris dengan tanda |; JANGAN membuat tabel di jawaban. (4) Jawab SINGKAT: paling banyak 5 poin pendek diawali "- ", atau 3 kalimat; tanpa ** dan #. Kalau diminta daftar, tulis "KODE: angka" per baris. (5) Jangan menyuruh beli/jual.\n'+AIC_KAMUS_HP+'\n\nDATA (halaman "'+k.lab+'"):\n'+k.teks;
 const aicSistem=(k,foto)=>'Kamu "AI Catatan Saham", asisten khusus aplikasi riset saham Indonesia (BEI) Catatan Saham. Tugasmu hanya membantu memahami data dan fitur Catatan Saham. Jawab dalam bahasa Indonesia yang santai dan mudah dipahami orang awam.\nATURAN:\n1. Semua angka, harga, kode saham, nama broker, dan fakta HARUS diambil dari DATA di bawah'+(foto?' atau dari foto yang dikirim':'')+'. Jangan mengarang angka, harga, atau berita. Jangan menyebut jumlah baris yang tidak ada di DATA.\n2. Tabel di DATA ditulis per baris, kolom dipisah tanda |. Baris "Kolom:" adalah judul kolomnya. Tulisan "(semua N baris)" berarti tabel lengkap.\n3. Kalau yang ditanya tidak ada di DATA, katakan terus terang, lalu sarankan NAMA halaman atau tab Catatan Saham yang memuatnya (dari daftar MENU). JANGAN menebak atau mengarang isi, kolom, atau tampilan halaman itu.\n4. Jelaskan arti angkanya: maksudnya apa, bagus atau jelek, dan kenapa.\n5. Jangan menyuruh beli atau jual. Beri pertimbangan dua sisi; keputusan di tangan pengguna.\n6. Panjang jawaban sesuai kebutuhan: penjelasan biasa cukup ringkas; kalau diminta daftar, tulis SEMUA barisnya sampai selesai, satu baris pendek per saham (mis. "1. HRME +34,15% · 55"), tanpa OHLC dan tanpa kolom yang isinya "-".'+(foto?'\n7. Pengguna mengirim foto (biasanya chart atau tangkapan layar). Baca isi foto dengan teliti; sebutkan yang terlihat jelas saja dan katakan bila tulisan di foto tidak terbaca.':'')+'\n\n'+AIC_KAMUS+(k.peta?'\n\nMENU CATATAN SASHAM (untuk menyarankan halaman):\n'.replace('SASHAM','SAHAM')+k.peta:'')+'\n\nDATA (halaman yang sedang dibuka: "'+k.lab+'"; bagian "Data dari halaman lain" diambil aplikasi otomatis sesuai pertanyaan; tanggal data mengikuti isi halaman):\n'+k.teks;
 /* ---- Formula Screener: panduan untuk AI + pemeriksa rumus di jawaban ----
@@ -2875,7 +2893,7 @@ box.innerHTML=`<style>#fdb th{background:#115e59!important;color:#e6fffa!importa
 <div class="card" style="padding:12px"><div class="sx" style="margin:0"><table style="white-space:normal;font-size:13px"><tr><th>Rasio</th><th style="text-align:right">${esc(c)}</th><th style="text-align:right">Median ${esc(m.lab)}${m.n&&m.lab!=='sektor'?' ('+m.n+')':''}</th></tr>
 ${R('ROE',fdN(x.roe,1,'%'),fdN(m.roe,1,'%'))}${R('ROA',fdN(x.roa,1,'%'),'—')}${R(isB?'Laba ÷ pendapatan bunga':'NPM (margin laba bersih)',fdN(x.npm,1,'%'),fdN(m.npm,1,'%'))}${R(isB?'DER (wajar tinggi untuk bank: dana nasabah)':'DER (utang ÷ ekuitas)',fdN(x.der)+'×',fdN(m.der)+'×')}${bk?R('NIM ≈ bunga bersih ÷ aset',fdN(bk.nim,1,'%'),fdN(BM.nim,1,'%'))+R('CASA (giro+tabungan ÷ DPK)',fdN(bk.casa,1,'%'),fdN(BM.casa,1,'%'))+R('LDR (kredit ÷ DPK)',fdN(bk.ldr,1,'%'),fdN(BM.ldr,1,'%'))+R('Cadangan ÷ kredit',fdN(bk.cov,1,'%'),fdN(BM.cov,1,'%')):''}${R('PBV',fdN(x.pbv)+'×',fdN(m.pbv)+'×')}${R('PER',fdN(x.per)+'×',fdN(m.per)+'×')}${R('EPS (trailing)','Rp '+fdSm(x.eps),'—')}${R('Nilai buku per saham','Rp '+fdSm(x.bv),x.bv>0&&x.bv<1?'sangat kecil: lembar saham sangat banyak':'—')}${R('Penjualan (periode LK)',fdRp(x.sales),'—')}${R('Laba ke pemilik induk',fdRp(x.laba),'—')}${R('Total aset',fdRp(x.aset),'—')}${R('Ekuitas',fdRp(x.ekuitas),'—')}</table></div>
 <div class="mu" style="font-size:12px;margin-top:6px">${J.q3&&J.q3[c]?`<b>Rasio memakai laporan Q3 2026</b> (9 bulan disetahunkan, PBV dari total ekuitas agar sebanding dengan median sektor). ${J.jn&&J.jn[c]?'Saat data Juni: '+(J.jn[c][15]?'lolos':'tidak lolos')+', ROE '+fdN(J.jn[c][3],1,'%')+', PBV '+fdN(J.jn[c][5])+'×. ':''}Median pembanding memakai data terbaru tiap emiten (campuran Juni dan Q3). ${isB?(bk?'Rasio khusus bank (NIM, CASA, LDR, cadangan) dihitung dari neraca &amp; laba rugi Q3 (perkiraan; NIM memakai total aset, bukan aset produktif); median dari '+BM.n+' bank yang laporannya sudah masuk. ':'Rasio khusus bank belum tersedia: laporan Q3 bank ini belum masuk dalam format xlsx. '):''}`:''}Sumber: ${esc(J.src)} · ${esc(J.lk)}. PER pasar ${N(J.mper,2)}×, PBV pasar ${N(J.mpbv,2)}×. Rasio dari BEI; penjualan dan laba adalah angka periode laporan (Juni = 6 bulan). PER sangat kecil bisa berarti laba sekali (mis. jual aset), cek laporannya.</div></div>
-${catCard(J,c,x)}${fdDup(J,c,x)}${scrCard(J,c)}${mmCard(J,c,x)}${pbCard(J,c)}${fwdCard(J,c)}${fdQ3(J,c)}<div class="mu" style="font-size:12px">${FD_RULE}</div>${FD_UJI(J)}<div class="row"><button class="btn" data-go="fund">Lihat semua di Penyaring Fundamental</button></div>`},0);
+${catCard(J,c,x)}${fdDup(J,c,x)}${scrCard(J,c)}${mmCard(J,c,x)}${pbCard(J,c)}${fwdCard(J,c)}${fdQ3(J,c)}${window.fdKw?fdKw(c):''}<div class="mu" style="font-size:12px">${FD_RULE}</div>${FD_UJI(J)}<div class="row"><button class="btn" data-go="fund">Lihat semua di Penyaring Fundamental</button></div>`},0);
 return '<div id="fdb"><div class="ld"><i></i> Memuat data fundamental…</div></div>'}
 function fund(){setTimeout(fdPage,0);chkWire('fdq',fdChk);return `<div class="brand">SCREENER</div><h1>Penyaring Fundamental</h1><div class="mu">Saring emiten dengan rasio keuangan dari laporan keuangan terbaru. ${FD_RULE} Ketuk kode untuk membuka tab Fundamental saham itu.</div>${chkBox('fdq','Kode atau nama saham, mis. BBCA')}<div id="fdp"><div class="ld"><i></i> Memuat data fundamental…</div></div>`}
 function jps(){setTimeout(()=>{const b=$('#jpp');if(b)jpsPage(b)},0);chkWire('jpq',jpsChk);return `<div class="brand">SCREENER</div><h1>Pemegang Saham (JPS)</h1><div class="mu">Cari emiten yang jumlah pemegang sahamnya naik atau turun dalam periode tertentu. Ketuk kode untuk membuka tab Profil saham itu.</div>${chkBox('jpq','Kode atau nama saham, mis. BBCA')}<div id="jpp"><div class="ld"><i></i> Memuat data pemegang saham…</div></div>`}
@@ -3896,13 +3914,20 @@ const HS={},tgl=d=>d?d.slice(6,8)+'/'+d.slice(4,6)+'/'+d.slice(0,4):'';
 const rp=v=>{const a=Math.abs(v),s=v<0?'−':'';const f=(x,k)=>x.toLocaleString('id-ID',{maximumFractionDigits:k,minimumFractionDigits:k});return s+(a>=1e12?'Rp '+f(a/1e12,2)+' T':a>=1e9?'Rp '+f(a/1e9,2)+' M':'Rp '+f(a/1e6,1)+' jt')};
 const nf=v=>Math.round(v).toLocaleString('id-ID');
 const segar=()=>{if(typeof S!=='undefined'&&(S.p==='fnb'||S.p==='own'||S.p==='saham'))render()};
-async function ambil(kode,f0,f1,k){try{const r=await fetch(CSW+'/app/api/asing/'+encodeURIComponent(kode)+'?dari='+f0+'&sampai='+f1,{headers:{'X-CS-Device':csDev()}});let j=null;try{j=await r.json()}catch(e){}
+const AP={};
+async function ambil(kode,f0,f1,k){return AP[k]=(async()=>{try{const r=await fetch(CSW+'/app/api/asing/'+encodeURIComponent(kode)+'?dari='+f0+'&sampai='+f1,{headers:{'X-CS-Device':csDev()}});let j=null;try{j=await r.json()}catch(e){}
   if(!r.ok||!j||!j.ok)throw new Error(r.status===429?'Batas permintaan tercapai. '+((j&&j.error)||'Coba lagi nanti.'):(j&&j.error)||'Server data tidak bisa dihubungi.');HS[k]=j}
  catch(e){HS[k]={err:e.message||String(e)};setTimeout(()=>{if(HS[k]&&HS[k].err)delete HS[k]},3e4)}
- segar()}
+ segar()})()}
 function tabel(judul,kelas,L,n,sisiBeli){const rows=L.map(([b,bv,sv,bl,sl])=>{const net=bv-sv,lot=sisiBeli?bl:sl,avg=lot?(sisiBeli?bv:sv)/(lot*100):0;
   return `<tr><td><b>${esc(b)}</b></td><td class="${kelas}">${rp(sisiBeli?net:-net)}</td><td>${nf(lot)}</td><td>${nf(avg)}</td></tr>`}).join('');
  return `<div class="card"><b class="${kelas}">${judul}</b><div class="mu" style="font-size:12px">${n} broker${n>L.length?' · '+L.length+' teratas':''}</div><table style="width:100%;font-size:13px"><tr style="text-align:left"><th>Broker</th><th>Net</th><th>Lot ${sisiBeli?'beli':'jual'}</th><th>AVG</th></tr>${rows||'<tr><td colspan="4" class="mu">Tidak ada.</td></tr>'}</table></div>`}
+/* untuk Tanya AI: 5 hari bursa terakhir (dari daftar tanggal aplikasi) */
+const rentang5=()=>{try{const ds=dates.slice(-5);return[ds[0],ds.at(-1)]}catch(e){return null}};
+window.asingSiap=function(kode){const r=rentang5();if(!r||typeof CSW==='undefined')return Promise.resolve();const k=kode+'|'+r[0]+'|'+r[1];if(!HS[k]){HS[k]={muat:1};return ambil(kode,r[0],r[1],k)}return AP[k]||Promise.resolve()};
+window.asingTeks=function(kode){const r=rentang5();if(!r)return'';const j=HS[kode+'|'+r[0]+'|'+r[1]];if(!j||j.muat||j.err||!(j.hari||[]).length)return'';
+ const b=L=>L.slice(0,6).map(([br,bv,sv])=>br+' '+rp(bv-sv)).join(', ')||'-';
+ return '=== Asing per broker '+kode+' ('+j.hari.length+' hari bursa, '+tgl(j.hari[0])+'–'+tgl(j.hari.at(-1))+'; hanya transaksi nasabah asing) ===\nBeli asing '+rp(j.beli)+', jual asing '+rp(j.jual)+', net '+rp(j.beli-j.jual)+'\nNet beli asing per broker: '+b(j.netBeli)+'\nNet jual asing per broker: '+b(j.netJual)+'\n'};
 window.asingBlk=function(kode,f0,f1){
  const kar=h=>`<div class="card" style="margin:12px 0"><b style="font-size:17px">Asing per Broker · ${esc(kode)}</b>${h}</div>`;
  if(typeof CSW==='undefined'||typeof csDev!=='function')return'';
@@ -3932,10 +3957,11 @@ const nf=v=>Math.round(v).toLocaleString('id-ID');
 const rpk=v=>{const a=Math.abs(v);return a>=1e12?'Rp '+(a/1e12).toLocaleString('id-ID',{maximumFractionDigits:2})+' T':a>=1e9?'Rp '+(a/1e9).toLocaleString('id-ID',{maximumFractionDigits:2})+' M':'Rp '+(a/1e6).toLocaleString('id-ID',{maximumFractionDigits:1})+' jt'};
 const kls=j=>j==='buy'?'up':j==='sell'?'dn':'';
 const segar=()=>{if(typeof S!=='undefined'&&(S.p==='saham'||S.p==='insider'))render()};
-async function ambil(path,k){try{const r=await fetch(CSW+'/app/api/insider/'+path,{headers:{'X-CS-Device':csDev()}});let j=null;try{j=await r.json()}catch(e){}
+const IP={};
+async function ambil(path,k){return IP[k]=(async()=>{try{const r=await fetch(CSW+'/app/api/insider/'+path,{headers:{'X-CS-Device':csDev()}});let j=null;try{j=await r.json()}catch(e){}
   if(!r.ok||!j||!j.ok)throw new Error(r.status===429?'Batas permintaan tercapai. '+((j&&j.error)||'Coba lagi nanti.'):(j&&j.error)||'Server data tidak bisa dihubungi.');IS[k]=j}
  catch(e){IS[k]={err:e.message||String(e)};setTimeout(()=>{if(IS[k]&&IS[k].err)delete IS[k]},3e4)}
- segar()}
+ segar()})()}
 function dapat(path,k){const j=IS[k];if(!j){IS[k]={muat:1};ambil(path,k);return null}return j.muat?null:j}
 const siap=()=>typeof CSW!=='undefined'&&typeof csDev==='function';
 /* satu baris transaksi: jenis, nama, jabatan, lembar, harga, kepemilikan */
@@ -3974,7 +4000,49 @@ function insider(){
   (L.length?L.map(r=>kartuTx(it(r),r[0])).join(''):'<div class="card mu">Tidak ada transaksi pada pilihan ini.</div>')+
   `<div class="mu" style="font-size:12px">${more?'Ditampilkan '+N0+' terbaru. ':''}Sumber: robot IDX Edge, diperbarui ${esc(String(j.dibuat||'').slice(0,10))}. Estimasi Rp hanya bila harga tercantum di laporan.</div>`}
 document.addEventListener('change',e=>{const t=e.target;if(!t||(t.id!=='isd'&&t.id!=='isz')||!/^\d{4}-\d{2}-\d{2}$/.test(t.value))return;S[t.id]=t.value;if(typeof render==='function')render()});
+/* untuk Tanya AI: siapkan data lalu ringkas jadi teks */
+window.insiderSiap=function(kode){if(!siap())return Promise.resolve();const k=kode?'k|'+kode:'p|hari=7';if(!IS[k]){IS[k]={muat:1};return ambil(kode?encodeURIComponent(kode):'_pasar?hari=7',k)}return IP[k]||Promise.resolve()};
+window.insiderTeks=function(kode){const k=kode?'k|'+kode:'p|hari=7',j=IS[k];if(!j||j.muat||j.err)return'';
+ const baris=it=>{const lb=ang(it.changes_value),px=ang(it.price_formatted);return '- '+tgl(it.date)+(it.kode?' '+it.kode:'')+': '+(JN[it.action_type]||it.action_type)+' oleh '+it.name+((it.badges||[]).length?' ('+it.badges.join('/')+')':'')+(lb!=null?', '+(lb>0?'+':'')+nf(lb)+' lembar':'')+(px?' @Rp'+nf(px):'')+(lb!=null&&px?' ≈'+rpk(Math.abs(lb)*px):'')+', kepemilikan sekarang '+(it.current_percentage||'?')+'%'};
+ if(kode)return '=== Transaksi insider '+kode+' (laporan terbaru) ===\n'+(j.items.length?j.items.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,10).map(baris).join('\n'):'Tidak ada transaksi insider tercatat.')+'\n';
+ const L=j.baris.filter(r=>r[3]==='buy'||r[3]==='sell').map(r=>({r,v:r[6]!=null&&r[9]?Math.abs(r[6])*r[9]:0})).sort((a,b)=>b.v-a.v).slice(0,25);
+ return '=== Transaksi insider seluruh pasar 7 hari ('+j.baris.length+' laporan; 25 terbesar menurut estimasi nilai) ===\n'+L.map(({r})=>baris({kode:r[0],date:r[1],name:r[2],action_type:r[3],badges:r[4]?String(r[4]).split('/'):[],changes_value:r[6],price_formatted:r[9],current_percentage:r[8]})).join('\n')+'\n'};
 try{P.insider=insider;const g=MENU.find(x=>x[0]==='Berita & Katalis');if(g)g[1].push(['insider','Transaksi Insider'])}catch(e){}
+})();
+</script>
+<script>
+/* ===== Grafik pendapatan & laba per kuartal 2025–2026 (tab Fundamental, semua edisi) =====
+   Permintaan pemilik 17 Nov 2026. Sumber: IDX Edge per kuartal (shards/qk.json, dibuat tools/fundamental/build_kuartal.py),
+   HANYA emiten yang Q1+Q2+Q3-nya sama dengan angka 9 bulan PDF pemilik (selisih <= 2%). Rp miliar. */
+(function(){
+let QK=null,QKL=null;
+const muat=()=>QKL||(QKL=fetch('shards/qk.json').then(r=>r.json()).then(j=>{QK=j}).catch(()=>{QK={d:{}}}));
+const fm=v=>{const a=Math.abs(v),s=v<0?'−':'';return s+(a>=1000?(a/1000).toLocaleString('id-ID',{maximumFractionDigits:2})+' T':a.toLocaleString('id-ID',{maximumFractionDigits:a>=100?0:1})+' M')};
+function bar(judul,v,lab,pisah){
+ const n=v.length,W=340,H=170,top=24,bot=30,ada=v.filter(x=>x!=null),mx=Math.max(0,...ada),mn=Math.min(0,...ada),rg=(mx-mn)||1,y=x=>top+(mx-x)/rg*(H-top-bot),slot=W/n,bw=Math.min(52,slot*.72);
+ let g=`<line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line)"/>`;
+ if(pisah>0&&pisah<n)g+=`<line x1="${slot*pisah}" x2="${slot*pisah}" y1="4" y2="${H-bot+4}" stroke="var(--line)" stroke-dasharray="3 3"/>`;
+ v.forEach((x,i)=>{const X=slot*i+(slot-bw)/2,cx=X+bw/2,lama=i<pisah;
+  if(x==null){g+=`<text x="${cx}" y="${y(0)-4}" text-anchor="middle" font-size="10" fill="var(--mute)">—</text>`}
+  else{const y0=y(0),y1=y(x),c=x>=0?'var(--up)':'var(--dn)';
+   g+=`<rect x="${X}" y="${Math.min(y0,y1)}" width="${bw}" height="${Math.max(1,Math.abs(y1-y0))}" rx="3" fill="${c}" opacity="${lama?.45:.9}"/><text x="${cx}" y="${x>=0?y1-4:y1+11}" text-anchor="middle" font-size="${n>4?8.5:11}" font-weight="700" fill="var(--ink)">${fm(x)}</text>`}
+  g+=`<text x="${cx}" y="${H-16}" text-anchor="middle" font-size="10" fill="var(--mute)">${lab[i][0]}</text><text x="${cx}" y="${H-5}" text-anchor="middle" font-size="9" fill="var(--mute)">${lab[i][1]}</text>`});
+ const pr=(a,b)=>a==null||b==null||a===0?null:(a<0&&b<0?null:(b-a)/Math.abs(a)*100);
+ const t=p=>p==null?'—':`<span class="${p>=0?'up':'dn'}">${p>=0?'+':''}${p.toLocaleString('id-ID',{maximumFractionDigits:1})}%</span>`;
+ const yoy=pisah?[0,1,2].map(i=>`Q${i+1} ${t(pr(v[i],v[pisah+i]))}`).join(' · '):'';
+ const qoq=`Q2 vs Q1 ${t(pr(v[pisah],v[pisah+1]))} · Q3 vs Q2 ${t(pr(v[pisah+1],v[pisah+2]))}`;
+ return `<div style="margin-top:8px"><b>${judul}</b><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block" role="img" aria-label="${judul} per kuartal">${g}</svg><div class="mu" style="font-size:12px">2026: ${qoq}${yoy?'<br>Dibanding kuartal sama 2025: '+yoy:''}</div></div>`}
+function isi(id,c){const el=document.getElementById(id);if(!el)return;const r=QK&&QK.d&&QK.d[c],r5=QK&&QK.d25&&QK.d25[c];
+ if(!r&&!r5){el.innerHTML=`<div class="card"><b>Per kuartal</b><div class="mu" style="font-size:12px">Belum ada data per kuartal untuk ${esc(c)} (tidak tersedia, atau jumlah kuartal tidak cocok dengan laporan 9 bulan/tahunan sehingga tidak ditampilkan).</div></div>`;return}
+ const L5=[['Q1','2025'],['Q2','2025'],['Q3','2025'],['Q4','2025']],L6=[['Q1','2026'],['Q2','2026'],['Q3','2026']];
+ const seri=k=>{const a=r5&&r5[k],b=r&&r[k];if(!a&&!b)return null;return{v:[...(a||[null,null,null,null]),...(b||[null,null,null])],lab:[...L5,...L6]}};
+ const P=seri(0),Lb=seri(1);
+ el.innerHTML=`<div class="card"><b>Per kuartal 2025–2026</b><div class="mu" style="font-size:12px">Pendapatan dan laba tiap kuartal (bukan kumulatif), Rp miliar (M) / triliun (T). Batang pudar = 2025. Angka hanya tampil bila jumlah kuartalnya cocok dengan laporan 9 bulan/tahunan; "—" = tidak lolos atau tidak ada.</div>${P?bar('Pendapatan',P.v,P.lab,4):''}${Lb?bar('Laba bersih (pemilik induk)',Lb.v,Lb.lab,4):''}</div>`}
+window.qkSiap=()=>muat();
+window.qkTeks=function(c){const a=QK&&QK.d25&&QK.d25[c],b=QK&&QK.d&&QK.d[c];if(!a&&!b)return QK?'=== Per kuartal '+c+' ===\nTidak ditampilkan (data kuartal tidak ada atau tidak cocok dengan laporan 9 bulan/tahunan).\n':'';
+ const f=(L,lab)=>L?L.map((v,i)=>lab[i]+' '+(v==null?'—':fm(v))).join(', '):'—',L5=['Q1 2025','Q2 2025','Q3 2025','Q4 2025'],L6=['Q1 2026','Q2 2026','Q3 2026'];
+ return '=== Per kuartal '+c+' (tiap kuartal, bukan kumulatif; M = miliar, T = triliun; "—" = tidak lolos pengecekan) ===\nPendapatan: '+f(a&&a[0],L5)+'; '+f(b&&b[0],L6)+'\nLaba bersih pemilik induk: '+f(a&&a[1],L5)+'; '+f(b&&b[1],L6)+'\n'};
+window.fdKw=function(c){const id='fdkw'+Math.random().toString(36).slice(2,8);if(QK)setTimeout(()=>isi(id,c),0);else muat().then(()=>isi(id,c));return `<div id="${id}"></div>`};
 })();
 </script>
 <script>

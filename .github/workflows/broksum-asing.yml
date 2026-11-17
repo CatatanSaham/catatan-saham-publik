@@ -85,6 +85,9 @@ jobs:
       - name: Ambil asing per broker
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode != 'selftest'
         run: python main/tools/backfill/broksum_backfill.py --flow F --folder bfa --harian data/apk-data/harian --robot robot/harian --shards next/apk/www/shards --out out --mulai "${{ github.event.inputs.mulai }}" --sampai "${{ github.event.inputs.sampai }}" --maks "${{ github.event.inputs.maks }}" --cadangan "${{ github.event.inputs.cadangan }}"
+      - name: Susun berkas per saham (rentang tanggal tanpa batas di aplikasi)
+        if: always() && (github.event_name == 'workflow_run' || github.event.inputs.mode != 'selftest')
+        run: python main/tools/asing/per_saham.py out
       - name: Simpan ke broksum-asing (hanya bila berubah)
         if: always() && (github.event_name == 'workflow_run' || github.event.inputs.mode != 'selftest')
         run: |

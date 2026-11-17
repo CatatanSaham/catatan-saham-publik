@@ -2485,7 +2485,7 @@ const AIC_KAMUS='KAMUS ISTILAH CATATAN SAHAM (pakai arti ini, jangan menebak art
 '- Broker Action: skor net/bruto Top N broker; ≥40 akumulasi besar, ≥10 akumulasi, −10 s.d. 10 netral, ≤−10 distribusi, ≤−40 distribusi besar.\n'+
 '- Smart Accumulation Matrix: jendela 1/2/5/10/20 sesi, kanal Top5 broker dan NBSA, hijau bila net > 0; "Matrix 5/5" berbeda dari "Clean Buy 5/5".\n'+
 '- MA n = rata-rata harga penutupan n sesi; EMA = rata-rata berbobot (lebih peka ke harga terbaru).\n'+
-'- Transaksi Insider = laporan perubahan kepemilikan direksi, komisaris, pengendali, pemegang besar (beli/jual, lembar, harga, kepemilikan sebelum → sesudah); menu Berita & Katalis dan tab Insider di halaman Saham. Insider beli bukan jaminan harga naik.\n'+
+'- Transaksi Insider = laporan perubahan kepemilikan direksi, komisaris, pengendali, pemegang besar (beli/jual, lot, harga, kepemilikan sebelum → sesudah); menu Berita & Katalis dan tab Insider di halaman Saham. Insider beli bukan jaminan harga naik.\n'+
 '- Asing per Broker = beli/jual nasabah asing yang lewat tiap broker (data sejak 2 Nov 2026), di Foreign Ownership → Foreign Buy/Sell harian, di atas Asing vs Lokal.\n'+
 '- Per kuartal 2025–2026 = pendapatan & laba tiap kuartal (bukan kumulatif) di tab Fundamental; hanya tampil bila jumlahnya cocok dengan laporan 9 bulan/tahunan, "—" = tidak lolos pengecekan.\n'+
 '- Semua hasil adalah catatan analisis, bukan rekomendasi beli/jual.';
@@ -3954,6 +3954,8 @@ const IS={},JN={buy:'Beli',sell:'Jual',transfer:'Pengalihan',cross:'Crossing',ri
 const tgl=d=>d?d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4):'';
 const ang=x=>{const t=String(x==null?'':x).replace(/,/g,'').replace('+','').trim();const v=t===''?null:Number(t);return v==null||isNaN(v)?null:v};
 const nf=v=>Math.round(v).toLocaleString('id-ID');
+/* 1 lot = 100 lembar; sisa pecahan (mis. 150 lembar = 1,5 lot) ditampilkan 1 desimal */
+const lotTx=v=>{const l=v/100;return Number.isInteger(l)?nf(l):l.toLocaleString('id-ID',{maximumFractionDigits:2})};
 const rpk=v=>{const a=Math.abs(v);return a>=1e12?'Rp '+(a/1e12).toLocaleString('id-ID',{maximumFractionDigits:2})+' T':a>=1e9?'Rp '+(a/1e9).toLocaleString('id-ID',{maximumFractionDigits:2})+' M':'Rp '+(a/1e6).toLocaleString('id-ID',{maximumFractionDigits:1})+' jt'};
 const kls=j=>j==='buy'?'up':j==='sell'?'dn':'';
 const segar=()=>{if(typeof S!=='undefined'&&(S.p==='saham'||S.p==='insider'))render()};
@@ -3964,11 +3966,11 @@ async function ambil(path,k){return IP[k]=(async()=>{try{const r=await fetch(CSW
  segar()})()}
 function dapat(path,k){const j=IS[k];if(!j){IS[k]={muat:1};ambil(path,k);return null}return j.muat?null:j}
 const siap=()=>typeof CSW!=='undefined'&&typeof csDev==='function';
-/* satu baris transaksi: jenis, nama, jabatan, lembar, harga, kepemilikan */
+/* satu baris transaksi: jenis, nama, jabatan, lot, harga, kepemilikan */
 function kartuTx(it,kode){const j=it.action_type,lb=ang(it.changes_value),px=ang(it.price_formatted),est=lb!=null&&px?Math.abs(lb)*px:null,jb=(it.badges||[]).join(' / ');
  return `<div class="card" style="padding:10px 12px;margin:8px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b class="${kls(j)}">${esc(JN[j]||j)}${kode?` · <span data-go="saham" onclick="S.hq='${esc(kode)}';S.ht='i';S.hs=null" style="cursor:pointer;text-decoration:underline">${esc(kode)}</span>`:''}</b><span class="mu">${tgl(it.date)}</span></div>
 <div style="margin-top:2px"><b>${esc(it.name||'')}</b>${jb?` <small class="mu">· ${esc(jb)}</small>`:''}${it.nationality==='foreign'?' <small class="mu">· asing</small>':''}</div>
-<div class="mu" style="font-size:13px;margin-top:2px">${lb!=null?`<span class="${lb>0?'up':lb<0?'dn':''}">${lb>0?'+':''}${nf(lb)} lembar</span>`:''}${px?' @ Rp'+nf(px):''}${est?' ≈ '+rpk(est):''} · kepemilikan ${esc(String(it.previous_percentage||'?'))}% → <b>${esc(String(it.current_percentage||'?'))}%</b>${it.broker_code?' · broker '+esc(it.broker_code):''}</div></div>`}
+<div class="mu" style="font-size:13px;margin-top:2px">${lb!=null?`<span class="${lb>0?'up':lb<0?'dn':''}">${lb>0?'+':''}${lotTx(lb)} lot</span>`:''}${px?' @ Rp'+nf(px):''}${est?' ≈ '+rpk(est):''} · kepemilikan ${esc(String(it.previous_percentage||'?'))}% → <b>${esc(String(it.current_percentage||'?'))}%</b>${it.broker_code?' · broker '+esc(it.broker_code):''}</div></div>`}
 /* tab Insider di halaman Saham */
 window.insiderBlk=function(kode){if(!siap())return'';
  const j=dapat(encodeURIComponent(kode),'k|'+kode);
@@ -4003,7 +4005,7 @@ document.addEventListener('change',e=>{const t=e.target;if(!t||(t.id!=='isd'&&t.
 /* untuk Tanya AI: siapkan data lalu ringkas jadi teks */
 window.insiderSiap=function(kode){if(!siap())return Promise.resolve();const k=kode?'k|'+kode:'p|hari=7';if(!IS[k]){IS[k]={muat:1};return ambil(kode?encodeURIComponent(kode):'_pasar?hari=7',k)}return IP[k]||Promise.resolve()};
 window.insiderTeks=function(kode){const k=kode?'k|'+kode:'p|hari=7',j=IS[k];if(!j||j.muat||j.err)return'';
- const baris=it=>{const lb=ang(it.changes_value),px=ang(it.price_formatted);return '- '+tgl(it.date)+(it.kode?' '+it.kode:'')+': '+(JN[it.action_type]||it.action_type)+' oleh '+it.name+((it.badges||[]).length?' ('+it.badges.join('/')+')':'')+(lb!=null?', '+(lb>0?'+':'')+nf(lb)+' lembar':'')+(px?' @Rp'+nf(px):'')+(lb!=null&&px?' ≈'+rpk(Math.abs(lb)*px):'')+', kepemilikan sekarang '+(it.current_percentage||'?')+'%'};
+ const baris=it=>{const lb=ang(it.changes_value),px=ang(it.price_formatted);return '- '+tgl(it.date)+(it.kode?' '+it.kode:'')+': '+(JN[it.action_type]||it.action_type)+' oleh '+it.name+((it.badges||[]).length?' ('+it.badges.join('/')+')':'')+(lb!=null?', '+(lb>0?'+':'')+lotTx(lb)+' lot':'')+(px?' @Rp'+nf(px):'')+(lb!=null&&px?' ≈'+rpk(Math.abs(lb)*px):'')+', kepemilikan sekarang '+(it.current_percentage||'?')+'%'};
  if(kode)return '=== Transaksi insider '+kode+' (laporan terbaru) ===\n'+(j.items.length?j.items.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,10).map(baris).join('\n'):'Tidak ada transaksi insider tercatat.')+'\n';
  const L=j.baris.filter(r=>r[3]==='buy'||r[3]==='sell').map(r=>({r,v:r[6]!=null&&r[9]?Math.abs(r[6])*r[9]:0})).sort((a,b)=>b.v-a.v).slice(0,25);
  return '=== Transaksi insider seluruh pasar 7 hari ('+j.baris.length+' laporan; 25 terbesar menurut estimasi nilai) ===\n'+L.map(({r})=>baris({kode:r[0],date:r[1],name:r[2],action_type:r[3],badges:r[4]?String(r[4]).split('/'):[],changes_value:r[6],price_formatted:r[9],current_percentage:r[8]})).join('\n')+'\n'};

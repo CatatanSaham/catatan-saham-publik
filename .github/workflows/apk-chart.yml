@@ -1,0 +1,59 @@
+# APK Chart Pro (mandiri). Kode di repo privat CatatanSaham/catatan-saham-mtf (folder apk-chart/), diambil memakai PRIVAT_TOKEN.
+# Jangan cetak data mentah ke log (log repo ini publik).
+name: Build APK Chart Pro
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Cabang repo privat"
+        default: "apk-next"
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: apk-chart
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: ${{ github.event.inputs.ref || 'apk-next' }}
+      - uses: actions/setup-node@v4
+        with: {node-version: "20"}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: "21"}
+      - run: pip install pillow
+      - name: Salin aplikasi dan ubah jadi hanya Chart Pro
+        run: |
+          cp -r ../apk/www www
+          python build_www.py www
+      - run: npm install --no-audit --no-fund
+      - run: cp node_modules/lightweight-charts/dist/lightweight-charts.standalone.production.js www/lwc.js
+      - run: npx cap add android
+      - run: |
+          python make_icons.py android/app/src/main/res
+          npx cap sync android
+      - name: Tanda tangan tetap + nomor versi
+        run: |
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          python - <<'PY'
+          p='android/app/build.gradle'
+          t=open(p).read()
+          blk='android {\n    signingConfigs {\n        debug {\n            storeFile file("$rootDir/../../apk/signing/debug.keystore")\n            storePassword "android"\n            keyAlias "androiddebugkey"\n            keyPassword "android"\n        }\n    }\n'
+          assert t.count('android {\n')==1
+          open(p,'w').write(t.replace('android {\n',blk,1))
+          PY
+      - name: Build debug APK
+        working-directory: apk-chart/android
+        run: ./gradlew assembleDebug --no-daemon
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk ChartPro.apk && ls -la ChartPro.apk
+      - name: Rilis ke repo privat (tag chart-latest)
+        env:
+          GH_TOKEN: ${{ secrets.PRIVAT_TOKEN }}
+        run: |
+          gh release delete chart-latest --repo CatatanSaham/catatan-saham-mtf --yes --cleanup-tag || true
+          gh release create chart-latest ChartPro.apk --repo CatatanSaham/catatan-saham-mtf --title "Chart Pro APK (terbaru)" --notes "Chart Pro mandiri (daftar pantau + daftar objek). Pakai hanya untuk diri sendiri." --target "$(git rev-parse HEAD)"

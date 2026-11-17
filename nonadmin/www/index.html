@@ -2420,7 +2420,7 @@ const AIC_ALIAS={gainer:['top gainer','gainer','naik paling','paling naik','kena
 function aicMenu(){try{return MENU.flatMap(g=>g[1]).filter(x=>P[x[0]]&&!(ADMP.has(x[0])&&!AG.admin))}catch(e){return[]}}
 function aicPeta(){const g=[];try{for(const[gr,it]of MENU){const n=it.filter(x=>P[x[0]]&&!(ADMP.has(x[0])&&!AG.admin)).map(x=>x[1].replace(/ ·.*$/,''));if(n.length)g.push(gr+': '+n.join(', '))}}catch(e){}return g.join('\n')}
 /* halaman alat/admin yang tidak berisi data untuk dibaca AI */
-const AIC_LEWAT=new Set(['ai','achart','agambar','chart','mm','tanya','vzip','pmgu','pelacak','visit','admin','support','tunda','mtfs','cari','saham','profil','lap','dvg','auto']);
+const AIC_LEWAT=new Set(['ai','achart','agambar','chart','mm','tanya','vzip','pmgu','pelacak','visit','admin','support','tunda','mtfs','cari','saham','profil','lap','dvg','auto','arsip']);
 function aicCariHalaman(q){const t=' '+q.toLowerCase()+' ',ok=new Set(aicMenu().map(x=>x[0]).filter(k=>!AIC_LEWAT.has(k))),h=[];
  for(const[k,al]of Object.entries(AIC_ALIAS)){const kk=k==='gainerL'?'gainer':k;if(ok.has(kk)&&al.some(a=>t.includes(a)))h.push(k)}
  for(const[k,l]of aicMenu()){const nm=l.replace(/\(.*?\)|·.*$/g,'').trim().toLowerCase();if(nm.length>5&&t.includes(nm)&&!h.includes(k))h.push(k)}

@@ -1842,7 +1842,9 @@ const fsdPilih=r=>r.nh>=-.02&&r.r20>-.20&&r.r5>-.10&&r.r1<.10&&r.vv<3,fsdBuang=r
 
 const ADMP=new Set(['fsd','mm','visit','smart','smb','amb','stealth','awal','dvg','dna','mdna','abot','aint','admin','mtfs','tunda','aud','vzip','pmgu','rencana','riset','akc','pelacak']);
 ADMP.delete('smart');ADMP.delete('awal');
-const HUBH=new Set(['chart','achart','ai','profil','agambar']);const MENUX=()=>{const adm=[];const pub=MENU.map(([g,l])=>[g,l.filter(x=>{if(HUBH.has(x[0]))return false;if(ADMP.has(x[0])){adm.push([x[0],x[1].replace(/ · admin$/,'')]);return false}return true})]).filter(([g,l])=>l.length||g==='Rencana & Evaluasi');return AG.admin&&adm.length?[...pub,['Admin · Riset',adm]]:pub};
+const HUBH=new Set(['chart','achart','ai','profil','agambar']);const MENUX=()=>{const adm=[];const pub=MENU.map(([g,l])=>[g,l.filter(x=>{if(HUBH.has(x[0]))return false;if(ADMP.has(x[0])){adm.push([x[0],x[1].replace(/ · admin$/,'')]);return false}return true})]).filter(([g,l])=>l.length||g==='Rencana & Evaluasi');if(!AG.admin||!adm.length)return pub;const ut=[],rs=[];for(const x of adm)(ADMU.includes(x[0])?ut:rs).push(x);ut.sort((a,b)=>ADMU.indexOf(a[0])-ADMU.indexOf(b[0]));return [...pub,['Admin',ut,rs]]};
+/* menu admin: 7 menu utama tampil langsung (urutan pemilik 18 Nov 2026), sisanya masuk folder Riset di dalam Admin */
+const ADMU=['vzip','auto','arsip','pmgu','admin','pelacak','visit'];
 /* ===== Bandarmologi: Top 5 Broker Accumulation + NBSA ===== */
 const BM={d:null,busy:false,tried:false,err:'',ix:{},ser:{},wk:null,all:{}};
 const BMP=[1,3,5,10,20];
@@ -3610,7 +3612,7 @@ function subHdr(){return `<div class="sub"><button data-back="1">← Kembali</bu
 function dataPct(){const R=updRows().filter(r=>r[3]!=='muat'),ok=R.filter(r=>r[1]&&!updTl(r)).length;return{pct:R.length?Math.round(ok/R.length*100):0,ok,n:R.length}}
 function popHtml(){const d=ld(dates.at(-1)),dp=dataPct();return `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px">Status pembaruan</b><button class="btn" id="px">✕</button></div><div style="color:var(--up);margin:8px 0">${dp.pct===100?'Data harian lengkap · 100%':'Data harian '+dp.pct+'% ('+dp.ok+'/'+dp.n+' sumber sudah sampai tanggal terbaru)'}</div><div class="mu">Data sampai ${d}</div>${upd()}`}
 function dmHtml(){const ar='<svg class="ar" width="20" height="12" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h15M12 1.500L17.500 6 12 10.500" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-return '<div style="display:flex;gap:10px;align-items:center"><img src="shards/logo.jpg" width="44" height="44" alt="" style="border-radius:50%;box-shadow:0 0 14px #2df6ff88"><div><b style="color:#ffd24a;font-size:20px">CATATAN SAHAM</b><br><small style="color:#a9c9cf">Analisa · Belajar · Tumbuh</small></div></div><div style="display:flex;gap:8px;align-items:center;margin:12px 0 4px"><div class="slg" style="font-size:12px">TRADING IS NOT ROCKET SCIENCE</div>'+rkH(22)+'</div><a data-go="home" tabindex="0" class="'+(S.p==='home'?'act':'')+'">'+ar+'<span>Beranda</span></a><a data-go="support" tabindex="0" class="'+(S.p==='support'?'act':'')+'">'+ar+'<span>❤️ Support</span></a>'+MENUX().map(([g,l])=>{const op=!(S.gc&&S.gc[g]);return `<button class="gh" data-gt="${g}" aria-expanded="${op}"><span>${g.toUpperCase()}</span><span aria-hidden="true">${op?'⌃':'⌄'}</span></button>`+(op?`<div class="sm">`+l.map(([k,n])=>`<a data-go="${k}" tabindex="0" class="${k===S.p?'act':''}"${k===S.p?' aria-current="page"':''}>${ar}<span>${n}</span></a>`).join('')+'</div>':'')}).join('')}
+return '<div style="display:flex;gap:10px;align-items:center"><img src="shards/logo.jpg" width="44" height="44" alt="" style="border-radius:50%;box-shadow:0 0 14px #2df6ff88"><div><b style="color:#ffd24a;font-size:20px">CATATAN SAHAM</b><br><small style="color:#a9c9cf">Analisa · Belajar · Tumbuh</small></div></div><div style="display:flex;gap:8px;align-items:center;margin:12px 0 4px"><div class="slg" style="font-size:12px">TRADING IS NOT ROCKET SCIENCE</div>'+rkH(22)+'</div><a data-go="home" tabindex="0" class="'+(S.p==='home'?'act':'')+'">'+ar+'<span>Beranda</span></a><a data-go="support" tabindex="0" class="'+(S.p==='support'?'act':'')+'">'+ar+'<span>❤️ Support</span></a>'+MENUX().map(([g,l,rs])=>{const op=!(S.gc&&S.gc[g]),it=([k,n])=>`<a data-go="${k}" tabindex="0" class="${k===S.p?'act':''}"${k===S.p?' aria-current="page"':''}>${ar}<span>${n}</span></a>`,rk=g+'/Riset',ro=!!(S.gc&&S.gc[rk])||!!(rs&&rs.some(x=>x[0]===S.p)),fd=rs&&rs.length?`<button class="gh" data-gt="${rk}" aria-expanded="${ro}" style="margin-left:14px;width:calc(100% - 14px)"><span>📁 RISET (${rs.length})</span><span aria-hidden="true">${ro?'⌃':'⌄'}</span></button>`+(ro?`<div class="sm" style="margin-left:14px">`+rs.map(it).join('')+'</div>':''):'';return `<button class="gh" data-gt="${g}" aria-expanded="${op}"><span>${g.toUpperCase()}</span><span aria-hidden="true">${op?'⌃':'⌄'}</span></button>`+(op?`<div class="sm">`+l.map(it).join('')+'</div>'+fd:'')}).join('')}
 
 S.hist=[];function go(p,nb){if(p==='menu'){$('#dr').classList.add('o');return}if(S.lwfs&&p!==S.p){S.lwfs=false;try{document.fullscreenElement&&document.exitFullscreen().catch(()=>{})}catch(e){}}if(!nb&&S.p!==p)S.hist.push(S.p);$('#pop').classList.remove('o');S.p=p;S.d=null;$('#dr').classList.remove('o');try{location.hash=p}catch(e){}render();scrollTo(0,0)}
 const LWD={ma1:true,ma2:false,lwv:true,rsi:false,macd:false};
@@ -3850,205 +3852,6 @@ m15Load=async function(q){
  const A=await job;MEM[q]=A.length?{R:A}:{err:1,at:Date.now()};return A
 };
 })();
-/* ===== Analitik Risiko: volatilitas, drawdown, beta vs IHSG, korelasi (dihitung di perangkat dari harga penutupan yang sudah ada) ===== */
-/* Hanya memakai harga: tidak ada data broker, jadi aman untuk edisi admin dan Non Admin. Rumus: docs/FORMULA_REGISTRY.md (main) bagian "Analitik Risiko". */
-const RK={sel:[],w:120,bm:'sama',wt:{},pr:{},cache:{},err:{},note:''};
-const RK_MAX=10,RK_HARI=245,RK_LONCAT=.4,RK_MINOBS=30;
-try{const j=JSON.parse(localStorage.getItem('cs_rk')||'null');if(j&&Array.isArray(j.s))RK.sel=j.s.filter(x=>/^[A-Z0-9]{4}$/.test(x)).slice(0,RK_MAX);if(j&&[60,120,250].includes(+j.w))RK.w=+j.w;
- if(j&&j.bm==='sendiri'&&j.b&&typeof j.b==='object'){RK.bm='sendiri';for(const t of RK.sel){const x=+j.b[t];RK.wt[t]=isFinite(x)&&x>0?x:0}}}catch(e){}
-const rkSave=()=>{try{localStorage.setItem('cs_rk',JSON.stringify({s:RK.sel,w:RK.w,bm:RK.bm,b:RK.wt}))}catch(e){}};
-/* bobot sendiri: nilai awal = sama rata (dibulatkan 0,1); dipanggil saat daftar saham berubah atau mode diganti */
-function rkBobotSama(){RK.wt={};const n=RK.sel.length;for(const t of RK.sel)RK.wt[t]=n?Math.round(1000/n)/10:0}
-
-/* --- hitungan murni (tanpa DOM) --- */
-const rkMean=a=>a.reduce((s,x)=>s+x,0)/a.length;
-const rkSd=a=>{if(a.length<2)return null;const m=rkMean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)*(x-m),0)/(a.length-1))};
-/* baris chart [yymmdd,o,h,l,c,v] → Map tanggal→close (close ≤ 0 dibuang: data hilang bukan nol) */
-function rkMap(rows){const m=new Map();for(const r of rows||[]){const c=+r[4];if(c>0)m.set(String(r[0]),c)}return m}
-/* kalender = gabungan tanggal semua saham terpilih, n+1 tanggal terakhir (n imbal hasil) */
-function rkCal(maps,n){const s=new Set();for(const m of maps)for(const d of m.keys())s.add(d);return [...s].sort().slice(-(n+1))}
-/* imbal hasil harian antar dua tanggal kalender berurutan; tanggal tanpa close di salah satu ujung dilewati (tidak diisi nol) */
-function rkRet(m,cal){const r=new Map();let loncat=0;for(let i=1;i<cal.length;i++){const a=m.get(cal[i-1]),b=m.get(cal[i]);if(a==null||b==null)continue;const x=b/a-1;if(Math.abs(x)>RK_LONCAT){loncat++;continue}r.set(cal[i],x)}return{r,loncat}}
-function rkDD(cl){let pk=-Infinity,mx=0;for(const c of cl){if(c>pk)pk=c;const d=c/pk-1;if(d<mx)mx=d}return{max:mx,now:cl.length?cl.at(-1)/pk-1:null}}
-function rkCorr(x,y){if(x.length<RK_MINOBS)return null;const mx=rkMean(x),my=rkMean(y);let sxy=0,sxx=0,syy=0;for(let i=0;i<x.length;i++){const a=x[i]-mx,b=y[i]-my;sxy+=a*b;sxx+=a*a;syy+=b*b}return sxx>0&&syy>0?sxy/Math.sqrt(sxx*syy):null}
-function rkBeta(x,m){if(x.length<RK_MINOBS)return null;const mx=rkMean(x),mm=rkMean(m);let c=0,v=0;for(let i=0;i<x.length;i++){c+=(x[i]-mx)*(m[i]-mm);v+=(m[i]-mm)*(m[i]-mm)}return v>0?c/v:null}
-/* imbal hasil IHSG (COMPOSITE) antar sesi berurutan di D.ix, mulai tanggal kalender pertama; kunci yymmdd */
-function rkIhsg(d0){const r=[];for(let i=1;i<ixd.length;i++){const a=D.ix[ixd[i-1]],b=D.ix[ixd[i]];if(!a||!b||!a.COMPOSITE||!b.COMPOSITE)continue;if(ixd[i].slice(2)<d0)continue;const x=b.COMPOSITE[0]/a.COMPOSITE[0]-1;if(isFinite(x))r.push({a:ixd[i-1].slice(2),b:ixd[i].slice(2),x})}return r}
-/* seluruh analitik: maps = {kode: Map}, n = jumlah sesi, wts = {kode: bobot} atau null (sama rata) */
-function rkHitung(maps,n,wts){
- const ks=Object.keys(maps);if(!ks.length)return null;
- const cal=rkCal(ks.map(k=>maps[k]),n);if(cal.length<RK_MINOBS+1)return{kurang:true,cal};
- const R={},baris=[];
- for(const k of ks){const m=maps[k],rr=rkRet(m,cal),cl=cal.map(d=>m.get(d)).filter(x=>x!=null),v=[...rr.r.values()],sd=rkSd(v),dd=rkDD(cl);
-  R[k]=rr.r;baris.push({k,n:v.length,ret:cl.length>1?cl.at(-1)/cl[0]-1:null,vol:sd==null||v.length<RK_MINOBS?null:sd*Math.sqrt(RK_HARI),dd:dd.max,ddn:dd.now,loncat:rr.loncat,cl:cl.length})}
- /* beta vs IHSG: stok dan indeks diukur pada pasangan sesi IHSG yang sama */
- const ih=rkIhsg(cal[0]);
- for(const b of baris){const m=maps[b.k],x=[],y=[];for(const p of ih){const a=m.get(p.a),c=m.get(p.b);if(a==null||c==null)continue;const r=c/a-1;if(Math.abs(r)>RK_LONCAT)continue;x.push(r);y.push(p.x)}b.beta=rkBeta(x,y);b.nb=x.length}
- /* korelasi berpasangan pada tanggal yang dimiliki kedua saham */
- const C={};
- for(const a of ks){C[a]={};for(const b of ks){if(a===b){C[a][b]=1;continue}const x=[],y=[];for(const [d,r] of R[a]){const q=R[b].get(d);if(q!=null){x.push(r);y.push(q)}}C[a][b]=rkCorr(x,y)}}
- /* portofolio dengan bobot tetap (dibagi ulang tiap hari), hanya pada tanggal semua saham berbobot >0 punya imbal hasil.
-    wts null/kosong/jumlah 0 → sama rata. Bobot dinormalkan ke jumlah 1; bobot negatif atau bukan angka dianggap 0. */
- let P=null;
- const wk=ks.map(k=>{const x=wts&&wts[k]!=null?+wts[k]:wts?0:1;return isFinite(x)&&x>0?x:0}),ws=wk.reduce((s,x)=>s+x,0);
- const sama=!wts||!(ws>0),W=sama?ks.map(()=>1/ks.length):wk.map(x=>x/ws);
- const ak=ks.filter((k,i)=>W[i]>0);
- if(ak.length>=2){const ds=[];for(const d of cal.slice(1)){if(ak.every(k=>R[k].has(d)))ds.push(d)}
-  if(ds.length>=RK_MINOBS){const pr=ds.map(d=>ks.reduce((s,k,i)=>s+(W[i]>0?W[i]*R[k].get(d):0),0)),sd=rkSd(pr);let e=1;const eq=[1];for(const x of pr){e*=1+x;eq.push(e)}
-   const iv=ks.map((k,i)=>W[i]>0?rkSd(ds.map(d=>R[k].get(d)))*Math.sqrt(RK_HARI):0),rata=iv.reduce((s,x,i)=>s+W[i]*x,0);
-   P={n:ds.length,vol:sd*Math.sqrt(RK_HARI),ret:e-1,dd:rkDD(eq).max,rata,kurang:1-sd*Math.sqrt(RK_HARI)/rata,ak:ak.length}}}
- return{cal,baris,C,P,ih:ih.length,W,sama}}
-
-/* --- muat data: chLoad (shard chart harian per kode) --- */
-function rkMuat(t){if(RK.pr[t])return RK.pr[t];return RK.pr[t]=chLoad(t).then(a=>{if(a&&a.length){RK.cache[t]=rkMap(a)}else{RK.err[t]='tidak ditemukan'}}).catch(()=>{RK.err[t]='gagal dimuat'}).then(()=>{if(S.p==='risiko'||S.p==='uji')render()})}
-function rkTambah(txt){const baru=String(txt||'').toUpperCase().split(/[^A-Z0-9]+/).filter(x=>/^[A-Z0-9]{4}$/.test(x));RK.note='';
- let tambah=0;for(const t of baru){if(RK.sel.includes(t))continue;if(RK.sel.length>=RK_MAX){RK.note='Maksimal '+RK_MAX+' saham.';break}RK.sel.push(t);tambah++}
- rkDaftarBerubah(tambah);rkSave();render()}
-/* daftar saham berubah: bobot sendiri dikembalikan ke sama rata supaya jumlahnya tidak ganjil */
-function rkDaftarBerubah(ubah){if(ubah&&RK.bm==='sendiri'){rkBobotSama();RK.note=(RK.note?RK.note+' ':'')+'Bobot dikembalikan ke sama rata karena daftar saham berubah.'}}
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-rk]');if(!b||S.p!=='risiko')return;const a=b.dataset.rk;
- if(a==='add'){const i=$('#rkin');rkTambah(i?i.value:'')}
- else if(a==='del'){const t=b.dataset.v;RK.sel=RK.sel.filter(x=>x!==t);delete RK.err[t];RK.note='';rkDaftarBerubah(1);rkSave();render()}
- else if(a==='ex'){RK.sel=['BBCA','BBRI','BMRI','TLKM','ASII'];RK.note='';rkDaftarBerubah(1);rkSave();render()}
- else if(a==='clr'){RK.sel=[];RK.note='';RK.wt={};rkSave();render()}});
-document.addEventListener('keydown',e=>{if(S.p==='risiko'&&e.key==='Enter'&&e.target&&e.target.id==='rkin'){e.preventDefault();rkTambah(e.target.value)}});
-document.addEventListener('change',e=>{if(S.p!=='risiko'||!e.target)return;const el=e.target;
- if(el.id==='rkw'){RK.w=+el.value;rkSave();render()}
- else if(el.id==='rkbm'){RK.bm=el.value==='sendiri'?'sendiri':'sama';if(RK.bm==='sendiri')rkBobotSama();else RK.wt={};RK.note='';rkSave();render()}
- else if(el.dataset&&el.dataset.rkb){const x=parseFloat(String(el.value).replace(',','.'));RK.wt[el.dataset.rkb]=isFinite(x)&&x>0?x:0;rkSave();render()}});
-
-/* --- halaman --- */
-const rkPct=(x,d=1)=>x==null||!isFinite(x)?'–':(x>0?'+':'')+N(x*100,d)+'%';
-const rkNum=(x,d=2)=>x==null||!isFinite(x)?'–':N(x,d);
-function rkWarna(r){if(r==null)return '';const a=Math.min(.5,Math.abs(r)*.5);return r>=0?`background:rgba(185,150,47,${a.toFixed(2)})`:`background:rgba(60,120,220,${a.toFixed(2)})`}
-function risiko(){
- const kepala=`<div class="brand">RISIKO</div><h1>Analitik Risiko</h1><div class="mu">Volatilitas, drawdown, beta terhadap IHSG, dan korelasi antar saham. Dihitung di perangkat dari harga penutupan harian. Catatan analisis, bukan rekomendasi.</div>`;
- const jml=RK.sel.reduce((a,t)=>a+(+RK.wt[t]||0),0);
- const bobotUI=`<label class="mu" style="font-size:12px;display:block;margin-top:8px">Bobot portofolio<select class="sel" id="rkbm"><option value="sama"${RK.bm==='sama'?' selected':''}>Sama rata</option><option value="sendiri"${RK.bm==='sendiri'?' selected':''}>Atur sendiri (%)</option></select></label>${RK.bm==='sendiri'&&RK.sel.length?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">${RK.sel.map(t=>`<label class="mu" style="font-size:12px;flex:1 1 40%"><b>${t}</b> (%)<input class="sel" inputmode="decimal" data-rkb="${t}" value="${RK.wt[t]!=null?RK.wt[t]:0}"></label>`).join('')}</div><div class="mu" style="font-size:12px;margin-top:4px">Total ${N(jml,1)}%${Math.abs(jml-100)>.05?' — tidak 100%, bobot dinormalkan otomatis.':'.'}</div>`:''}`;
- const pilih=`<div class="card"><label class="mu" style="font-size:12px">Tambah kode saham (maks ${RK_MAX}; pisahkan dengan spasi atau koma)<input class="sel" id="rkin" autocapitalize="characters" autocomplete="off" placeholder="mis. BBCA BBRI TLKM"></label>
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="btn on" data-rk="add">Tambah</button><button class="btn" data-rk="ex">Contoh 5 saham besar</button>${RK.sel.length?'<button class="btn" data-rk="clr">Kosongkan</button>':''}</div>
-${RK.note?`<div class="note">${RK.note}</div>`:''}
-<div style="margin-top:8px">${RK.sel.map(t=>`<button class="btn${RK.err[t]?'':' on'}" data-rk="del" data-v="${t}" title="Hapus ${t}">${t} ✕${RK.err[t]?' · '+RK.err[t]:''}</button>`).join(' ')}</div>
-<label class="mu" style="font-size:12px;display:block;margin-top:8px">Jendela<select class="sel" id="rkw">${[[60,'60 sesi (±3 bulan)'],[120,'120 sesi (±6 bulan)'],[250,'250 sesi (±1 tahun)']].map(([v,l])=>`<option value="${v}"${RK.w===v?' selected':''}>${l}</option>`).join('')}</select></label>${bobotUI}</div>`;
- if(!RK.sel.length)return kepala+pilih+`<div class="card">Pilih beberapa saham untuk melihat risikonya. Tekan "Contoh 5 saham besar" untuk mencoba.</div>`;
- const tunggu=RK.sel.filter(t=>!RK.cache[t]&&!RK.err[t]);
- if(tunggu.length){tunggu.forEach(rkMuat);return kepala+pilih+`<div class="card">Memuat data harga ${tunggu.join(', ')}…</div>`}
- const maps={};for(const t of RK.sel)if(RK.cache[t])maps[t]=RK.cache[t];
- const H=rkHitung(maps,RK.w,RK.bm==='sendiri'?RK.wt:null);
- if(!H)return kepala+pilih+`<div class="card">Tidak ada data yang bisa dihitung.</div>`;
- if(H.kurang)return kepala+pilih+`<div class="card">Data harga belum cukup (minimal ${RK_MINOBS+1} sesi).</div>`;
- const ks=H.baris.map(b=>b.k),loncat=H.baris.filter(b=>b.loncat);
- const t1=tbl(['Saham','Return','Vol/tahun','Maks DD','DD kini','Beta'],H.baris.map(b=>`<tr><td><span class="tk">${b.k}</span></td><td class="${cl(b.ret)}">${rkPct(b.ret)}</td><td>${b.vol==null?'–':N(b.vol*100,1)+'%'}</td><td class="dn">${rkPct(b.dd)}</td><td class="${cl(b.ddn)}">${rkPct(b.ddn)}</td><td>${rkNum(b.beta)}</td></tr>`));
- const k1=tbl([''].concat(ks),ks.map(a=>`<tr><td><b>${a}</b></td>${ks.map(b=>{const v=H.C[a][b];return `<td style="text-align:center;${a===b?'':rkWarna(v)}">${a===b?'·':rkNum(v)}</td>`}).join('')}</tr>`));
- let pas=null;for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++){const v=H.C[ks[i]][ks[j]];if(v!=null&&(!pas||v>pas.hi.v))pas={...pas,hi:{a:ks[i],b:ks[j],v}};if(v!=null&&(!pas||!pas.lo||v<pas.lo.v))pas={...pas,lo:{a:ks[i],b:ks[j],v}}}
- const jdl=H.sama?'Portofolio bobot sama':'Portofolio bobot Anda',kom=H.sama?'':ks.map((k,i)=>H.W[i]>0?k+' '+N(H.W[i]*100,0)+'%':'').filter(Boolean).join(' · ');
- const bn=H.baris.filter(b=>b.beta!=null),nb=bn.length?Math.max(...bn.map(b=>b.nb)):0;
- return kepala+pilih+`<div class="mu">Jendela ${RK.w} sesi: ${fd('20'+H.cal[0])} – ${fd('20'+H.cal.at(-1))}. Return = perubahan close awal ke akhir jendela.</div>
-${t1}
-<div class="note">Vol/tahun = simpangan baku imbal hasil harian × √${RK_HARI}. Maks DD = penurunan terdalam dari puncak close dalam jendela; DD kini = jarak close terakhir dari puncak itu. Beta = sensitivitas terhadap IHSG (1 = searah penuh, &gt;1 lebih liar dari indeks).${nb?` Beta memakai ${nb} sesi${H.cal[0]<ixd[0].slice(2)?': data IHSG baru ada sejak '+fd(ixd[0]):''}.`:' Beta belum tersedia: data IHSG dalam jendela kurang dari '+RK_MINOBS+' sesi.'}</div>
-${loncat.length?`<div class="note">⚠ ${loncat.map(b=>b.k+' '+b.loncat+'×').join(', ')}: imbal hasil harian di atas ±${RK_LONCAT*100}% dikecualikan (biasanya stock split/gabungan atau lubang data), supaya volatilitas tidak terdistorsi.</div>`:''}
-${ks.length>=2?`<h2 style="margin-top:12px">Korelasi antar saham</h2>${k1}<div class="note">Mendekati +1 = bergerak searah (diversifikasi kecil); mendekati 0 = tidak terkait; negatif = cenderung berlawanan.${pas&&pas.hi?` Paling searah: <b>${pas.hi.a}–${pas.hi.b}</b> (${rkNum(pas.hi.v)}). Paling tidak searah: <b>${pas.lo.a}–${pas.lo.b}</b> (${rkNum(pas.lo.v)}).`:''}</div>`:''}
-${H.P?`<h2 style="margin-top:12px">${jdl}</h2>${tbl(['Ukuran','Nilai'],[`<tr><td>Vol/tahun portofolio</td><td>${N(H.P.vol*100,1)}%</td></tr>`,`<tr><td>Rata-rata vol/tahun tiap saham${H.sama?'':' (tertimbang)'}</td><td>${N(H.P.rata*100,1)}%</td></tr>`,`<tr><td>Risiko turun karena campuran</td><td class="${cl(H.P.kurang)}">${rkPct(H.P.kurang,0)}</td></tr>`,`<tr><td>Maks DD portofolio</td><td class="dn">${rkPct(H.P.dd)}</td></tr>`,`<tr><td>Return portofolio</td><td class="${cl(H.P.ret)}">${rkPct(H.P.ret)}</td></tr>`].concat(H.sama?[]:[`<tr><td>Komposisi</td><td>${kom}</td></tr>`]))}<div class="note">Seandainya modal dibagi ${H.sama?'rata ke '+ks.length+' saham':'sesuai bobot ('+H.P.ak+' saham berbobot)'} dan dibagi ulang tiap hari ke bobot itu, pada ${H.P.n} sesi yang semua sahamnya punya data. "Risiko turun karena campuran" = 1 − vol portofolio ÷ rata-rata vol tiap saham${H.sama?'':' (tertimbang bobot)'}.</div>`:ks.length>=2?`<div class="note">Portofolio belum bisa dihitung: butuh minimal 2 saham berbobot di atas 0% dan ${RK_MINOBS} sesi bersama yang semuanya punya data.</div>`:''}
-<details class="det"><summary>Batasan</summary><div class="note">Berdasarkan harga masa lalu satu periode saja; bukan ramalan. Harga memakai close apa adanya (tanpa penyesuaian aksi korporasi selain pengecualian lompatan di atas). Sesi tanpa harga untuk suatu saham dilewati, tidak diisi nol. Beta dan korelasi butuh minimal ${RK_MINOBS} pengamatan; di bawah itu ditampilkan "–". Saham sangat jarang diperdagangkan bisa tampak sangat tenang padahal sulit dijual.</div></details>`}
-try{P.risiko=risiko;const g=MENU.find(x=>x[0]==='Pasar');if(g)g[1].push(['risiko','Analitik Risiko'])}catch(e){}
-try{if((location.hash||'').slice(1)==='risiko'){S.p='risiko';render()}}catch(e){}
-/* ===== Uji Strategi Sederhana: "kalau aturan ini dipakai di masa lalu, hasilnya berapa?" (dihitung di perangkat dari harga close harian) ===== */
-/* Hanya memakai harga, jadi aman untuk edisi admin dan Non Admin. Memakai pemuat data dan konstanta dari 18e-analitik-risiko.js (RK, rkMuat, rkMap, rkSd, rkDD, RK_HARI, RK_LONCAT, RK_MAX). */
-/* Rumus dan asumsi: docs/FORMULA_REGISTRY.md (main) bagian "Uji Strategi Sederhana". */
-const UJ={sel:[],st:'ma:20:100',w:500,note:''};
-const UJ_BIAYA=.002; /* per transaksi (beli atau jual) = 0,4% pergi-pulang */
-const UJ_ST=[['ma:5:20','Silang MA 5/20'],['ma:10:50','Silang MA 10/50'],['ma:20:100','Silang MA 20/100'],['ma:50:200','Silang MA 50/200'],['rsi:30:50','RSI(14): beli <30, jual >50'],['rsi:20:50','RSI(14): beli <20, jual >50'],['dc:20:10','Breakout: tembus puncak 20 sesi, keluar di bawah dasar 10'],['dc:55:20','Breakout: tembus puncak 55 sesi, keluar di bawah dasar 20']];
-const UJ_WIN=[[250,'1 tahun (250 sesi)'],[500,'2 tahun (500 sesi)'],[1000,'4 tahun (1000 sesi)'],[0,'Semua data (sejak 2020)']];
-try{const j=JSON.parse(localStorage.getItem('cs_uj')||'null');if(j){if(Array.isArray(j.s))UJ.sel=j.s.filter(x=>/^[A-Z0-9]{4}$/.test(x)).slice(0,RK_MAX);if(UJ_ST.some(x=>x[0]===j.t))UJ.st=j.t;if(UJ_WIN.some(x=>x[0]===+j.w))UJ.w=+j.w}}catch(e){}
-const ujSave=()=>{try{localStorage.setItem('cs_uj',JSON.stringify({s:UJ.sel,t:UJ.st,w:UJ.w}))}catch(e){}};
-
-/* --- hitungan murni (tanpa DOM) --- */
-/* Map tanggal→close → deret berurutan; lompatan harian di atas ±RK_LONCAT dianggap stock split/gabungan dan harga sebelumnya disesuaikan (menyambung) */
-function ujSeri(m){const d=[...m.keys()].sort(),c=d.map(x=>m.get(x)),n=c.length,a=new Array(n);let F=1,loncat=0;
- for(let i=n-1;i>=0;i--){a[i]=c[i]*F;if(i>0){const r=c[i]/c[i-1];if(Math.abs(r-1)>RK_LONCAT){F*=r;loncat++}}}
- return{d,c:a,loncat}}
-function ujRsi(c,n){const r=new Array(c.length).fill(null);if(c.length<=n)return r;let g=0,l=0;
- for(let i=1;i<=n;i++){const x=c[i]-c[i-1];if(x>0)g+=x;else l-=x}g/=n;l/=n;r[n]=l===0?100:100-100/(1+g/l);
- for(let i=n+1;i<c.length;i++){const x=c[i]-c[i-1];g=(g*(n-1)+(x>0?x:0))/n;l=(l*(n-1)+(x<0?-x:0))/n;r[i]=l===0?100:100-100/(1+g/l)}return r}
-/* sinyal[t] = 1 bila aturan menyuruh memegang saham, dihitung HANYA dari close sampai hari t */
-function ujSinyal(c,st){const q=st.split(':'),j=q[0],a=+q[1],b=+q[2],n=c.length,s=new Array(n).fill(0);
- if(j==='ma'){const S=k=>{const o=new Array(n).fill(null);for(let i=k-1;i<n;i++){let t=0;for(let q=i-k+1;q<=i;q++)t+=c[q];o[i]=t/k}return o},f=S(a),w=S(b);/* toleransi: harga mendatar membuat dua rata-rata sama persis; selisih pembulatan tidak boleh memicu transaksi */for(let i=0;i<n;i++)s[i]=f[i]!=null&&w[i]!=null&&f[i]>w[i]*(1+1e-9)?1:0}
- else if(j==='rsi'){const R=ujRsi(c,14);let p=0;for(let i=0;i<n;i++){if(R[i]!=null){if(R[i]<a)p=1;else if(R[i]>b)p=0}s[i]=p}}
- else if(j==='dc'){let p=0;for(let i=0;i<n;i++){if(i>=a){let hi=-Infinity;for(let k=i-a;k<i;k++)if(c[k]>hi)hi=c[k];if(c[i]>hi)p=1}if(i>=b){let lo=Infinity;for(let k=i-b;k<i;k++)if(c[k]<lo)lo=c[k];if(c[i]<lo)p=0}s[i]=p}}
- return s}
-/* simulasi satu saham. Sinyal hari t → transaksi di close hari t+1 → posisi ikut menikmati imbal hasil hari t+2 dan seterusnya (jeda 2 hari, tanpa mengintip).
-   Biaya UJ_BIAYA tiap kali posisi berubah. Mulai jendela dalam keadaan kosong (masuk di awal jendela juga kena biaya). Beli&tahan: biaya masuk sekali. */
-function ujSim(ser,st,win){const c=ser.c,d=ser.d,n=c.length,sig=ujSinyal(c,st),pos=new Array(n).fill(0);for(let i=2;i<n;i++)pos[i]=sig[i-2];
- const i0=win>0?Math.max(1,n-win):1,rS=[],rB=[],dt=[];let prev=0,tr=[],cur=null;
- for(let i=i0;i<n;i++){const r=c[i]/c[i-1]-1,p=pos[i],cost=p!==prev?UJ_BIAYA:0,x=(1-cost)*(1+p*r)-1;
-  rS.push(x);rB.push(i===i0?(1-UJ_BIAYA)*(1+r)-1:r);dt.push(d[i]);
-  if(p===1&&prev===0)cur=1-UJ_BIAYA;
-  if(cur!=null){if(p===1)cur*=(1+r);else{cur*=(1-UJ_BIAYA);tr.push(cur-1);cur=null}}
-  prev=p}
- let buka=false;if(cur!=null){tr.push(cur-1);buka=true}
- return{d:dt,rS,rB,tr,buka,expo:rS.length?pos.slice(i0).reduce((s,x)=>s+x,0)/rS.length:0,n:rS.length}}
-function ujMetrik(r){const n=r.length;if(!n)return null;let e=1;const eq=[1];for(const x of r){e*=1+x;eq.push(e)}
- const th=n/RK_HARI,sd=rkSd(r);return{ret:e-1,cagr:th>=1?Math.pow(e,1/th)-1:null,vol:sd==null?null:sd*Math.sqrt(RK_HARI),dd:rkDD(eq).max,eq}}
-/* gabungan: rata-rata imbal hasil harian semua saham (bobot sama) pada tanggal yang dimiliki semua saham */
-function ujGabung(sims){const M=sims.map(s=>new Map(s.d.map((d,i)=>[d,i])));let ds=sims[0].d.filter(d=>M.every(m=>m.has(d)));
- const rS=ds.map(d=>rkMean(sims.map((s,k)=>s.rS[M[k].get(d)]))),rB=ds.map(d=>rkMean(sims.map((s,k)=>s.rB[M[k].get(d)])));return{d:ds,rS,rB}}
-function ujTahun(g){const Y={};g.d.forEach((d,i)=>{const y='20'+d.slice(0,2);(Y[y]=Y[y]||{n:0,s:1,b:1});Y[y].n++;Y[y].s*=1+g.rS[i];Y[y].b*=1+g.rB[i]});return Object.keys(Y).sort().map(y=>({y,n:Y[y].n,s:Y[y].s-1,b:Y[y].b-1}))}
-function ujSvg(a,b,d0,d1){const n=a.length,W=340,H=150,all=a.concat(b);let mn=Infinity,mx=-Infinity;for(const v of all){if(v<mn)mn=v;if(v>mx)mx=v}
- const x=i=>(28+(W-34)*i/(n-1||1)).toFixed(1),y=v=>(H-20-(H-34)*(v-mn)/((mx-mn)||1)).toFixed(1),st=Math.max(1,Math.floor(n/300));
- const pts=arr=>{const o=[];for(let i=0;i<n;i+=st)o.push(x(i)+','+y(arr[i]));o.push(x(n-1)+','+y(arr[n-1]));return o.join(' ')};
- return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Kurva modal strategi dan beli dan tahan" style="display:block"><polyline fill="none" stroke="var(--mute)" stroke-width="1.6" points="${pts(b)}"/><polyline fill="none" stroke="var(--gold)" stroke-width="2" points="${pts(a)}"/><text x="2" y="${+y(mx)+4}" font-size="9" fill="var(--mute)">${N(mx*100,0)}</text><text x="2" y="${y(mn)}" font-size="9" fill="var(--mute)">${N(mn*100,0)}</text><text x="28" y="${H-5}" font-size="9" fill="var(--mute)">${d0}</text><text x="${W-4}" y="${H-5}" font-size="9" text-anchor="end" fill="var(--mute)">${d1}</text></svg>`}
-
-/* --- interaksi --- */
-function ujTambah(txt){const baru=String(txt||'').toUpperCase().split(/[^A-Z0-9]+/).filter(x=>/^[A-Z0-9]{4}$/.test(x));UJ.note='';
- for(const t of baru){if(UJ.sel.includes(t))continue;if(UJ.sel.length>=RK_MAX){UJ.note='Maksimal '+RK_MAX+' saham.';break}UJ.sel.push(t)}ujSave();render()}
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-uj]');if(!b||S.p!=='uji')return;const a=b.dataset.uj;
- if(a==='add'){const i=$('#ujin');ujTambah(i?i.value:'')}
- else if(a==='del'){UJ.sel=UJ.sel.filter(x=>x!==b.dataset.v);delete RK.err[b.dataset.v];UJ.note='';ujSave();render()}
- else if(a==='ex'){UJ.sel=['BBCA','BBRI','BMRI','TLKM','ASII'];UJ.note='';ujSave();render()}
- else if(a==='clr'){UJ.sel=[];UJ.note='';ujSave();render()}});
-document.addEventListener('keydown',e=>{if(S.p==='uji'&&e.key==='Enter'&&e.target&&e.target.id==='ujin'){e.preventDefault();ujTambah(e.target.value)}});
-document.addEventListener('change',e=>{if(S.p!=='uji'||!e.target)return;const el=e.target;
- if(el.id==='ujst'){UJ.st=el.value;ujSave();render()}else if(el.id==='ujw'){UJ.w=+el.value;ujSave();render()}});
-
-/* --- halaman --- */
-function uji(){
- const kepala=`<div class="brand">RISET</div><h1>Uji Strategi Sederhana</h1><div class="mu">"Kalau aturan ini dipakai di masa lalu, hasilnya berapa?" dibandingkan dengan beli lalu tahan, sudah termasuk biaya ${N(UJ_BIAYA*200,1)}% pergi-pulang. Dihitung di perangkat dari harga close harian. Catatan analisis, bukan rekomendasi.</div>`;
- const stNama=(UJ_ST.find(x=>x[0]===UJ.st)||[0,UJ.st])[1];
- const pilih=`<div class="card"><label class="mu" style="font-size:12px">Tambah kode saham (maks ${RK_MAX}; spasi atau koma)<input class="sel" id="ujin" autocapitalize="characters" autocomplete="off" placeholder="mis. BBCA BBRI TLKM"></label>
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="btn on" data-uj="add">Tambah</button><button class="btn" data-uj="ex">Contoh 5 saham besar</button>${UJ.sel.length?'<button class="btn" data-uj="clr">Kosongkan</button>':''}</div>
-${UJ.note?`<div class="note">${UJ.note}</div>`:''}
-<div style="margin-top:8px">${UJ.sel.map(t=>`<button class="btn${RK.err[t]?'':' on'}" data-uj="del" data-v="${t}" title="Hapus ${t}">${t} ✕${RK.err[t]?' · '+RK.err[t]:''}</button>`).join(' ')}</div>
-<label class="mu" style="font-size:12px;display:block;margin-top:8px">Aturan<select class="sel" id="ujst">${UJ_ST.map(([v,l])=>`<option value="${v}"${UJ.st===v?' selected':''}>${l}</option>`).join('')}</select></label>
-<label class="mu" style="font-size:12px;display:block;margin-top:4px">Periode uji<select class="sel" id="ujw">${UJ_WIN.map(([v,l])=>`<option value="${v}"${UJ.w===v?' selected':''}>${l}</option>`).join('')}</select></label></div>`;
- if(!UJ.sel.length)return kepala+pilih+`<div class="card">Pilih beberapa saham, lalu pilih aturan dan periode. Menguji ke beberapa saham sekaligus lebih jujur daripada satu saham pilihan. Tekan "Contoh 5 saham besar" untuk mencoba.</div>`;
- const tunggu=UJ.sel.filter(t=>!RK.cache[t]&&!RK.err[t]);
- if(tunggu.length){tunggu.forEach(rkMuat);return kepala+pilih+`<div class="card">Memuat data harga ${tunggu.join(', ')}…</div>`}
- const ok=UJ.sel.filter(t=>RK.cache[t]),S0=ok.map(t=>({k:t,ser:ujSeri(RK.cache[t])}));
- const sims=[],kurang=[];
- for(const x of S0){const sm=ujSim(x.ser,UJ.st,UJ.w);if(sm.n<60){kurang.push(x.k);continue}sm.k=x.k;sm.loncat=x.ser.loncat;sims.push(sm)}
- if(!sims.length)return kepala+pilih+`<div class="card">Data harga belum cukup untuk menguji (minimal 60 sesi per saham).</div>`;
- const rows=sims.map(sm=>({k:sm.k,s:ujMetrik(sm.rS),b:ujMetrik(sm.rB),tr:sm.tr.length,buka:sm.buka,expo:sm.expo,loncat:sm.loncat,n:sm.n}));
- const menang=rows.filter(r=>r.s.ret>r.b.ret).length;
- const G=sims.length>=2?ujGabung(sims):{d:sims[0].d,rS:sims[0].rS,rB:sims[0].rB};
- if(G.d.length<60)return kepala+pilih+`<div class="card">Saham-saham itu hanya punya ${G.d.length} sesi bersama dalam periode ini (minimal 60). Perpendek periode atau pilih saham yang lebih lama tercatat.</div>`;
- const mS=ujMetrik(G.rS),mB=ujMetrik(G.rB),tr=sims.flatMap(s=>s.tr),untung=tr.length?tr.filter(x=>x>0).length/tr.length:null,expo=rkMean(sims.map(s=>s.expo)),ths=G.d.length;
- const yr=ujTahun(G),loncat=rows.filter(r=>r.loncat),jmlTr=tr.length/sims.length;
- const lebih=mS.ret-mB.ret,kata=lebih>0?'unggul':'kalah';
- return kepala+pilih+`<div class="card ${lebih>0?'gr':'gd'}"><b>${stNama}</b>: pada ${fd('20'+G.d[0])} – ${fd('20'+G.d.at(-1))} (${ths} sesi bersama) ${sims.length>=2?'rata-rata '+sims.length+' saham, bobot sama':sims[0].k}, aturan ini <b>${kata}</b> dari beli &amp; tahan: <b class="${cl(mS.ret)}">${rkPct(mS.ret)}</b> vs <b class="${cl(mB.ret)}">${rkPct(mB.ret)}</b> (selisih ${rkPct(lebih)}). Lebih baik di <b>${menang} dari ${rows.length}</b> saham.</div>
-<h2 style="margin-top:12px">Per saham</h2>
-${tbl(['Saham','Aturan','Beli&amp;tahan','Selisih','Transaksi','Maks DD'],rows.map(r=>`<tr><td><span class="tk">${r.k}</span></td><td class="${cl(r.s.ret)}">${rkPct(r.s.ret)}</td><td class="${cl(r.b.ret)}">${rkPct(r.b.ret)}</td><td class="${cl(r.s.ret-r.b.ret)}">${rkPct(r.s.ret-r.b.ret)}</td><td>${r.tr}${r.buka?'*':''}</td><td class="dn">${rkPct(r.s.dd)}</td></tr>`))}
-<div class="note">Return dihitung sepanjang periode uji tiap saham (${rows.map(r=>r.k+' '+r.n).join(', ')} sesi). * = ada posisi yang masih berjalan, dihitung sampai close terakhir.</div>
-<h2 style="margin-top:12px">Gabungan${sims.length>=2?' (bobot sama)':''}</h2>
-<div class="card">${ujSvg(mS.eq.map(v=>v-1),mB.eq.map(v=>v-1),fd('20'+G.d[0]).slice(0,5)+'/'+G.d[0].slice(0,2),fd('20'+G.d.at(-1)).slice(0,5)+'/'+G.d.at(-1).slice(0,2))}<div class="mu" style="font-size:12px"><span style="color:var(--gold)">━</span> Aturan &nbsp; <span style="color:var(--mute)">━</span> Beli &amp; tahan &nbsp; (sumbu: % perubahan modal)</div></div>
-${tbl(['Ukuran','Aturan','Beli&amp;tahan'],[`<tr><td>Return total</td><td class="${cl(mS.ret)}">${rkPct(mS.ret)}</td><td class="${cl(mB.ret)}">${rkPct(mB.ret)}</td></tr>`,`<tr><td>Per tahun</td><td>${rkPct(mS.cagr)}</td><td>${rkPct(mB.cagr)}</td></tr>`,`<tr><td>Vol/tahun</td><td>${mS.vol==null?'–':N(mS.vol*100,1)+'%'}</td><td>${mB.vol==null?'–':N(mB.vol*100,1)+'%'}</td></tr>`,`<tr><td>Maks DD</td><td class="dn">${rkPct(mS.dd)}</td><td class="dn">${rkPct(mB.dd)}</td></tr>`,`<tr><td>Waktu pegang saham</td><td>${N(expo*100,0)}%</td><td>100%</td></tr>`,`<tr><td>Transaksi/saham</td><td>${N(jmlTr,1)}</td><td>1</td></tr>`,`<tr><td>Transaksi untung</td><td>${untung==null?'–':N(untung*100,0)+'% dari '+tr.length}</td><td>–</td></tr>`])}
-<h2 style="margin-top:12px">Per tahun kalender</h2>
-${tbl(['Tahun','Sesi','Aturan','Beli&amp;tahan','Selisih'],yr.map(r=>`<tr><td>${r.y}</td><td>${r.n}</td><td class="${cl(r.s)}">${rkPct(r.s)}</td><td class="${cl(r.b)}">${rkPct(r.b)}</td><td class="${cl(r.s-r.b)}">${rkPct(r.s-r.b)}</td></tr>`))}
-<div class="note">Cara membaca: kalau aturan hanya unggul di satu tahun atau satu-dua saham, kemungkinan itu kebetulan. Aturan yang berguna biasanya unggul di banyak saham dan banyak tahun, atau setidaknya mengurangi Maks DD tanpa mengorbankan hasil.</div>
-${kurang.length?`<div class="note">${kurang.join(', ')}: data kurang dari 60 sesi pada periode ini, tidak ikut diuji.</div>`:''}
-${loncat.length?`<div class="note">⚠ ${loncat.map(r=>r.k+' '+r.loncat+'×').join(', ')}: ada lompatan harga harian di atas ±${RK_LONCAT*100}% (kemungkinan stock split/gabungan). Harga sebelum lompatan disesuaikan supaya sambung.</div>`:''}
-<details class="det"><summary>Cara hitung &amp; batasan</summary><div class="note">Sinyal dibaca dari close hari t, transaksi di close hari t+1, dan posisi mulai menikmati imbal hasil hari t+2 (tanpa mengintip data hari yang sama). Biaya ${N(UJ_BIAYA*100,1)}% tiap beli atau jual; saat periode mulai, aturan dalam keadaan kosong dan masuk di awal juga kena biaya, beli &amp; tahan kena biaya sekali di awal. Tanpa pajak, tanpa selisih bid-ask, dan transaksi dianggap terisi di close. Hanya saham yang masih tercatat dan Anda pilih yang diuji (bias penyintas: saham yang sudah hilang dari bursa tidak ada). Memilih aturan dan periode terbaik dari banyak percobaan akan terlihat bagus karena kebetulan (overfitting). Hasil masa lalu bukan janji; ini alat untuk menguji ide, bukan sinyal beli atau jual.</div></details>`}
-try{P.uji=uji;const g=MENU.find(x=>x[0]==='Pasar');if(g)g[1].push(['uji','Uji Strategi Sederhana'])}catch(e){}
-try{if((location.hash||'').slice(1)==='uji'){S.p='uji';render()}}catch(e){}
 /* Screener Teknikal: RSI(14), MACD(12,26,9), silang MA. Memindai SEMUA saham di perangkat dari shard chart (harga close + volume),
    lalu menampilkan (1) daftar saham yang lolos dan (2) BUKTI HISTORIS sinyal yang sama: seberapa sering naik, dan apakah lebih baik
    daripada rata-rata saham lain di hari yang sama. Hanya close + volume; tanpa data broker. Aman untuk edisi Non Admin.
@@ -4577,12 +4380,14 @@ function ltCss(){if(document.getElementById('ltcss'))return;const s=document.cre
 .ltt{display:grid;grid-template-columns:22px 56px 1fr 1fr 64px;gap:4px;padding:6px 2px;border-bottom:1px solid var(--line);font-size:13px;font-variant-numeric:tabular-nums;align-items:center}.ltt>:nth-child(n+3){text-align:right}
 .u{color:var(--up,#1f9d55)}.d{color:var(--dn,#d64545)}`;document.head.appendChild(s)}
 function ltrade(){ltCss();LT.dirty=true;setTimeout(()=>{ltJaga();ltPaint(true)},0);const f=LT.f,apk=!!ltP();
- const tb=`<div class="ltseg" style="margin:8px 0">${[['trade','Running trade'],['pantau','Pantau 10 saham']].map(([k,n])=>`<button class="btn${LT.view===k?' on':''}" data-ltv="${k}">${n}</button>`).join('')}</div>`;
+ const tb=`<div class="ltseg" style="margin:8px 0">${(window.CS_NONADMIN?[]:[['trade','Running trade'],['pantau','Pantau 10 saham']]).map(([k,n])=>`<button class="btn${LT.view===k?' on':''}" data-ltv="${k}">${n}</button>`).join('')}</div>`;
+ if(window.CS_NONADMIN)LT.view='trade';
  if(LT.view==='pantau')return `<div class="brand">PASAR</div><h1>Live Trade</h1>`+tb+lvwBody();
  return `<div class="brand">PASAR</div><h1>Live Trade</h1>${tb}<div class="mu">Running trade, Top 5, dan Net Buy/Sell real-time dari IDX Edge (akun paid). Hanya mengalir di jam bursa dan selama halaman ini terbuka.</div>
 ${apk?'':'<div class="note" role="alert">Live Trade hanya tersedia di APK Catatan Saham (perlu koneksi khusus dengan kunci IDX Edge).</div>'}
 <div class="card"><div class="ltst" id="ltst"></div></div>
 <div class="card"><div class="lttb" id="lttb">${[['freq','Frekuensi'],['lot','Lot'],['value','Nilai'],['net_buy','Net Buy'],['net_sell','Net Sell']].map(([k,n])=>`<button class="btn${LT.tab===k?' on':''}" data-ltt="${k}">${n}</button>`).join('')}</div><div id="lttop"><div class="mu" style="font-size:12px">Menunggu data Top 5…</div></div></div>
+${pbCard()}
 <details class="det card" ${ltCodes().length||f.a!=='all'||f.lot||f.val?'open':''}><summary>Filter</summary>
 <div class="ltseg" style="margin-top:6px">${[['all','Semua'],['buy','Beli'],['sell','Jual']].map(([k,n])=>`<button class="btn${f.a===k?' on':''}" data-lta="${k}">${n}</button>`).join('')}</div>
 <div class="ltf"><div class="full"><label for="ltc">Kode (pisah koma, maks 50)</label><input class="sel" id="ltc" value="${esc(f.codes)}" placeholder="BBCA, BBRI, TLKM" autocapitalize="characters"></div>
@@ -4600,6 +4405,7 @@ function ltStat(){const el=document.getElementById('ltst');if(!el)return;const m
 function ltRow(x){if(!x)return null;const d=x.data||x;return d&&d.t?{t:d.t,c:d.c,a:d.a,p:+d.p,l:+d.l,v:+d.v,pc:+d.pc,tn:d.tn}:null}
 function ltAdd(r,live){if(!r)return;LT.rows.unshift(r);if(LT.rows.length>300)LT.rows.length=300;LT.n++;
  const C=ltCodes();if(live&&C.includes(r.t)){const k=LT.rek[r.t]||(LT.rek[r.t]={b:0,s:0,vb:0,vs:0});if(r.c==='buy'){k.b+=r.l;k.vb+=r.v}else{k.s+=r.l;k.vs+=r.v}}
+if(live)try{pbAdd(r)}catch(e){}
  if(live&&LT.f.getar&&r.v>=(+LT.f.jumbo||1000)*1e6&&Date.now()-LT.gt>3000){LT.gt=Date.now();try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
  LT.dirty=true}
 function ltMsg(t){let m;try{m=JSON.parse(t)}catch(e){return}
@@ -4622,15 +4428,52 @@ async function ltOpen(){const P=ltP(),k=ltKey();if(!P||!k)return;
 function ltJaga(){if(!ltP())return;const mau=S.p==='ltrade'&&LT.view!=='pantau'&&!!ltKey()&&!document.hidden&&!LT.stop;
  if(!mau){if(LT.ws)ltClose();return}
  if(!LT.ws){const tunggu=[0,2e3,5e3,1e4,3e4][Math.min(LT.retry,4)];if(Date.now()-LT.tutup>=tunggu)ltOpen()}}
+
+/* ===== Papan Catatan Saham: dihitung sendiri dari aliran running trade (sejak halaman dibuka) =====
+   Breakout (harga > tertinggi kemarin / 20 hari), Lonjakan volume (lot 5 menit vs rata-rata 20 hari), Naik cepat 5 menit, Order jumbo.
+   Data acuan dari data harian Catatan Saham (D.days, OHL). Running trade tidak membawa kode broker, jadi papan asing tidak bisa dibuat. */
+const PB={tab:'brk',st:{},ref:null,refAt:'',seen:{},last:0};
+function pbToday(){const d=new Date(Date.now()+7*36e5);return d.toISOString().slice(0,10).replace(/-/g,'')}
+function pbRef(){const td=pbToday();if(PB.ref&&PB.refAt===td)return PB.ref;const R={};try{let ds=Object.keys(D.days).sort();if(ds.at(-1)===td)ds=ds.slice(0,-1);const L=ds.slice(-20),last=L.at(-1),oh=(typeof OHL!=='undefined'&&OHL)||{};
+ for(const d of L){const day=D.days[d],o=oh[d]||{};if(!day)continue;day.t.forEach((t,i)=>{const r=R[t]||(R[t]={ph:0,h20:0,vs:0,n:0,pc:0});const c=+day.c[i]||0,h=(o[t]&&+o[t][1])||c;if(h>r.h20)r.h20=h;if(d===last){r.ph=h;r.pc=c}r.vs+=(+day.v[i]||0)/100;r.n++})}}catch(e){}
+ PB.ref=R;PB.refAt=td;return R}
+function pbAdd(r){if(!r||!(r.p>0))return;const now=Date.now(),s=PB.st[r.t]||(PB.st[r.t]={p0:r.p,p:r.p,pc:r.pc,lot:0,val:0,w:[],jb:0,js:0,jn:0});
+ s.p=r.p;s.pc=r.pc;s.lot+=r.l;s.val+=r.v;s.w.push([now,r.p,r.l]);while(s.w.length&&now-s.w[0][0]>3e5)s.w.shift();
+ const J=(+LT.f.jumbo||1000)*1e6;if(r.v>=J){s.jn++;if(r.c==='buy')s.jb+=r.v;else s.js+=r.v}
+ const ref=pbRef()[r.t];if(ref&&LT.f.pb_gb!==false){const lv=LT.f.pb_ref==='20'?ref.h20:ref.ph;if(lv>0&&r.p>lv&&!PB.seen[r.t]&&pbOk(r.t,s)){PB.seen[r.t]=1;
+  if(now-PB.last>2500){PB.last=now;try{navigator.vibrate&&navigator.vibrate([80,60,80])}catch(e){}try{tvToast('Breakout: '+r.t+' '+ltN(r.p)+' (di atas '+ltN(lv)+')')}catch(e){}}}}}
+function pbOk(t,s){const mp=+LT.f.pb_minp||0,mv=(+LT.f.pb_minv||0)*1e6;return s.p>=mp&&s.val>=mv}
+function pbRows(){const ref=pbRef(),now=Date.now(),out=[],rv=+LT.f.pb_rv||3;
+ for(const t in PB.st){const s=PB.st[t];if(!pbOk(t,s))continue;const f=ref[t]||null;let m=null,x='';
+  if(PB.tab==='brk'){if(!f)continue;const lv=LT.f.pb_ref==='20'?f.h20:f.ph;if(!(lv>0&&s.p>lv))continue;m=(s.p/lv-1)*100;x='> '+ltN(lv)+(LT.f.pb_ref!=='20'&&f.h20>0&&s.p>f.h20?' · 20H':'')}
+  else if(PB.tab==='vol'){if(!f||!f.n)continue;const w=s.w.filter(a=>now-a[0]<=3e5),l5=w.reduce((a,b)=>a+b[2],0),exp=f.vs/f.n/66;if(!(exp>0))continue;m=l5/exp;if(m<rv)continue;x=ltN(l5)+' lot/5m'}
+  else if(PB.tab==='up5'){const w=s.w.filter(a=>now-a[0]<=3e5);if(w.length<2)continue;m=(s.p/w[0][1]-1)*100;if(!(m>0))continue;x='dari '+ltN(w[0][1])}
+  else if(PB.tab==='jmb'){if(!s.jn)continue;m=s.jb-s.js;x=s.jn+'× · '+ltRp(s.jb+s.js)}
+  out.push({t,m,x,p:s.p,pc:s.pc})}
+ out.sort((a,b)=>PB.tab==='jmb'?Math.abs(b.m)-Math.abs(a.m):b.m-a.m);return out.slice(0,15)}
+function pbCard(){const f=LT.f;return `<div class="card"><b style="font-size:14px">Papan Catatan Saham</b><div class="mu" style="font-size:11px">Dihitung dari running trade sejak halaman dibuka${ltCodes().length?' · hanya kode di Filter':''}.</div>
+<div class="lttb" style="margin-top:6px">${[['brk','Breakout'],['vol','Lonjakan volume'],['up5','Naik cepat 5m'],['jmb','Order jumbo']].map(([k,n])=>`<button class="btn${PB.tab===k?' on':''}" data-pbt="${k}">${n}</button>`).join('')}</div><div id="pbl"></div>
+<details class="det" style="margin-top:6px"><summary style="font-size:13px">Atur papan</summary>
+<div class="ltseg" style="margin-top:6px"><span class="mu" style="font-size:12px;align-self:center">Breakout di atas</span>${[['1','Tertinggi kemarin'],['20','Tertinggi 20 hari']].map(([k,n])=>`<button class="btn${(f.pb_ref==='20'?'20':'1')===k?' on':''}" data-pbref="${k}">${n}</button>`).join('')}</div>
+<div class="ltf"><div><label for="pbminp">Min. harga</label><input class="sel" id="pbminp" inputmode="numeric" value="${esc(f.pb_minp||'')}" placeholder="mis. 50"></div>
+<div><label for="pbminv">Min. nilai transaksi (Rp juta)</label><input class="sel" id="pbminv" inputmode="numeric" value="${esc(f.pb_minv||'')}" placeholder="mis. 100"></div>
+<div><label for="pbrv">Lonjakan volume ≥ (× normal)</label><input class="sel" id="pbrv" inputmode="decimal" value="${esc(f.pb_rv||'3')}"></div>
+<div><label>&nbsp;</label><button class="btn${f.pb_gb!==false?' on':''}" data-pbgb="1" style="width:100%">${f.pb_gb!==false?'Getar breakout: nyala':'Getar breakout: mati'}</button></div></div>
+<div class="row" style="margin-top:8px"><button class="btn on" data-pbap="1">Simpan</button></div><div class="mu" style="font-size:11px;margin-top:4px">Order jumbo memakai batas "Tandai jumbo" di Filter. Papan asing tidak tersedia: running trade tidak membawa kode broker.</div></details></div>`}
+function pbPaint(force){const el=document.getElementById('pbl');if(!el)return;const now=Date.now();if(!force&&now-(PB.pt||0)<900)return;PB.pt=now;const L=pbRows();
+ const lab={brk:'% di atas acuan',vol:'× normal',up5:'% naik 5 menit',jmb:'net jumbo'}[PB.tab];
+ el.innerHTML=L.length?`<div class="ltt" style="font-size:11px;opacity:.65"><span>#</span><span>Kode</span><span>${lab}</span><span>Harga</span><span>%</span></div>`+L.map((r,i)=>`<div class="ltt"><span class="mu">${i+1}</span><b data-ltq="${esc(r.t)}">${esc(r.t)}</b><span class="${PB.tab==='jmb'?(r.m>=0?'u':'d'):'u'}">${PB.tab==='jmb'?ltRp(r.m):PB.tab==='vol'?r.m.toFixed(1).replace('.',',')+'×':'+'+r.m.toFixed(2).replace('.',',')+'%'}<br><small class="mu" style="font-size:10px">${esc(r.x)}</small></span><span>${ltN(r.p)}</span><span class="${r.pc>=0?'u':'d'}">${r.pc>=0?'+':''}${String((+r.pc||0).toFixed(2)).replace('.',',')}%</span></div>`).join('')
+  :`<div class="mu" style="font-size:12px;padding:6px 0">${LT.on?'Belum ada saham yang memenuhi.':'Menunggu running trade…'}</div>`}
 function ltPaint(force){if(S.p!=='ltrade')return;if(!LT.dirty&&!force)return;LT.dirty=false;ltStat();
  const top=document.getElementById('lttop');if(top&&LT.top){const L=LT.top[LT.tab]||[];const net=LT.tab.startsWith('net');
   top.innerHTML=L.length?L.map((x,i)=>`<div class="ltt"><span class="mu">${i+1}</span><b data-ltq="${esc(x.ticker)}">${esc(x.ticker)}</b><span class="${net?(x.metric>=0?'u':'d'):''}">${LT.tab==='value'||net?ltRp(x.metric):ltN(x.metric)}</span><span>${ltN(x.last_price)}</span><span class="${x.last_change_pct>=0?'u':'d'}">${x.last_change_pct>=0?'+':''}${String((+x.last_change_pct).toFixed(2)).replace('.',',')}%</span></div>`).join('')+`<div class="mu" style="font-size:11px;margin-top:4px">${net?'Net = nilai beli − jual (Rupiah)':LT.tab==='freq'?'Jumlah transaksi':LT.tab==='lot'?'Total lot':'Total nilai (Rupiah)'} · ${LT.win?'±'+Math.round(LT.win/60)+' menit terakhir':'jendela server'} · harga & %</div>`:'<div class="mu" style="font-size:12px">Belum ada data (bursa tutup/break).</div>'}
  const rk=document.getElementById('ltrek');if(rk){const C=ltCodes();rk.innerHTML=!C.length?'Isi kode di Filter untuk melihat total lot beli/jual sejak halaman dibuka.':'<div class="ltt" style="font-size:11px;opacity:.7;grid-template-columns:56px 1fr 1fr 1fr"><span>Kode</span><span>Beli lot</span><span>Jual lot</span><span>Net</span></div>'+C.map(c=>{const k=LT.rek[c]||{b:0,s:0,vb:0,vs:0},n=k.b-k.s;return`<div class="ltt" style="grid-template-columns:56px 1fr 1fr 1fr"><b data-ltq="${c}">${c}</b><span class="u">${ltN(k.b)}</span><span class="d">${ltN(k.s)}</span><span class="${n>=0?'u':'d'}">${n>=0?'+':''}${ltN(n)}<br><span style="font-size:11px">${ltRp(k.vb-k.vs)}</span></span></div>`}).join('')+`<div style="font-size:11px;margin-top:4px">Sejak ${LT.since?new Date(LT.since+7*36e5).toISOString().slice(11,16)+' WIB':'tersambung'}; hanya transaksi yang lolos filter.</div>`}
  const nn=document.getElementById('ltn');if(nn)nn.textContent=LT.n?LT.n.toLocaleString('id-ID')+' transaksi':'';
+ try{pbPaint()}catch(e){}
  if(LT.pause)return;const l=document.getElementById('ltl');if(!l)return;const J=(+LT.f.jumbo||1000)*1e6;
  l.innerHTML='<div class="ltr h"><span>Jam</span><span>Kode</span><span></span><span>Harga</span><span>Lot</span><span>Nilai</span></div>'+(LT.rows.length?LT.rows.slice(0,150).map(r=>`<div class="ltr ${r.c==='buy'?'b':'s'}${r.v>=J?' j':''}"><span>${esc(r.a||'')}</span><b data-ltq="${esc(r.t)}">${esc(r.t)}</b><span>${r.c==='buy'?'B':'S'}</span><span class="${r.pc>=0?'u':'d'}">${ltN(r.p)}</span><span>${ltN(r.l)}</span><span>${ltRp(r.v)}</span></div>`).join(''):'<div class="mu" style="font-size:12px;padding:8px 2px">Belum ada transaksi. Data mengalir di jam bursa (Senin–Jumat).</div>')}
-setInterval(()=>{ltJaga();ltPaint()},500);document.addEventListener('visibilitychange',ltJaga);
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ltt],[data-lta],[data-ltap],[data-ltrs],[data-ltpz],[data-ltq],[data-ltg],[data-ltk],[data-ltv]');if(!b||S.p!=='ltrade')return;const d=b.dataset;
+setInterval(()=>{ltJaga();ltPaint();if(S.p==='ltrade')try{pbPaint()}catch(e){}},500);document.addEventListener('visibilitychange',ltJaga);
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ltt],[data-lta],[data-ltap],[data-ltrs],[data-ltpz],[data-ltq],[data-ltg],[data-ltk],[data-ltv],[data-pbt],[data-pbgb],[data-pbref],[data-pbap]');if(!b||S.p!=='ltrade')return;const d=b.dataset;
  if(d.ltv){LT.view=d.ltv;LT.dirty=true;render();setTimeout(()=>{ltJaga();if(typeof lvJaga==='function')lvJaga()},0);return}
  if(d.ltt){LT.tab=d.ltt;document.querySelectorAll('[data-ltt]').forEach(x=>x.classList.toggle('on',x===b));ltPaint(true);return}
  if(d.lta){LT.f.a=d.lta;document.querySelectorAll('[data-lta]').forEach(x=>x.classList.toggle('on',x===b));return}
@@ -4638,11 +4481,15 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
  if(d.ltk){if(typeof lvSheet==='function')lvSheet();return}
  if(d.ltpz){LT.pause=!LT.pause;b.textContent=LT.pause?'▶ Lanjut':'⏸ Jeda';if(!LT.pause)ltPaint(true);return}
  if(d.ltq){S.cq=d.ltq;go('chart');return}
+ if(d.pbt){PB.tab=d.pbt;document.querySelectorAll('[data-pbt]').forEach(x=>x.classList.toggle('on',x===b));pbPaint(true);return}
+ if(d.pbgb){LT.f.pb_gb=!LT.f.pb_gb;ltSave();b.classList.toggle('on',LT.f.pb_gb);b.textContent=LT.f.pb_gb?'Getar breakout: nyala':'Getar breakout: mati';return}
+ if(d.pbref){LT.f.pb_ref=d.pbref;ltSave();PB.seen={};document.querySelectorAll('[data-pbref]').forEach(x=>x.classList.toggle('on',x===b));pbPaint(true);return}
  const v=id=>{const x=document.getElementById(id);return x?x.value.trim():''};
+ if(d.pbap){LT.f.pb_minp=v('pbminp');LT.f.pb_minv=v('pbminv');LT.f.pb_rv=v('pbrv')||'3';ltSave();pbPaint(true);try{tvToast('Pengaturan papan disimpan')}catch(e){}return}
  if(d.ltap){const ada=!!ltFilterObj();LT.f.codes=v('ltc').toUpperCase();LT.f.lot=v('ltlot');LT.f.val=v('ltval');LT.f.jumbo=v('ltj')||'1000';ltSave();LT.rek={};LT.since=Date.now();
   if(!ltFilterObj()){if(ada){LT.stop='';ltClose().then(()=>{LT.tutup=0;ltJaga()})}}else if(LT.on)ltKirimFilter();else try{tvToast('Filter tersimpan, diterapkan saat tersambung.')}catch(e){}ltPaint(true);return}
  if(d.ltrs){LT.f=Object.assign(LT.f,{a:'all',codes:'',lot:'',val:''});ltSave();LT.rek={};LT.stop='';ltClose().then(()=>{LT.tutup=0;render()});return}});
-try{P.ltrade=ltrade;const g=MENU.find(x=>x[0]==='Pasar');if(g)g[1].splice(1,0,['ltrade','Live Trade & Pantau 10 saham'])}catch(e){}
+try{P.ltrade=ltrade;const g=MENU.find(x=>x[0]==='Pasar');if(g)g[1].splice(1,0,['ltrade',window.CS_NONADMIN?'Live Trade':'Live Trade & Pantau 10 saham'])}catch(e){}
 </script>
 <script>
 /* ===== APK Non Admin: pembaruan otomatis (OTA) dari repo PUBLIK catatan-saham-publik (tanpa kunci GitHub) ===== */

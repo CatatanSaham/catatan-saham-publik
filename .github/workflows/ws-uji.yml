@@ -1,0 +1,31 @@
+name: uji websocket idx edge
+on: workflow_dispatch
+jobs:
+  uji:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: pip install websockets==13.1
+      - env:
+          K: ${{ secrets.IDX_EDGE_KEY }}
+        shell: python
+        run: |
+          import os, json, time
+          from websockets.sync.client import connect
+          def run(url, sub, dur):
+              print('==', url)
+              try:
+                  with connect(url, additional_headers={'X-API-Key': os.environ['K']}, open_timeout=15) as ws:
+                      if sub: ws.send(json.dumps(sub))
+                      t0=time.time(); n=0
+                      while time.time()-t0<dur and n<14:
+                          try: m=ws.recv(timeout=3)
+                          except TimeoutError: continue
+                          n+=1; print(m[:700])
+              except Exception as e: print('ERR', type(e).__name__, e)
+          run('wss://stock.arjum.com/ws/price', {'type':'subscribe','codes':['BBRI','BBCA','IHSG']}, 8)
+          run('wss://stock.arjum.com/ws/running-trade', None, 8)
+          # tanpa header: cek kode penolakan
+          try:
+              with connect('wss://stock.arjum.com/ws/price', open_timeout=10) as ws: print('noauth', ws.recv(timeout=5)[:200])
+          except Exception as e: print('noauth ERR', type(e).__name__, str(e)[:200])

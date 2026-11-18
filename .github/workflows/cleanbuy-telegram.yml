@@ -76,6 +76,12 @@ jobs:
           fi
           unzip -p "$zip" "$session.json" > "$RUNNER_TEMP/cleanbuy-session.json"
           node bot/run-cleanbuy.cjs formula/apk/www/index.html "$RUNNER_TEMP/cleanbuy-session.json" > "$RUNNER_TEMP/cleanbuy.json"
+          # Belum ada broksum maupun unggahan Clean Buy untuk sesi ini: tunggu jadwal berikutnya / unggahan admin (tidak dianggap gagal).
+          if node -e 'process.exit(require(process.argv[1]).kosong ? 0 : 1)' "$RUNNER_TEMP/cleanbuy.json"; then
+            echo "Sesi $session: belum ada broksum maupun unggahan Clean Buy; menunggu."
+            exit 0
+          fi
+          node -e 'console.log("Sumber Clean Buy:", require(process.argv[1]).sumber)' "$RUNNER_TEMP/cleanbuy.json"
           node -e 'if (require(process.argv[1]).as_of !== process.argv[2]) process.exit(1)' "$RUNNER_TEMP/cleanbuy.json" "$session"
           git -C data config user.name 'github-actions[bot]'
           git -C data config user.email '41898282+github-actions[bot]@users.noreply.github.com'

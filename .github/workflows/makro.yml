@@ -3,7 +3,7 @@
 name: Makro (PDB, inflasi, BI-Rate)
 on:
   schedule:
-    - cron: "37 10 * * 1,4"   # Senin & Kamis 17.37 WIB
+    - cron: "37 10 * * 1-5"   # Senin–Jumat 17.37 WIB (hari RDG BI ikut terbaca sore itu)
   workflow_dispatch:
     inputs:
       tes:

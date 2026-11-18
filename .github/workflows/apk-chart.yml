@@ -37,6 +37,8 @@ jobs:
       - run: |
           python make_icons.py android/app/src/main/res
           npx cap sync android
+      - name: Pasang plugin live IDX Edge (bila ada di cabang)
+        run: if [ -f pasang_live.py ]; then python pasang_live.py android; else echo "tanpa plugin live"; fi
       - name: Tanda tangan tetap + nomor versi
         run: |
           sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle

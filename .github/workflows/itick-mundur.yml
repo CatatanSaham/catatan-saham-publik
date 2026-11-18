@@ -1,0 +1,57 @@
+# BARU (18 Nov 2026): isi mundur candlestick 15 menit & 1 menit dari iTick (paket gratis).
+# Kode: repo privat catatan-saham-mtf tools/itick/ (diambil saat jalan memakai PRIVAT_TOKEN).
+# Hasil ke cabang privat `itick-mundur`. Log publik: hanya jumlah dan jam.
+name: Isi mundur chart (iTick)
+on:
+  schedule:
+    - cron: "40 17 * * *"   # 00.40 WIB tiap hari (±5 jam; 5 panggilan/menit)
+  workflow_dispatch:
+    inputs:
+      menit:
+        description: "Batas waktu run (menit)"
+        default: "290"
+permissions:
+  contents: read
+concurrency:
+  group: itick-mundur
+  cancel-in-progress: false
+jobs:
+  isi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 320
+    env:
+      ITICK_KEY: ${{ secrets.ITICK_KEY }}
+      REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+          sparse-checkout: |
+            tools/itick
+            universe.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Ambil cabang itick-mundur (buat baru bila belum ada)
+        run: |
+          if git ls-remote --exit-code "$REPO_PRIVAT" refs/heads/itick-mundur >/dev/null; then
+            git clone -q --depth 1 --branch itick-mundur "$REPO_PRIVAT" out
+          else
+            mkdir out && cd out && git init -q -b itick-mundur && git remote add origin "$REPO_PRIVAT"
+          fi
+      - name: Isi mundur
+        run: python main/tools/itick/itick_mundur.py --universe main/universe.json --out out --menit "${{ github.event.inputs.menit || '290' }}"
+      - name: Simpan ke itick-mundur (hanya bila berubah)
+        if: always()
+        run: |
+          cd out
+          [ -f README.md ] || cp ../main/tools/itick/README.md README.md
+          git config user.name "Robot iTick"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "itick-mundur $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do git push -q origin HEAD:itick-mundur && break; sleep 5; done

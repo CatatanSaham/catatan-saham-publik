@@ -44,7 +44,7 @@ jobs:
       REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
     steps:
       - uses: actions/checkout@v4
-        with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main, sparse-checkout: tools/backfill}
+        with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main, sparse-checkout: "tools/backfill\ntools/asing"}
       - uses: actions/checkout@v4
         with:
           repository: CatatanSaham/catatan-saham-mtf

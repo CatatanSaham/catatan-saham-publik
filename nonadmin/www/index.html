@@ -4492,6 +4492,67 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 try{P.ltrade=ltrade;const g=MENU.find(x=>x[0]==='Pasar');if(g)g[1].splice(1,0,['ltrade',window.CS_NONADMIN?'Live Trade':'Live Trade & Pantau 10 saham'])}catch(e){}
 </script>
 <script>
+/* ===== Dapatkan MCP (menu Komunitas) =====
+   Orang mengisi nama + kontak lalu mendapat kunci MCP gratis dengan jatah total panggilan alat (angka dari server /app/mcp/saya, bawaan 100).
+   Server: bot Radar Catatan Saham (repo radar-catatan-saham-bot), modul mcp-kunci.js:
+     POST /app/mcp/daftar {nama,kontak}  → {ok,id,kunci,sisa}   (1 kunci per perangkat, 3 per jaringan)
+     GET  /app/mcp/saya                  → {ok,ada,id,nama,sisa,jatah,aktif}
+   Kunci asli hanya dikirim sekali; salinan disimpan di HP ini (localStorage cs_mcp_key) supaya bisa dilihat lagi.
+   Jatah habis → minta tambah ke admin (admin dapat pesan Telegram otomatis). */
+const MCG={st:null,muat:false,err:'',kunci:'',buat:false,gratis:100};
+const MCG_URL=()=>CSW+'/mcp';
+const MCG_ADM='@CtatanSaham'; // akun Telegram admin untuk melayani pemakai
+function mcgKey(){try{return localStorage.getItem('cs_mcp_key')||''}catch(e){return''}}
+async function mcgApi(path,opt){opt=opt||{};const h={'X-CS-Device':csDev()};if(opt.body)h['Content-Type']='application/json';
+  const r=await fetch(CSW+'/app/mcp/'+path,{method:opt.method||'GET',headers:h,body:opt.body});let j=null;try{j=await r.json()}catch(e){}
+  if(!j)throw new Error('server tidak menjawab (HTTP '+r.status+')');return j}
+function mcgMuat(){if(MCG.muat||MCG.st)return;MCG.muat=true;
+  mcgApi('saya').then(j=>{if(j&&+j.gratis>0)MCG.gratis=+j.gratis;MCG.st=j.ok?j:{ada:false};MCG.err=j.ok?'':(j.error||'')}).catch(e=>{MCG.st={ada:false};MCG.err='Tidak bisa menghubungi server: '+e.message}).then(()=>{MCG.muat=false;if(typeof render==='function')render()})}
+function mcgSalin(teks,tombol){const ok=()=>{if(tombol){const a=tombol.textContent;tombol.textContent='Tersalin ✓';setTimeout(()=>{tombol.textContent=a},1600)}};
+  try{navigator.clipboard.writeText(teks).then(ok,()=>{window.prompt('Salin teks ini:',teks)})}catch(e){window.prompt('Salin teks ini:',teks)}}
+function mcgPetunjuk(k){return `<div class="card"><b>Cara menyambungkan ke Claude</b>
+<ol style="margin:8px 0 0 18px;padding:0;line-height:1.55">
+<li>Buka Claude → Pengaturan → <b>Konektor</b> → <b>Tambah konektor kustom</b>.</li>
+<li>Nama: <b>Catatan Saham</b>. Alamat server:<br><code style="word-break:break-all">${esc(MCG_URL())}</code> <button class="btn" data-mcg="salin-url" style="padding:2px 8px">Salin</button></li>
+<li>Autentikasi: pilih <b>Tanpa masuk / tanpa OAuth</b>, lalu tambahkan <b>header permintaan</b>:<br>Nama <code>X-API-Key</code>, isi: kunci di atas.</li>
+<li>Setelah tersambung, tanya misalnya: <i>"Ringkas BBCA menurut Catatan Saham"</i> atau <i>"Saham apa yang di atas MA200 dan lolos penyaring fundamental?"</i></li>
+</ol>
+<div class="mu" style="font-size:12px;margin-top:8px">Satu pertanyaan biasanya memakai 3–5 panggilan alat dari jatah. Kunci ini hanya untuk dipakai sendiri: jangan dibagikan dan datanya jangan dijual ulang. Semua hasil adalah catatan analisis menurut Catatan Saham, bukan rekomendasi investasi.</div></div>`}
+function mcpg(){
+ const hd=`<div class="brand">KOMUNITAS</div><h1>Dapatkan MCP</h1><div class="mu">Sambungkan data Catatan Saham ke Claude lewat MCP, lalu tanyakan saham langsung dari obrolan Claude. Gratis <b>${MCG.gratis} panggilan</b> (sekitar ${Math.round(MCG.gratis/5)}–${Math.round(MCG.gratis/3)} pertanyaan). Kalau habis, minta tambah ke admin di Telegram <b>${MCG_ADM}</b>.</div>`;
+ if(typeof CSW==='undefined'||typeof csDev!=='function')return hd+'<div class="card mu">Tidak tersedia di sini.</div>';
+ mcgMuat();
+ if(!MCG.st)return hd+'<div class="card mu">Memuat…</div>';
+ const st=MCG.st,k=MCG.kunci||mcgKey();
+ const galat=MCG.err?`<div class="note">${esc(MCG.err)}</div>`:'';
+ if(st.ada){
+  const hab=st.sisa!=null&&st.sisa<=0;
+  const info=`<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(st.nama||'Kunci kamu')}</b><span class="mu">ID ${esc(st.id||'')}</span></div>
+   <div style="font-size:26px;font-weight:700;margin:6px 0" class="${hab?'dn':''}">${st.sisa==null?'harian':st.sisa}<small class="mu" style="font-size:13px;font-weight:400"> ${st.sisa==null?'':'sisa dari '+(st.jatah||'?')+' panggilan'}</small></div>
+   ${!st.aktif?'<div class="note">Kunci ini dimatikan admin.</div>':hab?'<div class="note">Jatah gratis habis. Minta tambah ke admin di Telegram <b>${MCG_ADM}</b> (admin juga sudah menerima pemberitahuan otomatis saat kunci dipakai setelah habis).</div>':''}
+   <div class="mu" style="font-size:12px">Sisa diperbarui saat halaman ini dibuka.</div>
+   <button class="btn" data-mcg="segar" style="margin-top:8px">Perbarui sisa</button></div>`;
+  const kk=k?`<div class="card"><b>Kunci kamu</b> <small class="mu">(tersimpan di HP ini)</small><br><code style="word-break:break-all;font-size:13px" id="mcgk">${esc(k)}</code><br><button class="btn" data-mcg="salin-kunci" style="margin-top:8px">Salin kunci</button></div>`
+   :`<div class="note">Kunci sudah pernah dibuat di perangkat ini, tetapi salinannya tidak ada di HP ini. Kunci asli tidak bisa ditampilkan ulang. Kalau hilang, chat admin di Telegram ${MCG_ADM} supaya kuncinya dihapus, lalu buat lagi.</div>`;
+  return hd+galat+info+kk+(k?mcgPetunjuk(k):'')};
+ return hd+galat+`<div class="card"><b>Buat kunci gratis</b>
+  <div class="mu" style="font-size:12px;margin:2px 0 8px">Nama dan kontak hanya supaya admin tahu ini siapa. Satu kunci per HP.</div>
+  <input class="sel" id="mcgn" placeholder="Nama (mis. Budi)" maxlength="20" value="${esc(S.mcgn||'')}" style="margin:0 0 8px;width:100%">
+  <input class="sel" id="mcgc" placeholder="Kontak Telegram atau WhatsApp (mis. @budi123)" maxlength="40" value="${esc(S.mcgc||'')}" style="margin:0 0 8px;width:100%">
+  <button class="btn on" data-mcg="buat"${MCG.buat?' disabled':''}>${MCG.buat?'Membuat…':'Buat kunci gratis'}</button></div>`}
+document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='mcgn')S.mcgn=t.value;if(t&&t.id==='mcgc')S.mcgc=t.value});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-mcg]');if(!b)return;const a=b.getAttribute('data-mcg');
+ if(a==='salin-url')return mcgSalin(MCG_URL(),b);
+ if(a==='salin-kunci')return mcgSalin(MCG.kunci||mcgKey(),b);
+ if(a==='segar'){MCG.st=null;MCG.err='';if(typeof render==='function')render();return}
+ if(a==='buat'){if(MCG.buat)return;MCG.err='';MCG.buat=true;if(typeof render==='function')render();
+  mcgApi('daftar',{method:'POST',body:JSON.stringify({nama:S.mcgn||'',kontak:S.mcgc||''})}).then(j=>{
+   if(j.ok){MCG.kunci=j.kunci;try{localStorage.setItem('cs_mcp_key',j.kunci)}catch(x){}MCG.st={ok:true,ada:true,id:j.id,nama:j.nama,sisa:j.sisa,jatah:j.sisa,aktif:true}}
+   else{MCG.err=j.ada?'Perangkat ini sudah punya kunci.':(j.error||'Gagal membuat kunci');if(j.ada)MCG.st=null}
+  }).catch(x=>{MCG.err='Tidak bisa menghubungi server: '+x.message}).then(()=>{MCG.buat=false;if(typeof render==='function')render()})}});
+try{P.mcpg=mcpg;const g=MENU.find(x=>x[0]==='Komunitas');if(g)g[1].push(['mcpg','Dapatkan MCP'])}catch(e){}
+</script>
+<script>
 /* ===== APK Non Admin: pembaruan otomatis (OTA) dari repo PUBLIK catatan-saham-publik (tanpa kunci GitHub) ===== */
 (function(){
 if(!window.Capacitor)return;

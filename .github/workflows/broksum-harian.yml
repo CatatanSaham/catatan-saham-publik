@@ -6,6 +6,7 @@ on:
   schedule:
     - cron: "0 11 * * 1-5"    # 18.00 WIB Sen-Jum; menunggu data sampai 240 menit (22.00 WIB). Data 16 Nov muncul ±18.05 WIB
     - cron: "30 23 * * 0-5"   # 06.30 WIB Sen-Sab: susulan, unduh hari kerja kemarin bila belum ada (data kemarin harus ada sebelum 09.00)
+    - cron: "15,45 12-15 * * 1-5"   # coba ulang 19.15–22.45 WIB tiap 30 menit bila run 18.00 gagal (mis. IDX Edge mati); bila file hari ini sudah ada langsung lewat tanpa kuota
   workflow_dispatch:
     inputs:
       mode:
@@ -64,6 +65,8 @@ jobs:
         run: |
           if [ "${{ github.event.schedule }}" = "30 23 * * 0-5" ]; then
             python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --kemarin --tunggu 30 --cadangan 1000
+          elif [ "${{ github.event.schedule }}" = "15,45 12-15 * * 1-5" ]; then
+            python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --tunggu 20 --cadangan 1000
           else
             python main/tools/broksum/harian_edge.py --universe main/universe.json --out out --tanggal "${{ github.event.inputs.tanggal || '' }}" --tunggu "${{ github.event.inputs.tunggu || '240' }}" --cadangan "${{ github.event.inputs.cadangan || '1000' }}"
           fi

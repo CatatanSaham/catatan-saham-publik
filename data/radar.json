@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-17 17:36 WIB",
- "baru": 8,
+ "upd": "2026-11-18 17:34 WIB",
+ "baru": 6,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -9,19 +9,77 @@
   "CNBC Indonesia: 100",
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 12",
+  "Google Berita: 8",
   "Google Berita: 5",
-  "Google Berita: 28",
-  "Google Berita: 24",
-  "Google Berita: 7",
-  "Google Berita: 18",
-  "Google Berita: 25",
-  "Google Berita: 27",
+  "Google Berita: 21",
   "Google Berita: 15",
+  "Google Berita: 8",
+  "Google Berita: 14",
+  "Google Berita: 21",
+  "Google Berita: 25",
+  "Google Berita: 10",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "BEI Perpanjang Suspensi Perdagangan Saham WIKA, Ini Penyebabnya",
+   "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxNNUtaMENqTEMxSEtleDZRM1ZZVkN6NWtWWEVPeGxXU2ZRSldsSV9Zc1EwU1pRQm5rT0xyLXgtUVZ3cjJwcDVsYURmbWhNSXRobkh4S18zMXNGdkc4SDUyX2RjRXg5S1lURFdBcE43ZVNhemxDMTlWRWpLOTBJY09UWGxNRi1UbGJjZUZ5WW5n?oc=5",
+   "src": "stockwatch.id",
+   "ts": 1794997955,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "WIKA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-18 17:34"
+  },
+  {
+   "t": "VIVA Siapkan Konversi Utang Menjadi Saham Saat Liabilitas Capai Rp5,8 Triliun",
+   "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOM3l2blNyX0FfaTdTVVhKWWZ1YTZPUDVpdzREcmRKc3ZGX1RrRUJxQWIwLVhOZ25WZ3g4X0ZiNG9LQmtKdVdITHVHYUUwcmdYdXBzSU92QUh6SWp1c1lSV2E4ZkJuMkduTi1MdFEyb3lKOVdYNUJMdm1YWmplSlNYMXFlcV9PV3JrTUFyVHVuR0V5TTNmTU1hZ1VCQQ?oc=5",
+   "src": "gadget.qoo10.co.id",
+   "ts": 1794976680,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "VIVA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-18 17:34"
+  },
+  {
+   "t": "WEGE Selesaikan Satu PKPU dan Hadapi Permohonan Baru",
+   "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBTUVBrOXdYalV4VmVaVnk1d1doRUM1NkJwZ0JBdEIyWmhMOGhabXBqc2R0OFFNWUIyaTBha3pRbWlWZTVQWGUwOUl4eXA2UGcxcGRtZE9vTVBScVU?oc=5",
+   "src": "SuaraGarut.ID",
+   "ts": 1794969693,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "WEGE"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-18 17:34"
+  },
+  {
+   "t": "COIN Akuisisi 10% Saham Data Center Milik Andrew Hidayat, Transaksi Afiliasi Rp 200 M",
+   "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPbFBpWkd4X0FIeFlBN3VXeVNYSVNURTZ0cy1Sd2lfd0I5VHFRTkRhRnRRVHdpeTFDTndTQmx3c0YyNUgwVWpwRERDQjhVNV9KMkZWTnlIMHYwZ2FIWUtzQmxseC11WTRfQVdDOGJLcjk2Z0p6NWUtSFpINzZtMnVxMEx0T2VRNWxyaWVJdk1jWmtVV21RMzVuX0llV1pIQWlKYlM5cDVXajBYVVRIQjRnWlYzRlQtRi0z?oc=5",
+   "src": "KONTAN",
+   "ts": 1794961197,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "COIN"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-18 17:34"
+  },
+  {
+   "t": "BP luncurkan penawaran tender hingga $6 miliar untuk obligasi",
+   "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNT05xY1hQVUlvR25SeUp4eUZoLXliaWxKbWc2T0gzaTFKSWNFald4a0ZSalhlZWh3ZlFxSFpXa2JfdGlwQjN0T0hXSG5OOUZ1MlIwWXRSVTdNTG9ObTdYcTI3QXdHaTk1c1duM0c3Mjh5UG1WenVjSDlCRTVBM19fZmo5QkMzQ1E3ZVNLM3FpOVk2X1JOWkdtOVQ0N0JXbllDS1VrYzRmQlhlbi1QeVlUVUZmczVoRXc?oc=5",
+   "src": "Investing.com Indonesia",
+   "ts": 1794936444,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-18 17:34"
+  },
   {
    "t": "Cakrawala Nexus Akuisisi 29,87% Saham INET Senilai Rp 2 Triliun",
    "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxPejZ1dWtZNF9SWWJzbW1saE5XSWMzcTFHcFNyRmJ1X1BTa1QwMTBxOHVNOEs3T1cxaGI1NVZOeVFqRWJ0eDZvbFd5dF9mRkVHSjZGamtxNGZvOVc2TWM3aVpxRG5rVFdDb21haVBYT0ZpdWlZZUZ2UG8xcUV2aUZCWXk5UU9BOFRTUW5pWEZzWHdqVTFockdjdkI0Y202QdIBlgFBVV95cUxPQmJ5eER6RzUxNjhMRS0wcl9IRnlJbWMyVTZVaE5ueGlRXzNaaUQ0OGxCUmtxbmdTN18xWnJUdU96c1A3NFdiS0JtRThhN3U5NGMtRkdEQVIwUW9RVGlreGxkcmxrcEVrRk5zSDJyTDVQc1k4UWYyT1EtbERrVU16dXFjUXhmUUVzSldhZnVXOTFzTXRpZkE?oc=5",
@@ -69,6 +127,18 @@
    ],
    "impact": "Tinggi",
    "found": "2026-11-17 17:36"
+  },
+  {
+   "t": "KETR Resmi Beralih ke Pengendali Baru, Vidcy Octory Jadi Direktur Utama",
+   "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOMUhBb2xXMGczMnd5X2NRQkdfUkxDdFV4NGdHTEVKQmxuU3lfWEVXQWNxeUFIdEZMU2JqeWpHeVhPX2p6YTVEWG1XZ1dzcnZiMVhELTF3emF0SGNTcWRFV1ZmNmRVTUMzZXhsRWRKMFk4eWMzak9GdmsyYTNkSkl2MzVNMWdzQXR2VmdtR3ZyLUkwM2d4SDduTw?oc=5",
+   "src": "StockWatch.id",
+   "ts": 1794829750,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "KETR"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-18 17:34"
   },
   {
    "t": "Nawasena Ambil Alih 66,58 Persen Saham IDEA",

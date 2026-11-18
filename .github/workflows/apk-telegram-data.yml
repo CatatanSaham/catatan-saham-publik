@@ -363,4 +363,6 @@ jobs:
           git add bot-data
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'Update bot data from APK uploads'
-          git push origin HEAD:apk-data
+          # Robot lain (makro, Clean Buy, APK) sering menulis apk-data bersamaan; tanpa pull dulu push ditolak
+          # dan server bot/MCP tertinggal (kejadian 17–18 Nov: data harian MCP berhenti di 13 Nov, pasar 16 Nov).
+          for i in 1 2 3 4 5; do git pull -q --rebase origin apk-data && git push -q origin HEAD:apk-data && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); done

@@ -1,9 +1,9 @@
 # BARU (16 Nov 2026): mencatat JAM berapa IDX Edge mulai punya broksum hari bursa terbaru.
-# 1 panggilan per cek (BBCA, tanggal hari ini WIB), tiap 30 menit. Log publik hanya berisi jam, tanggal, dan jumlah broker (bukan data broker).
+# 1 panggilan per cek (BBCA, tanggal hari ini WIB), tiap 30 menit 18.05–22.35 WIB hari bursa (data tidak pernah ada siang hari). Log publik hanya berisi jam, tanggal, dan jumlah broker (bukan data broker).
 name: Cek waktu update broksum (IDX Edge)
 on:
   schedule:
-    - cron: "5,35 * * * *"
+    - cron: "5,35 11-15 * * 1-5"   # 18.05–22.35 WIB Sen–Jum (10 cek/hari, sebelumnya 48 sepanjang hari)
   workflow_dispatch:
 permissions:
   contents: read

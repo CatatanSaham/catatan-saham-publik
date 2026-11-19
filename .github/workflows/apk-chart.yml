@@ -1,6 +1,6 @@
 # APK Chart Pro (mandiri). Kode di repo privat CatatanSaham/catatan-saham-mtf (folder apk-chart/), diambil memakai PRIVAT_TOKEN.
 # Jangan cetak data mentah ke log (log repo ini publik).
-name: Build APK Chart Pro
+name: Build APK Chart Saham
 on:
   workflow_dispatch:
     inputs:
@@ -58,4 +58,4 @@ jobs:
           GH_TOKEN: ${{ secrets.PRIVAT_TOKEN }}
         run: |
           gh release delete chart-latest --repo CatatanSaham/catatan-saham-mtf --yes --cleanup-tag || true
-          gh release create chart-latest ChartPro.apk --repo CatatanSaham/catatan-saham-mtf --title "Chart Pro APK (terbaru)" --notes "Chart Pro mandiri (daftar pantau + daftar objek). Pakai hanya untuk diri sendiri." --target "$(git rev-parse HEAD)"
+          gh release create chart-latest ChartPro.apk --repo CatatanSaham/catatan-saham-mtf --title "Chart Saham APK (terbaru)" --notes "Chart Saham (dulu Chart Pro) mandiri (daftar pantau + daftar objek). Pakai hanya untuk diri sendiri." --target "$(git rev-parse HEAD)"

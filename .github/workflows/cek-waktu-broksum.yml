@@ -1,6 +1,6 @@
-# BARU (16 Nov 2026): mencatat JAM berapa IDX Edge mulai punya broksum hari bursa terbaru.
+# BARU (16 Nov 2026): mencatat JAM berapa sumber data mulai punya broksum hari bursa terbaru.
 # 1 panggilan per cek (BBCA, tanggal hari ini WIB), tiap 30 menit 18.05–22.35 WIB hari bursa (data tidak pernah ada siang hari). Log publik hanya berisi jam, tanggal, dan jumlah broker (bukan data broker).
-name: Cek waktu update broksum (IDX Edge)
+name: Cek waktu update broksum
 on:
   schedule:
     - cron: "5,35 11-15 * * 1-5"   # 18.05–22.35 WIB Sen–Jum (10 cek/hari, sebelumnya 48 sepanjang hari)
@@ -31,6 +31,6 @@ jobs:
                   d = json.loads(r.read().decode("utf-8"))
                   sisa = r.headers.get("x-ratelimit-remaining")
               n = len(d.get("brokers") or [])
-              print(f"CEK jam WIB {wib:%H:%M} tgl {tgl}: broker hari ini={n}, tanggal broksum terbaru di IDX Edge={d.get('broker_date_max')}, sisa kuota={sisa}")
+              print(f"CEK jam WIB {wib:%H:%M} tgl {tgl}: broker hari ini={n}, tanggal broksum terbaru di sumber data={d.get('broker_date_max')}, sisa kuota={sisa}")
           except urllib.error.HTTPError as e:
               print(f"CEK jam WIB {wib:%H:%M} tgl {tgl}: HTTP {e.code} (404 = belum ada data hari ini)")

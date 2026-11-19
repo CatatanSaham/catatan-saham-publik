@@ -1,9 +1,9 @@
-# BARU (16 Nov 2026): isi-mundur broksum harian 2 Jan - 29 Jun 2026 dari IDX Edge (stock.arjum.com).
+# BARU (16 Nov 2026): isi-mundur broksum harian 2 Jan - 29 Jun 2026 dari sumber data (stock.arjum.com).
 # Kode: repo privat catatan-saham-mtf tools/backfill/broksum_backfill.py (diambil saat jalan memakai PRIVAT_TOKEN).
 # Hasil ditulis ke cabang privat `broksum-backfill` repo privat (BUKAN apk-data/apk-next/api-data, BUKAN repo ini).
 # Log repo ini publik: skrip hanya mencetak jumlah dan tanggal, tidak pernah data broker.
-name: Isi mundur broksum (IDX Edge)
-# Dijalankan tepat setelah kuota harian IDX Edge reset (00.00 WIB). Memakai SELURUH jatah 1.000 panggilan per hari (atas perintah pemilik 16 Nov 2026;
+name: Isi mundur broksum
+# Dijalankan tepat setelah kuota harian sumber data reset (00.00 WIB). Memakai SELURUH jatah 1.000 panggilan per hari (atas perintah pemilik 16 Nov 2026;
 # kuota dipakai bersama chat, jadi chat tidak punya jatah sampai reset berikutnya). Satu hari bursa (semua saham) per run, mundur dari 29 Jun (30 Jun sudah diunggah pemilik).
 on:
   schedule:

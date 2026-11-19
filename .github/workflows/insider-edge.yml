@@ -1,7 +1,7 @@
-# BARU (16 Nov 2026): robot transaksi insider IDX Edge (15 transaksi terbaru per emiten).
+# BARU (16 Nov 2026): robot transaksi insider sumber data (15 transaksi terbaru per emiten).
 # Kode: repo privat catatan-saham-mtf tools/insider/insider_edge.py (diambil saat jalan memakai PRIVAT_TOKEN).
 # Hasil ke cabang privat `insider-edge` (BUKAN apk-data/apk-next/api-data). Log publik: hanya jumlah dan kode.
-name: Robot insider (IDX Edge)
+name: Robot insider
 on:
   schedule:
     - cron: "30 11 * * 1-5"   # 18.30 WIB Sen-Jum

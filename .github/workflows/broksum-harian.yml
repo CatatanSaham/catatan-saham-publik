@@ -1,12 +1,12 @@
-# BARU (16 Nov 2026): robot broksum harian IDX Edge -> ZIP 89 file .xls (format unduhan pemilik).
+# BARU (16 Nov 2026): robot broksum harian sumber data -> ZIP 89 file .xls (format unduhan pemilik).
 # Kode: repo privat catatan-saham-mtf tools/broksum/ (diambil saat jalan memakai PRIVAT_TOKEN).
 # Hasil ke cabang privat `broksum-harian`. Log publik: hanya jumlah dan jam.
-name: Robot broksum harian (IDX Edge)
+name: Robot broksum harian
 on:
   schedule:
     - cron: "0 11 * * 1-5"    # 18.00 WIB Sen-Jum; menunggu data sampai 240 menit (22.00 WIB). Data 16 Nov muncul ±18.05 WIB
     - cron: "30 23 * * 0-5"   # 06.30 WIB Sen-Sab: susulan, unduh hari kerja kemarin bila belum ada (data kemarin harus ada sebelum 09.00)
-    - cron: "15,45 12-15 * * 1-5"   # coba ulang 19.15–22.45 WIB tiap 30 menit bila run 18.00 gagal (mis. IDX Edge mati); bila file hari ini sudah ada langsung lewat tanpa kuota
+    - cron: "15,45 12-15 * * 1-5"   # coba ulang 19.15–22.45 WIB tiap 30 menit bila run 18.00 gagal (mis. sumber data mati); bila file hari ini sudah ada langsung lewat tanpa kuota
   workflow_dispatch:
     inputs:
       mode:

@@ -1,15 +1,15 @@
-# BARU (16 Nov 2026): broksum ASING per broker (flow=F) dari IDX Edge.
+# BARU (16 Nov 2026): broksum ASING per broker (flow=F) dari sumber data.
 # Kode: repo privat catatan-saham-mtf tools/backfill/broksum_backfill.py (diambil memakai PRIVAT_TOKEN).
 # Daftar saham per tanggal dari ZIP harian pemilik (cabang privat apk-data). Hasil ke cabang privat `broksum-asing`.
 # Log repo ini publik: skrip hanya mencetak jumlah dan tanggal, tidak pernah data broker.
 # 17 Nov 2026: jalan otomatis setelah robot broksum harian selesai. Daftar saham dari hasil robot broksum harian (cabang broksum-harian)
 # digabung ZIP pemilik, jadi tetap jalan walau pemilik berhenti unggah. Hanya hari yang belum ada (10 hari terakhir).
-name: Broksum asing per broker (IDX Edge)
+name: Broksum asing per broker
 on:
   # Langsung setelah robot broksum harian selesai (sore ±18.10 WIB dan susulan pagi 06.30 WIB),
   # supaya asing per broker sejalan dengan broksum harian.
   workflow_run:
-    workflows: ["Robot broksum harian (IDX Edge)"]
+    workflows: ["Robot broksum harian"]
     types: [completed]
   workflow_dispatch:
     inputs:

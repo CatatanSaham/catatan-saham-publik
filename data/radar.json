@@ -1,27 +1,97 @@
 {
- "upd": "2026-11-18 17:34 WIB",
- "baru": 6,
+ "upd": "2026-11-19 18:24 WIB",
+ "baru": 8,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
   "StockWatch: 12",
   "Katadata: 25",
   "CNBC Indonesia: 100",
-  "Kontan: gagal (HTTP Error 403: Forbidden)",
+  "Kontan: 25",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
   "Google Berita: 8",
-  "Google Berita: 5",
-  "Google Berita: 21",
-  "Google Berita: 15",
+  "Google Berita: 7",
+  "Google Berita: 23",
+  "Google Berita: 23",
+  "Google Berita: 9",
   "Google Berita: 8",
-  "Google Berita: 14",
-  "Google Berita: 21",
+  "Google Berita: 27",
   "Google Berita: 25",
   "Google Berita: 10",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "Transaksi Jumbo Rp4,2 Triliun! Wibowo Group Capital Caplok 82,5% Saham MBSS, BNI Sekuritas Jadi Penasihat",
+   "link": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxPRElMRG5KQVZ0VnVIMW1MNlNVZTJwTTJHVEZtRmlEUHJGbU96enJZNzdMZDlGRUpEcXVEeHBJSEVuOVo3OFBxbGZTVHkxWHJiTXFQV2x2a2YxN1FSMjhpRjZHbldST290MDNON2NsU2R4Wmk2MVRQUF9BbzB0TkFwb0tEdlJQZWFncFhyalRLLUoxS0UzT2RkWGhDQUFTQTBvWHVKMGo3bTdqTEpOUFd4WXM1X01VQWFTQ3FfMG5JMkxYbmNSTGM3N00tWnVrd1BUM2k3SERn?oc=5",
+   "src": "Pasardana",
+   "ts": 1795081500,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "MBSS"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-19 18:24"
+  },
+  {
+   "t": "Transaksi Nego Rp4,46 Triliun di Saham HRUM, Pengendali Ungkap Restrukturisasi Internal",
+   "link": "https://www.idxchannel.com/market-news/transaksi-nego-rp446-triliun-di-saham-hrum-pengendali-ungkap-restrukturisasi-internal",
+   "src": "IDX Channel",
+   "ts": 1795080300,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "HRUM"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-19 18:24"
+  },
+  {
+   "t": "Medco Energi Terbitkan Obligasi USD300 Juta untuk Tender Offer dan Refinancing Utang",
+   "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxNeFBrRDMtM1hnMF9Dc2hFTW5LaVB6VGpsUmNiYzlacnNPUzNzZEVBQzlpYjVBLVFoWmJvOFNsd0l1QVlQcWVnN2o5YnhqMjFqc3dETklLenZKV1NUTFRjRVpsalpjampRZXVPWEdURDNjZlNkQVVUUTVpcGNlQk9lbTdJczgyV2Y4RXFjQU5lVFNRQUlxZ1FoLUdGclJtQQ?oc=5",
+   "src": "Qoo Media",
+   "ts": 1795080120,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-19 18:24"
+  },
+  {
+   "t": "TGRA Private Placement 21 Miliar Saham, Adidaya Mandiri Jadi Pengendali Baru",
+   "link": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQSkpCb0hMdGJPZFpZZkF1VU1WbkhRQkRJMk9ySjdHWVUycjdTSmhYN3UwSUZBUGg4R0dYbXFqZF8tbjk3R1M3X1BrbHJZV3g2Z1hld1VaMnduS0Q5WVd1dGIxTUdXaVFrZWZpV1dZcDRBNnlISTFtZE5VQnFFN3pMcUI0OUVXSzdCX1poWnpiZjQ2UURONkpZTDRVdHUzLWV0LTQ0blNRRl9ObU5ILTRXX3BLR2pOaFpJY2Q0X2lhdVRiUEEzRUNj0gHMAUFVX3lxTE0zLWF6ZkVzNFZGZFhYcnR5b1VqUGRSbm5NS1dRVHp1eDQ2ZnZLcVJSR3FONFBfUi1Yc1VHQTBhRjBWZzJYWFJKcVRmTnlZVkxpX0lTWTJSWTVFZHRkZkdEUzJOV1hKNzlrak9LcEE5SUhyOURaMklKMXJSY0RHcFptaWIwWjNGazdWSGFYTHphaEF6S1hlaGJ1aGQxblZOWUlQTlVzel9jVTI3WUVFQk0xSmFjM1RCQlFiaDZvOF93cFkzMzF1Z1FITmF3VA?oc=5",
+   "src": "Katadata.co.id",
+   "ts": 1795066740,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "TGRA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-19 18:24"
+  },
+  {
+   "t": "BEI Buka Kembali Suspensi Saham TMPO pada 19 November 2026",
+   "link": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNTGhHQkZBWVlPaGtPX0Z6ZnF3SjN0T3ozcEhBRGdQbHBNZ3hEMms1Ujc3U2Q1dnRza2ViTVRRamlHbkFvbF9oczhBSDJMSVpRUnJ3dzZHSVNZUU9GMy0yc0RDQzlvbm1NMzFucUszWDJuUjc0T3RpOGRuWnZXT2FOdmhzNnplUXNr?oc=5",
+   "src": "StockWatch.id",
+   "ts": 1795052066,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "TMPO"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-19 18:24"
+  },
+  {
+   "t": "VCG Ambil Alih 56,84 Persen Saham TGUK dari DKI",
+   "link": "https://news.google.com/rss/articles/CBMie0FVX3lxTE05dWZTaHh2Q2xST3lYZ1QyZGQ3ek5fUU5mS3dwQ1J3TnhreEJJZ0dqU3AzT0FCWlJvNGZ3anozck9zVmp6aVFhMFlFWnVmWTdjbDYxMkFtWDMzdXpmYzhVcEw1bGVVa2FsS2xOc1lvVGRUMmlUUjRZV2gzNA?oc=5",
+   "src": "Lensa Hukum",
+   "ts": 1795022700,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "TGUK"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-19 18:24"
+  },
   {
    "t": "BEI Perpanjang Suspensi Perdagangan Saham WIKA, Ini Penyebabnya",
    "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxNNUtaMENqTEMxSEtleDZRM1ZZVkN6NWtWWEVPeGxXU2ZRSldsSV9Zc1EwU1pRQm5rT0xyLXgtUVZ3cjJwcDVsYURmbWhNSXRobkh4S18zMXNGdkc4SDUyX2RjRXg5S1lURFdBcE43ZVNhemxDMTlWRWpLOTBJY09UWGxNRi1UbGJjZUZ5WW5n?oc=5",
@@ -35,6 +105,18 @@
    "found": "2026-11-18 17:34"
   },
   {
+   "t": "Dividen Antam (ANTM) Bisa Tembus 80%, Potensi Cuan Sahamnya 54%",
+   "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPWEZ5dUh3eWFjcWMxRTJTdG5zcjVROVZBc0NraFpsaGpzd1d3YTR5eXlQcGhfQU9KTG03aU5RajhGbDdoTDMyWl9RdTBGUVE3ZWhBbjhxTzZYcDJjbktmbjJMLXpaNnR2WjAwSi1rWHNzdEM0WUstbjYwT1E2czM3dlRjdVJLblJnMkZ1TWpmY0lwMllEOGJ3?oc=5",
+   "src": "investor.id",
+   "ts": 1794992700,
+   "cat": "Buyback / dividen",
+   "k": [
+    "ANTM"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-19 18:24"
+  },
+  {
    "t": "VIVA Siapkan Konversi Utang Menjadi Saham Saat Liabilitas Capai Rp5,8 Triliun",
    "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOM3l2blNyX0FfaTdTVVhKWWZ1YTZPUDVpdzREcmRKc3ZGX1RrRUJxQWIwLVhOZ25WZ3g4X0ZiNG9LQmtKdVdITHVHYUUwcmdYdXBzSU92QUh6SWp1c1lSV2E4ZkJuMkduTi1MdFEyb3lKOVdYNUJMdm1YWmplSlNYMXFlcV9PV3JrTUFyVHVuR0V5TTNmTU1hZ1VCQQ?oc=5",
    "src": "gadget.qoo10.co.id",
@@ -45,6 +127,18 @@
    ],
    "impact": "Tinggi",
    "found": "2026-11-18 17:34"
+  },
+  {
+   "t": "MEDC Terbitkan Obligasi US$ 300 Juta untuk Tender Offer dan Refinancing",
+   "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPZmlGVEYtVHFHX09qZnpQY2JsLVV2cW9Sbk50ZUFCWTlJbTdnV3RDOXhzSUpKUl95Y3N3WDVLNlZ5SDBuWjUwS3BTc1VtTHczZUpDMHRKdFdrQzBwTklQZ0lhOFR1Rzhvclk4akYtLVVqcGRJbE9FbldkWU9nTkxzdWFwNWM0UW5CUS1KY2liWkhQN1FpM1hscURHd1dheUZJRDNDaWJmUQ?oc=5",
+   "src": "investor.id",
+   "ts": 1794973500,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "MEDC"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-19 18:24"
   },
   {
    "t": "WEGE Selesaikan Satu PKPU dan Hadapi Permohonan Baru",

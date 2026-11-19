@@ -1,10 +1,10 @@
-# BARU (16 Nov 2026): robot fundamental IDX Edge (laba rugi, neraca, arus kas kuartal 2026, semua emiten).
+# BARU (16 Nov 2026): robot fundamental sumber data (laba rugi, neraca, arus kas kuartal 2026, semua emiten).
 # Kode: repo privat catatan-saham-mtf tools/fundamental/fundamental_edge.py (diambil saat jalan memakai PRIVAT_TOKEN).
 # Hasil ditulis ke cabang privat `fundamental-edge` repo privat (BUKAN apk-data/apk-next/api-data, BUKAN repo ini).
 # Log repo ini publik: skrip hanya mencetak jumlah dan kode, tidak pernah angka laporan.
-name: Robot fundamental (IDX Edge)
+name: Robot fundamental
 on:
-  # Jadwal otomatis dimatikan 18 Nov 2026 atas permintaan pemilik (hemat kuota IDX Edge). Jalankan manual bila perlu.
+  # Jadwal otomatis dimatikan 18 Nov 2026 atas permintaan pemilik (hemat kuota sumber data). Jalankan manual bila perlu.
   workflow_dispatch:
     inputs:
       mode:

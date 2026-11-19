@@ -2,7 +2,8 @@
 # Kode: repo privat catatan-saham-mtf tools/donedetail/done_edge.py. Daftar saham dari cabang privat broksum-harian.
 # Hasil ke cabang privat `done-detail` (dd/YYYYMMDD/KODE.json.gz). Log repo ini publik: skrip hanya mencetak jumlah.
 # Jalan manual dulu (perkiraan 18 Nov: 834 saham, ±16.300 panggilan).
-name: Running trade (IDX Edge)
+# 19 Nov 2026: di akhir run, ringkas_dd.py (repo privat) membuat rk/ untuk halaman Running Trade + Bandar Volume intraday aplikasi admin.
+name: Running trade + done detail (IDX Edge)
 on:
   workflow_dispatch:
     inputs:

@@ -1,0 +1,57 @@
+# BARU (19 Nov 2026): running trade (done detail) IDX Edge per tanggal, untuk Bandar Volume 15m/1h.
+# Kode: repo privat catatan-saham-mtf tools/donedetail/done_edge.py. Daftar saham dari cabang privat broksum-harian.
+# Hasil ke cabang privat `done-detail` (dd/YYYYMMDD/KODE.json.gz). Log repo ini publik: skrip hanya mencetak jumlah.
+# Jalan manual dulu (perkiraan 18 Nov: 834 saham, ±16.300 panggilan).
+name: Running trade (IDX Edge)
+on:
+  workflow_dispatch:
+    inputs:
+      tanggal:
+        description: "Tanggal bursa (YYYY-MM-DD)"
+        default: "2026-11-18"
+      maks:
+        description: "Batas panggilan API run ini"
+        default: "25000"
+      cadangan:
+        description: "Berhenti bila sisa kuota <= angka ini"
+        default: "3000"
+permissions:
+  contents: read
+concurrency:
+  group: done-detail
+  cancel-in-progress: false
+jobs:
+  ambil:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
+      REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+    steps:
+      - uses: actions/checkout@v4
+        with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main, sparse-checkout: tools/donedetail}
+      - uses: actions/checkout@v4
+        with: {path: robot, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: broksum-harian, sparse-checkout: harian}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Uji awal (1 panggilan, acuan NICL 18 Nov)
+        run: python main/tools/donedetail/done_edge.py --tanggal x --robot x --out x --selftest
+      - name: Ambil cabang done-detail (buat baru bila belum ada)
+        run: |
+          if git ls-remote --exit-code "$REPO_PRIVAT" done-detail >/dev/null; then
+            git clone -q --depth 1 --branch done-detail "$REPO_PRIVAT" out
+          else
+            mkdir out && cd out && git init -q -b done-detail && git remote add origin "$REPO_PRIVAT"
+          fi
+      - name: Ambil running trade
+        run: python main/tools/donedetail/done_edge.py --tanggal "${{ github.event.inputs.tanggal }}" --robot robot/harian --out out --maks "${{ github.event.inputs.maks }}" --cadangan "${{ github.event.inputs.cadangan }}" --menit 320
+      - name: Simpan ke done-detail (hanya bila berubah)
+        if: always()
+        run: |
+          cd out
+          git config user.name "Running Trade"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "done-detail ${{ github.event.inputs.tanggal }}"
+          for i in 1 2 3 4 5; do git push -q origin HEAD:done-detail && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin done-detail || true; done

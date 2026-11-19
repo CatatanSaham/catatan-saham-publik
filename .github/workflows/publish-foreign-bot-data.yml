@@ -51,5 +51,11 @@ jobs:
             echo "Verified data unchanged"
           else
             git commit -m "data: publish reconciled APK foreign lots for Telegram"
-            git push origin HEAD:apk-data
+            # 19 Nov 2026: robot lain bisa mendorong ke apk-data pada saat yang sama → ambil terbaru lalu coba lagi (maks 4x)
+            for i in 1 2 3 4; do
+              git push origin HEAD:apk-data && exit 0
+              echo "push ditolak, ambil apk-data terbaru lalu coba lagi ($i)"; sleep $((i*5))
+              git pull --rebase origin apk-data || { git rebase --abort; exit 1; }
+            done
+            exit 1
           fi

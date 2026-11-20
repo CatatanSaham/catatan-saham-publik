@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-20 18:19 WIB",
- "baru": 6,
+ "upd": "2026-11-21 00:59 WIB",
+ "baru": 1,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -9,19 +9,31 @@
   "CNBC Indonesia: 100",
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 7",
+  "Google Berita: 8",
   "Google Berita: 8",
   "Google Berita: 19",
   "Google Berita: 15",
-  "Google Berita: 10",
-  "Google Berita: 7",
-  "Google Berita: 25",
+  "Google Berita: 9",
+  "Google Berita: 8",
+  "Google Berita: 24",
   "Google Berita: 30",
   "Google Berita: 10",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "Emiten BTPN Bakal Go Private dan Delisting",
+   "link": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNazJnMDMySkYzeDBkTFlXLUVmYThSRGVpYS1NZHFtU2xvcnN1N3pSYU9JTFc0LVRpdXlvT1JrRjlDUzBpR01lY28tZ2JPaWFJQXRvS3lOVVI2OXhEMXJacklZN3lDUXg0N0hLVEpaajAtUGxucXRVRnRVM0hJR2RYNEpVaGxDcHRxX3lhTUxjSdIBhgFBVV95cUxQWkI3RjZ5bjZiUkdNbEt0MGZYOW5ORnRqd0xMWUZwVHJGaG56VEpjR2VLTDl4NkN4c0FIQTVKVVpnTl9WQjlCSmsyLXJ1alJWMXlrcFdRblBrbWR3RmtCQ0p1dWlfRDEwZldfMGpkTWxIRkJlOFNDaUROWjVLVE9lWFVBWUpYUQ?oc=5",
+   "src": "Liputan6.com",
+   "ts": 1795179957,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "BTPN"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-21 00:59"
+  },
   {
    "t": "Emiten EXCL Siapkan Rp 1 Triliun Buat Buyback Saham",
    "link": "https://news.google.com/rss/articles/CBMi-AFBVV95cUxQdXVCZzdEUERZREtvdl9NME5LOGFtaWZBRjJHM0JROUdPSHhIUnlLM1pmd092VXR3cU5fSFFWdEp1VUpRNnRKMG83b21SOGJGaVdYdF9GQmlxQ3l3ekJVRFZYaWxJRG9Td3VlclJ0TXNhVUhvaXhRellBQ1hoTWk3SnlzeUdObVZUcUhtUHI3RVMwcGdWUmVtdVFlUTdkM2M2SlJBakhlc0JibzZ6M0xaSHV6OW9hN0gwcGdRaFhkOFV1SnByRnJleEFnNk9oTDgzU3k3V0RpdVg1bXV2aFJzTzZLTElKQTBiX2trcDRTVHpwSk9ZTVdmddIB-AFBVV95cUxQdXVCZzdEUERZREtvdl9NME5LOGFtaWZBRjJHM0JROUdPSHhIUnlLM1pmd092VXR3cU5fSFFWdEp1VUpRNnRKMG83b21SOGJGaVdYdF9GQmlxQ3l3ekJVRFZYaWxJRG9Td3VlclJ0TXNhVUhvaXhRellBQ1hoTWk3SnlzeUdObVZUcUhtUHI3RVMwcGdWUmVtdVFlUTdkM2M2SlJBakhlc0JibzZ6M0xaSHV6OW9hN0gwcGdRaFhkOFV1SnByRnJleEFnNk9oTDgzU3k3V0RpdVg1bXV2aFJzTzZLTElKQTBiX2trcDRTVHpwSk9ZTVdmdQ?oc=5",

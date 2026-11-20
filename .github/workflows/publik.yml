@@ -5,7 +5,7 @@ name: Terbit ke repo publik
 # untuk APK Non Admin. Butuh secret PUBLIK_TOKEN (fine-grained, hanya repo publik, Contents: write).
 on:
   workflow_run:
-    workflows: ["Hitung modul otomatis (Fase 3, mode bayangan)", "Data API Non Admin (cabang api-data)", "Radar BEI sore", "Makro (PDB, inflasi, BI-Rate)"]
+    workflows: ["Hitung modul otomatis (Fase 3, mode bayangan)", "Data API Non Admin (cabang api-data)", "Radar BEI sore", "Makro (PDB, inflasi, BI-Rate)", "Robot 1 & 15 menit"]
     types: [completed]
   workflow_dispatch:
 permissions:
@@ -27,7 +27,15 @@ jobs:
         with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main}
       - uses: actions/checkout@v4
         if: steps.k.outputs.ada == '1'
-        with: {ref: apk-data, path: data, sparse-checkout: "apk-data/derived\napk-data/harian\napk-data/kepemilikan\napk-data/makro.json\napk-data/radar.json", sparse-checkout-cone-mode: false, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}"}
+        with: {ref: apk-data, path: data, sparse-checkout: "apk-data/derived\napk-data/harian\napk-data/kepemilikan\napk-data/makro.json\napk-data/radar.json\napk-data/m15", sparse-checkout-cone-mode: false, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}"}
+      # 20 Nov 2026: Open 0 BEI diisi dari bar 1m/15m (tools/isi_open.py) -> data/open-isi.json
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.ada == '1'
+        with: {ref: apk-next, path: nx, sparse-checkout: "apk/www/shards", sparse-checkout-cone-mode: false, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}"}
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.ada == '1'
+        continue-on-error: true
+        with: {ref: m15-harian, path: mh, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}"}
       - uses: actions/checkout@v4
         if: steps.k.outputs.ada == '1'
         with: {repository: CatatanSaham/catatan-saham-publik, token: "${{ secrets.PRIVAT_TOKEN }}", path: pub}
@@ -35,10 +43,11 @@ jobs:
         if: steps.k.outputs.ada == '1'
         run: |
           python main/publik/terbit.py data/apk-data pub
+          python main/tools/isi_open.py --harian data/apk-data/harian --shards nx/apk/www/shards --m15 data/apk-data/m15 --m15 mh/m15 --m1 mh/m1 --out pub/data/open-isi.json || echo "isi_open gagal, dilewati"
           cd pub
           git config user.name "Terbit Catatan Saham"
           git config user.email "noreply@github.com"
           git add data
-          git diff --cached --quiet -- data/cleanbuy data/harian data/kepemilikan data/makro.json data/radar.json && exit 0
+          git diff --cached --quiet -- data/cleanbuy data/harian data/kepemilikan data/makro.json data/radar.json data/open-isi.json && exit 0
           git commit -q -m "Terbit $(TZ=Asia/Jakarta date '+%Y-%m-%d %H:%M')"
           for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done

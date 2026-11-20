@@ -2892,7 +2892,30 @@ function aicHalaman(m){m=m||$('#m');const tab=[];let t='';try{t=aicRapi(aicTeks(
 function aicRingkasSaham(c){try{const SR=hubSer(c);if(!SR.length)return'';const la=SR.at(-1),f=n=>{const s=SR.slice(-n);return s.length>1?((la.c/s[0].c-1)*100).toFixed(1)+'%':'-'},s3=SR.slice(-63).map(r=>r.c);
  return 'Saham '+c+(NM[c]?' ('+NM[c]+')':'')+(typeof SEC!=='undefined'&&SEC&&SEC[c]?' · sektor '+SEC[c]:'')+'\nHarga penutupan terakhir ('+fd(la.d)+'): '+la.c+(la.p?' (sebelumnya '+la.p+', '+((la.c/la.p-1)*100).toFixed(2)+'%)':'')+'\nPerubahan harga: 5 hari '+f(6)+' · 1 bulan '+f(22)+' · 3 bulan '+f(64)+'\nTertinggi/terendah 3 bulan: '+Math.max(...s3)+' / '+Math.min(...s3)+'\n'}catch(e){return''}}
 /* kode saham yang disebut di pertanyaan (huruf besar, atau huruf kecil bila kata "saham" ikut disebut) */
-function aicKodeDisebut(q){const ada=new Set(),kecil=/saham|emiten|kode/i.test(q);for(const w of q.match(/\b[A-Za-z]{4}\b/g)||[]){const u=w.toUpperCase();if((w===u||kecil)&&NM[u])ada.add(u)}return[...ada].slice(0,3)}
+/* 20 Nov 2026: kode dikenali juga bila belum ada di daftar nama (mis. MPPA, ISAP, PURA, NANO) asal ada di data harga; sampai 8 kode */
+const AIC_KATA=new Set('DARI DATA YANG SAJA JUGA LAGI BISA AKAN ATAU DONG KASI KASIH COBA MANA BAGI SAMA PADA HARI SESI TAHU TAU MINTA BUAT BELI JUAL NAIK TURUN LIAT LIHAT SUDA UDAH BARU LAMA BANK SAYA AKUN APAKAH APAH KALO KALAU MANA SINI SITU'.split(' '));
+function aicKodeAda(u){if(NM[u])return true;try{const x=D.days[dates.at(-1)];return!!(x&&x.t.includes(u))}catch(e){return false}}
+function aicKodeDisebut(q){const ada=new Set(),kecil=/saham|emiten|kode|analisa|analisis/i.test(q);for(const w of q.match(/\b[A-Za-z]{4}\b/g)||[]){const u=w.toUpperCase();if((w===u||(kecil&&!AIC_KATA.has(u)))&&aicKodeAda(u))ada.add(u)}return[...ada].slice(0,8)}
+/* Data lengkap per saham dari server (sama dengan MCP ringkasan_saham + fundamental): harga & MA, Clean Buy, bandar 5 sesi, broker 5 sesi, profil, rasio */
+const AIC_SH={};
+window.sahamSiap=function(kode){if(typeof CSW==='undefined'||typeof csDev!=='function'||!kode)return Promise.resolve();if(AIC_SH[kode])return AIC_SH[kode].p||Promise.resolve();
+ const o=AIC_SH[kode]={},ambil=j=>fetch(CSW+'/app/api/'+j+'/'+encodeURIComponent(kode),{headers:{'X-CS-Device':csDev()}}).then(r=>r.ok?r.json():null).catch(()=>null);
+ o.p=Promise.all([ambil('saham'),ambil('fund')]).then(([a,b])=>{o.s=a&&a.ok!==false?a:null;o.f=b&&b.fundamental||b&&b.profil?b:null;if(!o.s&&!o.f)setTimeout(()=>delete AIC_SH[kode],3e4)});return o.p};
+window.sahamTeks=function(kode){const o=AIC_SH[kode];if(!o||(!o.s&&!o.f))return'';const s=o.s||{},f=o.f||{},n=v=>v==null?'-':Math.round(v).toLocaleString('id-ID'),d1=v=>v==null?'-':String(+(+v).toFixed(2)).replace('.',','),tg=d=>d?String(d).slice(6,8)+'/'+String(d).slice(4,6):'',rp=v=>{const a=Math.abs(v||0),g=v<0?'-':'';return g+(a>=1e12?(a/1e12).toFixed(2).replace('.',',')+' T':a>=1e9?(a/1e9).toFixed(2).replace('.',',')+' M':Math.round(a/1e6)+' jt')};
+ const pr=s.profil||{},fp=f.profil||{},fu=f.fundamental||{},h=s.harga||{},L=[];
+ L.push('=== DATA SAHAM '+kode+' ('+(pr.nama||fp.nama||NM[kode]||'')+') ===');
+ const sek=[pr.sektor||fu.sektor,pr.subsektor||fu.subindustri,pr.papan&&'papan '+pr.papan,(pr.listing||fp.tanggal_listing)&&'listing '+(pr.listing||fp.tanggal_listing)].filter(Boolean).join(' · ');if(sek)L.push('Profil: '+sek);
+ const us=pr.usaha||(f.catatan_profil&&f.catatan_profil.usaha)||fp.ringkasan_usaha;if(us)L.push('Usaha: '+String(us).slice(0,180));
+ if(h.close!=null){const at=(k,lbl)=>h[k]!=null?lbl+' '+d1(h[k])+(h.close>=h[k]?' (harga di atas)':' (harga di bawah)'):'';L.push('Harga tutup '+tg(h.as_of)+': '+n(h.close)+' · '+['ma5','ma20','ma100','ma200'].map(k=>at(k,k.toUpperCase())).filter(Boolean).join(' · '))}
+ if(s.cleanbuy)L.push('Clean Buy '+tg(s.cleanbuy.as_of)+': '+((s.cleanbuy.label||[]).length?s.cleanbuy.label.join(', '):'tidak masuk'));
+ const bm=s.bandarmologi&&s.bandarmologi.baris;if(bm&&bm.length){const t=bm.slice(-5),tn=t.reduce((a,x)=>a+(x[7]||0),0),as=t.reduce((a,x)=>a+((x[3]||0)-(x[4]||0)),0)/100;
+  L.push('Bandar (net top 5 broker, lot) 5 sesi: '+t.map(x=>tg(x[0])+' '+(x[7]>0?'+':'')+n(x[7])).join(', ')+' · total '+(tn>0?'+':'')+n(tn)+' lot');
+  L.push('Asing 5 sesi: net '+(as>0?'+':'')+n(as)+' lot · nilai transaksi 5 sesi Rp '+rp(t.reduce((a,x)=>a+(x[1]||0),0)))}
+ const tb=s.top_broker;if(tb&&tb.beli){const b=a=>a.slice(0,4).map(x=>x.k+' '+rp(x.bv-x.sv)).join(', ');L.push('Broker '+(tb.h||5)+' sesi — pembeli bersih: '+b(tb.beli)+' · penjual bersih: '+b(tb.jual||[]))}
+ if(fu.per!=null||fu.pbv!=null)L.push('Fundamental (laporan '+tg(fu.laporan)+'/'+String(fu.laporan||'').slice(0,4)+'): PER '+d1(fu.per)+'x · PBV '+d1(fu.pbv)+'x · ROE '+d1(fu.roe)+'% · DER '+d1(fu.der)+'x · NPM '+d1(fu.npm)+'% · pendapatan Rp '+d1(fu.pendapatan)+' M · laba bersih Rp '+d1(fu.laba_bersih)+' M'+(fu.lolos_penyaring_fundamental!=null?' · penyaring fundamental: '+(fu.lolos_penyaring_fundamental?'lolos':'tidak lolos'):''));
+ const pp=f.per_periode;if(pp&&pp.length)L.push('Laba per periode (Rp M): '+pp.slice(-4).map(x=>x.periode+' '+x.tahun+' '+d1(x.laba_bersih)).join(' · '));
+ const p5=f.pemegang_5_persen&&f.pemegang_5_persen.data;if(p5&&p5.length)L.push('Pemegang ≥5%: '+p5.slice(0,4).map(x=>x.nama+' '+d1(x.persen)+'%').join('; '));
+ return L.join('\n')+'\n'};
 /* ---- AI kenal seluruh Catatan Saham ----
    Tiap halaman dibuat oleh fungsi P[kunci](). Bila pertanyaan menyebut halaman lain (mis. "clean buy" saat membuka
    Top Gainer), halaman itu dirakit diam-diam di wadah tak terlihat, dibaca tabelnya, lalu dibuang.
@@ -2929,13 +2952,14 @@ window.hakaTeks=function(kode,q){const h=aicHkHari(q),turun=/haki|jual|distribus
 const AIC_RE_INS=/insider|orang dalam|direksi|direktur|komisaris|pengendali/i,AIC_RE_ASG=/asing|foreign/i,AIC_RE_KW=/kuartal|quarter|\bq[1-4]\b|laba|pendapatan|penjualan|kinerja|laporan keuangan/i;
 function aicKodeFitur(q){const ks=aicKodeDisebut(q||'');if(!ks.length&&AIC_RE_HK.test(q||'')){for(const w of String(q).match(/\b[A-Za-z]{4}\b/g)||[]){const u=w.toUpperCase();if(NM[u]&&!/^(HAKA|HAKI|YANG|SAJA|HARI|SESI|LAGI|JUGA|DARI|BISA)$/.test(u)&&!ks.includes(u))ks.push(u)}}if(!ks.length&&S.p==='saham'){try{ks.push(hubSync())}catch(e){}}return ks.slice(0,2)}
 async function aicSiapBaru(q){const ks=aicKodeFitur(q),J=[];
+ if(window.sahamSiap)aicKodeDisebut(q||'').forEach(k=>J.push(sahamSiap(k)));
  if(AIC_RE_INS.test(q||'')&&window.insiderSiap){if(ks.length)ks.forEach(k=>J.push(insiderSiap(k)));else J.push(insiderSiap(''))}
  if(AIC_RE_ASG.test(q||'')&&window.asingSiap)ks.forEach(k=>J.push(asingSiap(k)));
  if(AIC_RE_KW.test(q||'')&&ks.length&&window.qkSiap)J.push(qkSiap());
  if(AIC_RE_HK.test(q||'')&&window.hakaSiap){if(ks.length)ks.forEach(k=>J.push(hakaSiap(k,q)));else J.push(hakaSiap('',q))}
  if(J.length)await Promise.race([Promise.all(J.map(p=>Promise.resolve(p).catch(()=>{}))),new Promise(r=>setTimeout(r,7000))])}
 function aicTeksBaru(q){const ks=aicKodeFitur(q);let t='';
- try{if(AIC_RE_INS.test(q||'')&&window.insiderTeks){if(ks.length)ks.forEach(k=>t+=insiderTeks(k));else t+=insiderTeks('')}
+ try{if(window.sahamTeks)aicKodeDisebut(q||'').forEach(k=>t+=sahamTeks(k));if(AIC_RE_INS.test(q||'')&&window.insiderTeks){if(ks.length)ks.forEach(k=>t+=insiderTeks(k));else t+=insiderTeks('')}
  if(AIC_RE_ASG.test(q||'')&&window.asingTeks)ks.forEach(k=>t+=asingTeks(k));
  if(AIC_RE_KW.test(q||'')&&window.qkTeks)ks.forEach(k=>t+=qkTeks(k));
  if(AIC_RE_HK.test(q||'')&&window.hakaTeks){if(ks.length)ks.forEach(k=>t+=hakaTeks(k,q));else t+=hakaTeks('',q)}}catch(e){}
@@ -4526,144 +4550,6 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   if(L.length>=10){try{tvToast('Maksimal 10 saham')}catch(x){}return}
   L.push(v);lvListSet(L);if(i)i.value='';lvwPaint();return}});
 try{P.lvpantau=lvpantau}catch(e){}
-</script>
-<script>
-/* ===== Live Trade (running trade IDX Edge, WebSocket, khusus APK) =====
-   wss://stock.arjum.com/ws/running-trade, header X-API-Key (akun paid) lewat plugin Android CsLive saluran "trade".
-   Pesan: snapshot {market,top,recent} · trade {data:{t,c,a,p,l,v,pc,tn,ts}} · top5 {boards:{freq,lot,value,net_buy,net_sell},window_seconds}
-          filter_applied {filter,recent,matched} · filter_error.  Filter dikirim di socket yang terbuka (maks 1 per detik).
-   Hanya tersambung saat halaman ini tampil. Kunci sama dengan harga live (cs_edge_key). */
-const LT={view:'trade',on:false,ws:false,stop:'',err:'',mkt:null,top:null,win:0,rows:[],pause:false,dirty:true,tab:'freq',rek:{},since:0,n:0,lis:false,tutup:0,retry:0,gt:0,
- f:(()=>{try{return Object.assign({a:'all',codes:'',lot:'',val:'',jumbo:1000,getar:true},JSON.parse(localStorage.getItem('cs_lt')||'{}'))}catch(e){return{a:'all',codes:'',lot:'',val:'',jumbo:1000,getar:true}}})()};
-const ltSave=()=>{try{localStorage.setItem('cs_lt',JSON.stringify(LT.f))}catch(e){}};
-const ltP=()=>{const C=window.Capacitor;return C&&C.Plugins&&C.Plugins.CsLive};
-const ltKey=()=>{try{return localStorage.getItem('cs_edge_key')||''}catch(e){return ''}};
-const ltCodes=()=>String(LT.f.codes||'').toUpperCase().split(/[^A-Z0-9]+/).filter(x=>/^[A-Z0-9]{4}$/.test(x)).slice(0,50);
-const ltRp=v=>{v=+v||0;const a=Math.abs(v),s=v<0?'-':'';return a>=1e12?s+(a/1e12).toFixed(2).replace('.',',')+' T':a>=1e9?s+(a/1e9).toFixed(2).replace('.',',')+' M':a>=1e6?s+(a/1e6).toFixed(1).replace('.',',')+' jt':a>=1e3?s+Math.round(a/1e3)+' rb':s+Math.round(a)};
-const ltN=v=>Number(v).toLocaleString('id-ID',{maximumFractionDigits:2});
-function ltCss(){if(document.getElementById('ltcss'))return;const s=document.createElement('style');s.id='ltcss';s.textContent=`
-.ltst{display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap}.ltdot{width:9px;height:9px;border-radius:50%;background:#999;display:inline-block}.ltdot.on{background:#1f9d55;box-shadow:0 0 0 3px rgba(31,157,85,.2)}
-.ltseg{display:flex;gap:6px;flex-wrap:wrap}.ltseg .btn{padding:6px 12px;min-height:34px}
-.ltf{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.ltf input{width:100%;box-sizing:border-box}.ltf .full{grid-column:1/-1}.ltf label{font-size:11px;opacity:.7;display:block;margin-bottom:2px}
-.ltl{font-variant-numeric:tabular-nums;font-size:12.5px;max-height:62svh;overflow:auto;border-top:1px solid var(--line)}
-.ltr{display:grid;grid-template-columns:58px 52px 20px 1fr 1fr 1.1fr;gap:4px;padding:5px 2px;border-bottom:1px solid var(--line);align-items:center}
-.ltr>*{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ltr>:nth-child(n+4){text-align:right}.ltr.h{font-size:11px;opacity:.65;position:sticky;top:0;background:var(--card,#fff);z-index:1}
-.ltr.b>:nth-child(3){color:var(--up,#1f9d55);font-weight:700}.ltr.s>:nth-child(3){color:var(--dn,#d64545);font-weight:700}
-.ltr.j{background:rgba(224,164,0,.18)}.ltr.j>:nth-child(6){font-weight:800}.ltr b{cursor:pointer}
-.lttb{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}.lttb .btn{white-space:nowrap;padding:6px 10px;min-height:32px}
-.ltt{display:grid;grid-template-columns:22px 56px 1fr 1fr 64px;gap:4px;padding:6px 2px;border-bottom:1px solid var(--line);font-size:13px;font-variant-numeric:tabular-nums;align-items:center}.ltt>:nth-child(n+3){text-align:right}
-.u{color:var(--up,#1f9d55)}.d{color:var(--dn,#d64545)}`;document.head.appendChild(s)}
-function ltrade(){ltCss();LT.dirty=true;setTimeout(()=>{ltJaga();ltPaint(true)},0);const f=LT.f,apk=!!ltP();
- const tb=`<div class="ltseg" style="margin:8px 0">${(window.CS_NONADMIN?[]:[['trade','Running trade'],['pantau','Pantau 10 saham']]).map(([k,n])=>`<button class="btn${LT.view===k?' on':''}" data-ltv="${k}">${n}</button>`).join('')}</div>`;
- if(window.CS_NONADMIN)LT.view='trade';
- if(LT.view==='pantau')return `<div class="brand">PASAR</div><h1>Live Trade</h1>`+tb+lvwBody();
- return `<div class="brand">PASAR</div><h1>Live Trade</h1>${tb}<div class="mu">Running trade, Top 5, dan Net Buy/Sell real-time (akun paid). Hanya mengalir di jam bursa dan selama halaman ini terbuka.</div>
-${apk?'':'<div class="note" role="alert">Live Trade hanya tersedia di APK Catatan Saham (perlu koneksi khusus dengan kunci live).</div>'}
-<div class="card"><div class="ltst" id="ltst"></div></div>
-<div class="card"><div class="lttb" id="lttb">${[['freq','Frekuensi'],['lot','Lot'],['value','Nilai'],['net_buy','Net Buy'],['net_sell','Net Sell']].map(([k,n])=>`<button class="btn${LT.tab===k?' on':''}" data-ltt="${k}">${n}</button>`).join('')}</div><div id="lttop"><div class="mu" style="font-size:12px">Menunggu data Top 5…</div></div></div>
-${pbCard()}
-<details class="det card" ${ltCodes().length||f.a!=='all'||f.lot||f.val?'open':''}><summary>Filter</summary>
-<div class="ltseg" style="margin-top:6px">${[['all','Semua'],['buy','Beli'],['sell','Jual']].map(([k,n])=>`<button class="btn${f.a===k?' on':''}" data-lta="${k}">${n}</button>`).join('')}</div>
-<div class="ltf"><div class="full"><label for="ltc">Kode (pisah koma, maks 50)</label><input class="sel" id="ltc" value="${esc(f.codes)}" placeholder="BBCA, BBRI, TLKM" autocapitalize="characters"></div>
-<div><label for="ltlot">Min. lot</label><input class="sel" id="ltlot" inputmode="numeric" value="${esc(f.lot)}" placeholder="mis. 1000"></div>
-<div><label for="ltval">Min. nilai (Rp juta)</label><input class="sel" id="ltval" inputmode="numeric" value="${esc(f.val)}" placeholder="mis. 100"></div>
-<div><label for="ltj">Tandai jumbo ≥ (Rp juta)</label><input class="sel" id="ltj" inputmode="numeric" value="${esc(f.jumbo)}"></div>
-<div><label>&nbsp;</label><button class="btn${f.getar?' on':''}" data-ltg="1" style="width:100%">${f.getar?'Getar: nyala':'Getar: mati'}</button></div></div>
-<div class="row" style="margin-top:8px"><button class="btn on" data-ltap="1">Terapkan</button><button class="btn" data-ltrs="1">Reset filter</button></div></details>
-<div class="card" id="ltrekc"><b style="font-size:13px">Rekap kode dipantau</b><div id="ltrek" class="mu" style="font-size:12px;margin-top:4px"></div></div>
-<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><b>Running trade</b><span class="row" style="margin:0"><span class="mu" id="ltn" style="font-size:12px"></span><button class="btn" data-ltpz="1">${LT.pause?'▶ Lanjut':'⏸ Jeda'}</button></span></div>
-<div class="ltl" id="ltl"></div></div>`}
-function ltStat(){const el=document.getElementById('ltst');if(!el)return;const m=LT.mkt||{},k=ltKey();
- let t=!ltP()?'Hanya di APK':!k?'Kunci live belum diisi':LT.stop?LT.stop:LT.on?'Tersambung':LT.err||'Menyambung…';
- el.innerHTML=`<span class="ltdot${LT.on?' on':''}"></span><b>${esc(t)}</b>${m.label?`<span class="mu">· ${esc(m.label)}${m.session_end?' · s/d '+esc(m.session_end):''}</span>`:''}${ltP()?`<button class="btn" data-ltk="1" style="margin-left:auto;padding:4px 10px;min-height:30px">⚡ Kunci</button>`:''}`}
-function ltRow(x){if(!x)return null;const d=x.data||x;return d&&d.t?{t:d.t,c:d.c,a:d.a,p:+d.p,l:+d.l,v:+d.v,pc:+d.pc,tn:d.tn}:null}
-function ltAdd(r,live){if(!r)return;LT.rows.unshift(r);if(LT.rows.length>300)LT.rows.length=300;LT.n++;
- const C=ltCodes();if(live&&C.includes(r.t)){const k=LT.rek[r.t]||(LT.rek[r.t]={b:0,s:0,vb:0,vs:0});if(r.c==='buy'){k.b+=r.l;k.vb+=r.v}else{k.s+=r.l;k.vs+=r.v}}
-if(live)try{pbAdd(r)}catch(e){}
- if(live&&LT.f.getar&&r.v>=(+LT.f.jumbo||1000)*1e6&&Date.now()-LT.gt>3000){LT.gt=Date.now();try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
- LT.dirty=true}
-function ltMsg(t){let m;try{m=JSON.parse(t)}catch(e){return}
- if(m.type==='trade'){ltAdd(ltRow(m),true);return}
- if(m.type==='snapshot'){LT.mkt=m.market||LT.mkt;if(m.top&&!LT.top)LT.top={freq:m.top};LT.rows=[];(m.recent||[]).slice().reverse().forEach(x=>ltAdd(ltRow(x),false));ltStat();LT.dirty=true;return}
- if(m.type==='top5'){LT.top=m.boards||{freq:m.top||[]};LT.win=m.window_seconds||0;if(m.market)LT.mkt=m.market;LT.dirty=true;return}
- if(m.type==='filter_applied'){LT.rows=[];(m.recent||[]).slice().reverse().forEach(x=>ltAdd(ltRow(x),false));LT.err='';try{tvToast('Filter diterapkan'+(m.matched!=null?' · '+m.matched+' transaksi cocok':''))}catch(e){}LT.dirty=true;return}
- if(m.type==='filter_error'||m.type==='error'){try{tvToast('Filter ditolak: '+(m.message||m.error||'periksa isian'))}catch(e){}}}
-function ltStatus(o){if(o.s==='open'){LT.on=true;LT.retry=0;LT.err='';LT.since=Date.now();setTimeout(ltKirimFilter,400);ltStat();return}
- LT.on=false;LT.ws=false;const c=+o.code;
- if(c===4401||c===401||c===403)LT.stop='Kunci ditolak (salah atau bukan akun paid)';else if(c===4408)LT.stop='Dipakai di tempat lain (1 koneksi per akun). Buka ulang menu untuk menyambung.';
- else if(c!==1000){LT.err='Terputus, menyambung lagi…';LT.retry=Math.min(LT.retry+1,4)}ltStat()}
-function ltFilterObj(){const f=LT.f,o={type:'filter'},C=ltCodes();let ada=false;if(f.a==='buy'||f.a==='sell'){o.action=f.a;ada=true}if(C.length){o.codes=C;ada=true}
- const lot=parseInt(String(f.lot).replace(/\D/g,''))||0,val=parseInt(String(f.val).replace(/\D/g,''))||0;if(lot>0){o.min_lot=lot;ada=true}if(val>0){o.min_value=val*1e6;ada=true}return ada?o:null}
-function ltKirimFilter(){const P=ltP(),o=ltFilterObj();if(!P||!LT.on||!o)return;P.send({ch:'trade',text:JSON.stringify(o)}).catch(()=>{})}
-async function ltClose(){LT.on=false;LT.ws=false;const P=ltP();if(P)try{await P.close({ch:'trade'})}catch(e){}}
-async function ltOpen(){const P=ltP(),k=ltKey();if(!P||!k)return;
- if(!LT.lis){LT.lis=true;P.addListener('pesan',o=>{if(o&&o.ch==='trade')ltMsg(o.t)});P.addListener('status',o=>{if(o&&o.ch==='trade')ltStatus(o)})}
- LT.ws=true;LT.tutup=Date.now();try{await P.connect({ch:'trade',url:'wss://stock.arjum.com/ws/running-trade',key:k})}catch(e){LT.ws=false;LT.err=e.message||String(e);ltStat()}}
-function ltJaga(){if(!ltP())return;const mau=S.p==='ltrade'&&LT.view!=='pantau'&&!!ltKey()&&!document.hidden&&!LT.stop;
- if(!mau){if(LT.ws)ltClose();return}
- if(!LT.ws){const tunggu=[0,2e3,5e3,1e4,3e4][Math.min(LT.retry,4)];if(Date.now()-LT.tutup>=tunggu)ltOpen()}}
-
-/* ===== Papan Catatan Saham: dihitung sendiri dari aliran running trade (sejak halaman dibuka) =====
-   Breakout (harga > tertinggi kemarin / 20 hari), Lonjakan volume (lot 5 menit vs rata-rata 20 hari), Naik cepat 5 menit, Order jumbo.
-   Data acuan dari data harian Catatan Saham (D.days, OHL). Running trade tidak membawa kode broker, jadi papan asing tidak bisa dibuat. */
-const PB={tab:'brk',st:{},ref:null,refAt:'',seen:{},last:0};
-function pbToday(){const d=new Date(Date.now()+7*36e5);return d.toISOString().slice(0,10).replace(/-/g,'')}
-function pbRef(){const td=pbToday();if(PB.ref&&PB.refAt===td)return PB.ref;const R={};try{let ds=Object.keys(D.days).sort();if(ds.at(-1)===td)ds=ds.slice(0,-1);const L=ds.slice(-20),last=L.at(-1),oh=(typeof OHL!=='undefined'&&OHL)||{};
- for(const d of L){const day=D.days[d],o=oh[d]||{};if(!day)continue;day.t.forEach((t,i)=>{const r=R[t]||(R[t]={ph:0,h20:0,vs:0,n:0,pc:0});const c=+day.c[i]||0,h=(o[t]&&+o[t][1])||c;if(h>r.h20)r.h20=h;if(d===last){r.ph=h;r.pc=c}r.vs+=(+day.v[i]||0)/100;r.n++})}}catch(e){}
- PB.ref=R;PB.refAt=td;return R}
-function pbAdd(r){if(!r||!(r.p>0))return;const now=Date.now(),s=PB.st[r.t]||(PB.st[r.t]={p0:r.p,p:r.p,pc:r.pc,lot:0,val:0,w:[],jb:0,js:0,jn:0});
- s.p=r.p;s.pc=r.pc;s.lot+=r.l;s.val+=r.v;s.w.push([now,r.p,r.l]);while(s.w.length&&now-s.w[0][0]>3e5)s.w.shift();
- const J=(+LT.f.jumbo||1000)*1e6;if(r.v>=J){s.jn++;if(r.c==='buy')s.jb+=r.v;else s.js+=r.v}
- const ref=pbRef()[r.t];if(ref&&LT.f.pb_gb!==false){const lv=LT.f.pb_ref==='20'?ref.h20:ref.ph;if(lv>0&&r.p>lv&&!PB.seen[r.t]&&pbOk(r.t,s)){PB.seen[r.t]=1;
-  if(now-PB.last>2500){PB.last=now;try{navigator.vibrate&&navigator.vibrate([80,60,80])}catch(e){}try{tvToast('Breakout: '+r.t+' '+ltN(r.p)+' (di atas '+ltN(lv)+')')}catch(e){}}}}}
-function pbOk(t,s){const mp=+LT.f.pb_minp||0,mv=(+LT.f.pb_minv||0)*1e6;return s.p>=mp&&s.val>=mv}
-function pbRows(){const ref=pbRef(),now=Date.now(),out=[],rv=+LT.f.pb_rv||3;
- for(const t in PB.st){const s=PB.st[t];if(!pbOk(t,s))continue;const f=ref[t]||null;let m=null,x='';
-  if(PB.tab==='brk'){if(!f)continue;const lv=LT.f.pb_ref==='20'?f.h20:f.ph;if(!(lv>0&&s.p>lv))continue;m=(s.p/lv-1)*100;x='> '+ltN(lv)+(LT.f.pb_ref!=='20'&&f.h20>0&&s.p>f.h20?' · 20H':'')}
-  else if(PB.tab==='vol'){if(!f||!f.n)continue;const w=s.w.filter(a=>now-a[0]<=3e5),l5=w.reduce((a,b)=>a+b[2],0),exp=f.vs/f.n/66;if(!(exp>0))continue;m=l5/exp;if(m<rv)continue;x=ltN(l5)+' lot/5m'}
-  else if(PB.tab==='up5'){const w=s.w.filter(a=>now-a[0]<=3e5);if(w.length<2)continue;m=(s.p/w[0][1]-1)*100;if(!(m>0))continue;x='dari '+ltN(w[0][1])}
-  else if(PB.tab==='jmb'){if(!s.jn)continue;m=s.jb-s.js;x=s.jn+'× · '+ltRp(s.jb+s.js)}
-  out.push({t,m,x,p:s.p,pc:s.pc})}
- out.sort((a,b)=>PB.tab==='jmb'?Math.abs(b.m)-Math.abs(a.m):b.m-a.m);return out.slice(0,15)}
-function pbCard(){const f=LT.f;return `<div class="card"><b style="font-size:14px">Papan Catatan Saham</b><div class="mu" style="font-size:11px">Dihitung dari running trade sejak halaman dibuka${ltCodes().length?' · hanya kode di Filter':''}.</div>
-<div class="lttb" style="margin-top:6px">${[['brk','Breakout'],['vol','Lonjakan volume'],['up5','Naik cepat 5m'],['jmb','Order jumbo']].map(([k,n])=>`<button class="btn${PB.tab===k?' on':''}" data-pbt="${k}">${n}</button>`).join('')}</div><div id="pbl"></div>
-<details class="det" style="margin-top:6px"><summary style="font-size:13px">Atur papan</summary>
-<div class="ltseg" style="margin-top:6px"><span class="mu" style="font-size:12px;align-self:center">Breakout di atas</span>${[['1','Tertinggi kemarin'],['20','Tertinggi 20 hari']].map(([k,n])=>`<button class="btn${(f.pb_ref==='20'?'20':'1')===k?' on':''}" data-pbref="${k}">${n}</button>`).join('')}</div>
-<div class="ltf"><div><label for="pbminp">Min. harga</label><input class="sel" id="pbminp" inputmode="numeric" value="${esc(f.pb_minp||'')}" placeholder="mis. 50"></div>
-<div><label for="pbminv">Min. nilai transaksi (Rp juta)</label><input class="sel" id="pbminv" inputmode="numeric" value="${esc(f.pb_minv||'')}" placeholder="mis. 100"></div>
-<div><label for="pbrv">Lonjakan volume ≥ (× normal)</label><input class="sel" id="pbrv" inputmode="decimal" value="${esc(f.pb_rv||'3')}"></div>
-<div><label>&nbsp;</label><button class="btn${f.pb_gb!==false?' on':''}" data-pbgb="1" style="width:100%">${f.pb_gb!==false?'Getar breakout: nyala':'Getar breakout: mati'}</button></div></div>
-<div class="row" style="margin-top:8px"><button class="btn on" data-pbap="1">Simpan</button></div><div class="mu" style="font-size:11px;margin-top:4px">Order jumbo memakai batas "Tandai jumbo" di Filter. Papan asing tidak tersedia: running trade tidak membawa kode broker.</div></details></div>`}
-function pbPaint(force){const el=document.getElementById('pbl');if(!el)return;const now=Date.now();if(!force&&now-(PB.pt||0)<900)return;PB.pt=now;const L=pbRows();
- const lab={brk:'% di atas acuan',vol:'× normal',up5:'% naik 5 menit',jmb:'net jumbo'}[PB.tab];
- el.innerHTML=L.length?`<div class="ltt" style="font-size:11px;opacity:.65"><span>#</span><span>Kode</span><span>${lab}</span><span>Harga</span><span>%</span></div>`+L.map((r,i)=>`<div class="ltt"><span class="mu">${i+1}</span><b data-ltq="${esc(r.t)}">${esc(r.t)}</b><span class="${PB.tab==='jmb'?(r.m>=0?'u':'d'):'u'}">${PB.tab==='jmb'?ltRp(r.m):PB.tab==='vol'?r.m.toFixed(1).replace('.',',')+'×':'+'+r.m.toFixed(2).replace('.',',')+'%'}<br><small class="mu" style="font-size:10px">${esc(r.x)}</small></span><span>${ltN(r.p)}</span><span class="${r.pc>=0?'u':'d'}">${r.pc>=0?'+':''}${String((+r.pc||0).toFixed(2)).replace('.',',')}%</span></div>`).join('')
-  :`<div class="mu" style="font-size:12px;padding:6px 0">${LT.on?'Belum ada saham yang memenuhi.':'Menunggu running trade…'}</div>`}
-function ltPaint(force){if(S.p!=='ltrade')return;if(!LT.dirty&&!force)return;LT.dirty=false;ltStat();
- const top=document.getElementById('lttop');if(top&&LT.top){const L=LT.top[LT.tab]||[];const net=LT.tab.startsWith('net');
-  top.innerHTML=L.length?L.map((x,i)=>`<div class="ltt"><span class="mu">${i+1}</span><b data-ltq="${esc(x.ticker)}">${esc(x.ticker)}</b><span class="${net?(x.metric>=0?'u':'d'):''}">${LT.tab==='value'||net?ltRp(x.metric):ltN(x.metric)}</span><span>${ltN(x.last_price)}</span><span class="${x.last_change_pct>=0?'u':'d'}">${x.last_change_pct>=0?'+':''}${String((+x.last_change_pct).toFixed(2)).replace('.',',')}%</span></div>`).join('')+`<div class="mu" style="font-size:11px;margin-top:4px">${net?'Net = nilai beli − jual (Rupiah)':LT.tab==='freq'?'Jumlah transaksi':LT.tab==='lot'?'Total lot':'Total nilai (Rupiah)'} · ${LT.win?'±'+Math.round(LT.win/60)+' menit terakhir':'jendela server'} · harga & %</div>`:'<div class="mu" style="font-size:12px">Belum ada data (bursa tutup/break).</div>'}
- const rk=document.getElementById('ltrek');if(rk){const C=ltCodes();rk.innerHTML=!C.length?'Isi kode di Filter untuk melihat total lot beli/jual sejak halaman dibuka.':'<div class="ltt" style="font-size:11px;opacity:.7;grid-template-columns:56px 1fr 1fr 1fr"><span>Kode</span><span>Beli lot</span><span>Jual lot</span><span>Net</span></div>'+C.map(c=>{const k=LT.rek[c]||{b:0,s:0,vb:0,vs:0},n=k.b-k.s;return`<div class="ltt" style="grid-template-columns:56px 1fr 1fr 1fr"><b data-ltq="${c}">${c}</b><span class="u">${ltN(k.b)}</span><span class="d">${ltN(k.s)}</span><span class="${n>=0?'u':'d'}">${n>=0?'+':''}${ltN(n)}<br><span style="font-size:11px">${ltRp(k.vb-k.vs)}</span></span></div>`}).join('')+`<div style="font-size:11px;margin-top:4px">Sejak ${LT.since?new Date(LT.since+7*36e5).toISOString().slice(11,16)+' WIB':'tersambung'}; hanya transaksi yang lolos filter.</div>`}
- const nn=document.getElementById('ltn');if(nn)nn.textContent=LT.n?LT.n.toLocaleString('id-ID')+' transaksi':'';
- try{pbPaint()}catch(e){}
- if(LT.pause)return;const l=document.getElementById('ltl');if(!l)return;const J=(+LT.f.jumbo||1000)*1e6;
- l.innerHTML='<div class="ltr h"><span>Jam</span><span>Kode</span><span></span><span>Harga</span><span>Lot</span><span>Nilai</span></div>'+(LT.rows.length?LT.rows.slice(0,150).map(r=>`<div class="ltr ${r.c==='buy'?'b':'s'}${r.v>=J?' j':''}"><span>${esc(r.a||'')}</span><b data-ltq="${esc(r.t)}">${esc(r.t)}</b><span>${r.c==='buy'?'B':'S'}</span><span class="${r.pc>=0?'u':'d'}">${ltN(r.p)}</span><span>${ltN(r.l)}</span><span>${ltRp(r.v)}</span></div>`).join(''):'<div class="mu" style="font-size:12px;padding:8px 2px">Belum ada transaksi. Data mengalir di jam bursa (Senin–Jumat).</div>')}
-setInterval(()=>{ltJaga();ltPaint();if(S.p==='ltrade')try{pbPaint()}catch(e){}},500);document.addEventListener('visibilitychange',ltJaga);
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ltt],[data-lta],[data-ltap],[data-ltrs],[data-ltpz],[data-ltq],[data-ltg],[data-ltk],[data-ltv],[data-pbt],[data-pbgb],[data-pbref],[data-pbap]');if(!b||S.p!=='ltrade')return;const d=b.dataset;
- if(d.ltv){LT.view=d.ltv;LT.dirty=true;render();setTimeout(()=>{ltJaga();if(typeof lvJaga==='function')lvJaga()},0);return}
- if(d.ltt){LT.tab=d.ltt;document.querySelectorAll('[data-ltt]').forEach(x=>x.classList.toggle('on',x===b));ltPaint(true);return}
- if(d.lta){LT.f.a=d.lta;document.querySelectorAll('[data-lta]').forEach(x=>x.classList.toggle('on',x===b));return}
- if(d.ltg){LT.f.getar=!LT.f.getar;ltSave();b.classList.toggle('on',LT.f.getar);b.textContent=LT.f.getar?'Getar: nyala':'Getar: mati';return}
- if(d.ltk){if(typeof lvSheet==='function')lvSheet();return}
- if(d.ltpz){LT.pause=!LT.pause;b.textContent=LT.pause?'▶ Lanjut':'⏸ Jeda';if(!LT.pause)ltPaint(true);return}
- if(d.ltq){S.cq=d.ltq;go('chart');return}
- if(d.pbt){PB.tab=d.pbt;document.querySelectorAll('[data-pbt]').forEach(x=>x.classList.toggle('on',x===b));pbPaint(true);return}
- if(d.pbgb){LT.f.pb_gb=!LT.f.pb_gb;ltSave();b.classList.toggle('on',LT.f.pb_gb);b.textContent=LT.f.pb_gb?'Getar breakout: nyala':'Getar breakout: mati';return}
- if(d.pbref){LT.f.pb_ref=d.pbref;ltSave();PB.seen={};document.querySelectorAll('[data-pbref]').forEach(x=>x.classList.toggle('on',x===b));pbPaint(true);return}
- const v=id=>{const x=document.getElementById(id);return x?x.value.trim():''};
- if(d.pbap){LT.f.pb_minp=v('pbminp');LT.f.pb_minv=v('pbminv');LT.f.pb_rv=v('pbrv')||'3';ltSave();pbPaint(true);try{tvToast('Pengaturan papan disimpan')}catch(e){}return}
- if(d.ltap){const ada=!!ltFilterObj();LT.f.codes=v('ltc').toUpperCase();LT.f.lot=v('ltlot');LT.f.val=v('ltval');LT.f.jumbo=v('ltj')||'1000';ltSave();LT.rek={};LT.since=Date.now();
-  if(!ltFilterObj()){if(ada){LT.stop='';ltClose().then(()=>{LT.tutup=0;ltJaga()})}}else if(LT.on)ltKirimFilter();else try{tvToast('Filter tersimpan, diterapkan saat tersambung.')}catch(e){}ltPaint(true);return}
- if(d.ltrs){LT.f=Object.assign(LT.f,{a:'all',codes:'',lot:'',val:''});ltSave();LT.rek={};LT.stop='';ltClose().then(()=>{LT.tutup=0;render()});return}});
-try{P.ltrade=ltrade;const g=MENU.find(x=>x[0]==='Pasar');if(g)g[1].splice(1,0,['ltrade',window.CS_NONADMIN?'Live Trade':'Live Trade & Pantau 10 saham'])}catch(e){}
 </script>
 <script>
 /* ===== Dapatkan MCP (menu Komunitas) =====

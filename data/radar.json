@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-20 01:38 WIB",
- "baru": 2,
+ "upd": "2026-11-20 18:19 WIB",
+ "baru": 6,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -9,19 +9,94 @@
   "CNBC Indonesia: 100",
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 8",
   "Google Berita: 7",
-  "Google Berita: 24",
-  "Google Berita: 26",
+  "Google Berita: 8",
+  "Google Berita: 19",
+  "Google Berita: 15",
   "Google Berita: 10",
   "Google Berita: 7",
-  "Google Berita: 27",
-  "Google Berita: 26",
-  "Google Berita: 8",
+  "Google Berita: 25",
+  "Google Berita: 30",
+  "Google Berita: 10",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "Emiten EXCL Siapkan Rp 1 Triliun Buat Buyback Saham",
+   "link": "https://news.google.com/rss/articles/CBMi-AFBVV95cUxQdXVCZzdEUERZREtvdl9NME5LOGFtaWZBRjJHM0JROUdPSHhIUnlLM1pmd092VXR3cU5fSFFWdEp1VUpRNnRKMG83b21SOGJGaVdYdF9GQmlxQ3l3ekJVRFZYaWxJRG9Td3VlclJ0TXNhVUhvaXhRellBQ1hoTWk3SnlzeUdObVZUcUhtUHI3RVMwcGdWUmVtdVFlUTdkM2M2SlJBakhlc0JibzZ6M0xaSHV6OW9hN0gwcGdRaFhkOFV1SnByRnJleEFnNk9oTDgzU3k3V0RpdVg1bXV2aFJzTzZLTElKQTBiX2trcDRTVHpwSk9ZTVdmddIB-AFBVV95cUxQdXVCZzdEUERZREtvdl9NME5LOGFtaWZBRjJHM0JROUdPSHhIUnlLM1pmd092VXR3cU5fSFFWdEp1VUpRNnRKMG83b21SOGJGaVdYdF9GQmlxQ3l3ekJVRFZYaWxJRG9Td3VlclJ0TXNhVUhvaXhRellBQ1hoTWk3SnlzeUdObVZUcUhtUHI3RVMwcGdWUmVtdVFlUTdkM2M2SlJBakhlc0JibzZ6M0xaSHV6OW9hN0gwcGdRaFhkOFV1SnByRnJleEFnNk9oTDgzU3k3V0RpdVg1bXV2aFJzTzZLTElKQTBiX2trcDRTVHpwSk9ZTVdmdQ?oc=5",
+   "src": "Liputan6.com",
+   "ts": 1795173264,
+   "cat": "Buyback / dividen",
+   "k": [
+    "EXCL"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-20 18:19"
+  },
+  {
+   "t": "SMGR EXCL dan ELSA Gelar Buyback Saham Rp 1 Triliun",
+   "link": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9WaWVBX1FoODE1WGxSZnJPTzFZZFdsZHdiRHBya0FOR1Q1V0d4U3RfYTkyR2FOMnZWSkRCZEc2QzBXbHpEYkZ1WVUyZmRJMnJLZlFWMWZFVjZYa0l1X0VDYU9XVjVicUxFcXN1VjVn?oc=5",
+   "src": "Demokratis.co.id",
+   "ts": 1795166861,
+   "cat": "Buyback / dividen",
+   "k": [
+    "SMGR",
+    "EXCL",
+    "ELSA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-20 18:19"
+  },
+  {
+   "t": "Adhi Karya (ADHI) Dapat Gugatan PKPU, Manajemen Buka Suara",
+   "link": "https://www.cnbcindonesia.com/market/20261120120345-17-786945/adhi-karya--adhi--dapat-gugatan-pkpu-manajemen-buka-suara",
+   "src": "CNBC Indonesia",
+   "ts": 1795151746,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "ADHI"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-20 18:19"
+  },
+  {
+   "t": "PKPK Raih Kontrak Penjualan 1 Juta Ton Batu Bara Senilai Rp1,39 Triliun",
+   "link": "https://www.idxchannel.com/market-news/pkpk-raih-kontrak-penjualan-1-juta-ton-batu-bara-senilai-rp139-triliun",
+   "src": "IDX Channel",
+   "ts": 1795147200,
+   "cat": "Kontrak / proyek",
+   "k": [
+    "PKPK"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-20 18:19"
+  },
+  {
+   "t": "PGAS Perkuat Pasokan Gas dan BBCA Bagikan Dividen Rp 4,2 Triliun",
+   "link": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE1mY0Nyb19rMm16anhvYnhDN2JaNnFJZmptLUs3cnlqZ1FwVDA5LTI3N1p6WlowMnhOOTRSV2EyT2ttLTgxd1loUlJhLWN1SFZ4ZE5CV1phTUhWbk1lNkE?oc=5",
+   "src": "ChatNews.id",
+   "ts": 1795147081,
+   "cat": "Buyback / dividen",
+   "k": [
+    "PGAS",
+    "BBCA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-20 18:19"
+  },
+  {
+   "t": "Demi Dividen, 24,28% Saham Milik Grafiti Pers di TMPO Susut Jadi 1,95%",
+   "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPNGlrOWdGSWluakFzT19NSk5qMnVZNjBMN0gzZDV5TWF6Z2RpOVA0SzU2VWVVNmpkaTBvbk1ObTlfWkp3QWxncHZSVnotRHpyVWNvdzQ1ODZtX0RtWWVRTjNoNTFpdnpYNnFFT09MQzY3cDdScnExLXdFakRSdlU1ZE0wdVQtb0dtMWx4emI4R1BkTE5yYjAtdQ?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1795145400,
+   "cat": "Buyback / dividen",
+   "k": [
+    "TMPO"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-20 18:19"
+  },
   {
    "t": "ADRO Lanjutkan Buyback Rp5 Triliun di Tengah Ekspansi Bisnis",
    "link": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE5DV3B2dlc4LUJKOVVoMHo3RnV0NnlnTTBVNERBZDBxMkNPVExtb3ctblRaS1BQeUU3NFB0QTJXOHVjSEF6aW9IYnlhU2x4MnNXTWZXdHdiakRxMVg5RTZnczBrYw?oc=5",

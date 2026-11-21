@@ -4414,11 +4414,24 @@ window.insiderBlk=function(kode){if(!siap())return'';
  const it=j.items.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
  return head+it.map(x=>kartuTx(x,'')).join('')+(j.diambil?`<div class="mu" style="font-size:12px">Diperbarui robot ${esc(String(j.diambil).slice(0,10))}.</div>`:'')};
 /* halaman pasar */
+/* Beli berturut-turut (22 Nov 2026): per emiten, jumlah hari bursa (hari yang ada di data) beruntun dengan net beli > 0, berakhir di 2 hari data terbaru.
+   Hanya jenis beli/jual (crossing, pengalihan, rights issue, dll. diabaikan). */
+function beruntun(rows,semua){
+ const hari=[...new Set(semua.map(r=>r[1]))].sort().reverse();if(hari.length<2)return '<div class="card mu">Data terlalu sedikit.</div>';
+ const per={};for(const r of rows){if(r[3]!=='buy'&&r[3]!=='sell')continue;const v=ang(r[6]);if(v==null)continue;const k=r[0],o=per[k]||(per[k]={});const e=o[r[1]]||(o[r[1]]={n:0,est:0,p:new Set()});e.n+=v;const px=ang(r[9]);if(px)e.est+=v*px;e.p.add(r[2])}
+ const out=[];for(const k in per){let i=hari.findIndex(d=>per[k][d]);if(i<0||i>1)continue;let st=0,lot=0,est=0;const ps=new Set();const akhir=hari[i];
+  for(;i<hari.length;i++){const e=per[k][hari[i]];if(!e||!(e.n>0))break;st++;lot+=e.n;est+=e.est>0?e.est:0;e.p.forEach(x=>ps.add(x))}
+  if(st>=2)out.push({k,st,lot:lot/100,est,np:ps.size,akhir})}
+ out.sort((a,b)=>b.st-a.st||b.est-a.est);
+ const N1=Math.max(50,+S.isn||50),lst=out.slice(0,N1);
+ const kt=lst.map(x=>`<div class="card" style="padding:10px 12px;margin:8px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b><span data-go="saham" onclick="S.hq='${esc(x.k)}';S.ht='i';S.hs=null" style="cursor:pointer;text-decoration:underline">${esc(x.k)}</span> <small class="mu">${esc((typeof NM!=='undefined'&&NM[x.k])||'')}</small></b><b class="up">${x.st} hari</b></div><div class="mu" style="font-size:13px;margin-top:2px">net beli +${lotTx(x.lot*100)} lot${x.est>0?' ≈ '+rpk(x.est):''} · ${x.np} pelapor · terakhir ${tgl(x.akhir)}</div></div>`).join('');
+ return `<div class="g2" style="grid-template-columns:repeat(2,1fr)"><div class="st"><span class="mu">Emiten beli beruntun</span><b class="up">${out.length}</b></div><div class="st"><span class="mu">Hari data</span><b>${hari.length}</b></div></div>`+(kt||'<div class="card mu">Belum ada emiten dengan net beli insider 2 hari bursa beruntun atau lebih pada pilihan ini.</div>')+(out.length>N1?`<button class="btn" data-isn="1" style="width:100%;margin:8px 0">Tampilkan 50 lagi</button>`:'')+'<div class="mu" style="font-size:12px">Hari beruntun = hari bursa (yang ada di data) berturut-turut dengan jumlah beli lebih besar dari jual oleh pelapor di emiten itu, berakhir di dua hari data terbaru. Hanya transaksi beli/jual; crossing, pengalihan, dan rights issue diabaikan. Laporan insider tidak selalu terbit tiap hari, jadi ini petunjuk, bukan rekomendasi.</div>'}
 function insider(){
  const hd=`<div class="brand">BERITA & KATALIS</div><h1>Transaksi Insider</h1><div class="mu">Laporan perubahan kepemilikan direksi, komisaris, pengendali, dan pemegang besar di seluruh pasar. Ketuk kode untuk buka saham.</div>`;
  if(!siap())return hd+'<div class="card mu">Tidak tersedia di sini.</div>';
  const h=['7','30','90','c'].includes(String(S.ish))?String(S.ish):'7',jn=['b','s','a'].includes(S.isj)?S.isj:'a',jb=['a','d','k','p'].includes(S.isb)?S.isb:'a';
- const ctl=chips([['7','7 hari'],['30','30 hari'],['90','90 hari'],['c','Pilih tanggal']],h,'ish')+chips([['a','Semua'],['b','Beli'],['s','Jual']],jn,'isj')+chips([['a','Semua pelapor'],['d','Direktur'],['k','Komisaris'],['p','Pengendali']],jb,'isb');
+ const md=S.isv==='r'?'r':'l',sq=String(S.isq||'').trim().toUpperCase();
+ const ctl=chips([['l','Daftar transaksi'],['r','Beli berturut-turut']],md,'isv')+chips([['7','7 hari'],['30','30 hari'],['90','90 hari'],['c','Pilih tanggal']],h,'ish')+(md==='l'?chips([['a','Semua'],['b','Beli'],['s','Jual']],jn,'isj'):'')+chips([['a','Semua pelapor'],['d','Direktur'],['k','Komisaris'],['p','Pengendali']],jb,'isb')+`<input type="text" id="isq" class="sel" placeholder="Cari kode, nama emiten, atau nama pelapor (lalu Enter)" value="${esc(S.isq||'')}" autocomplete="off" autocorrect="off" spellcheck="false" style="margin:8px 0">`;
  const hr=d=>new Date(Date.now()+7*36e5-d*864e5).toISOString().slice(0,10);
  if(h==='c'){if(!/^\d{4}-\d{2}-\d{2}$/.test(S.isd||''))S.isd=hr(30);if(!/^\d{4}-\d{2}-\d{2}$/.test(S.isz||''))S.isz=hr(0);if(S.isd>S.isz)[S.isd,S.isz]=[S.isz,S.isd]}
  const pil=h==='c'?`<div style="display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;margin:8px 0"><span>Dari</span><input type="date" class="sel" id="isd" value="${S.isd}" min="${hr(120)}" max="${hr(0)}" style="margin:0"><span>Sampai</span><input type="date" class="sel" id="isz" value="${S.isz}" min="${hr(120)}" max="${hr(0)}" style="margin:0"></div><div class="mu" style="font-size:12px">Data pasar tersedia ±120 hari terakhir.</div>`:'';
@@ -4427,13 +4440,18 @@ function insider(){
  if(!j)return hd+ctl+pil+'<div class="card mu">Memuat…</div>';
  if(j.err)return hd+ctl+pil+'<div class="note">'+esc(j.err)+'</div>';
  const JB={d:'DIREKTUR',k:'KOMISARIS',p:'PENGENDALI'};
- let L=j.baris.filter(r=>(jn==='a'||(jn==='b'?r[3]==='buy':r[3]==='sell'))&&(jb==='a'||String(r[4]).includes(JB[jb])));
+ const cocok=r=>{if(!sq)return true;const nm=(typeof NM!=='undefined'&&NM[r[0]])||'';return r[0].includes(sq)||String(nm).toUpperCase().includes(sq)||String(r[2]).toUpperCase().includes(sq)};
+ const dasar=j.baris.filter(r=>(jb==='a'||String(r[4]).includes(JB[jb]))&&cocok(r));
+ if(md==='r')return hd+ctl+pil+beruntun(dasar,j.baris);
+ let L=dasar.filter(r=>jn==='a'||(jn==='b'?r[3]==='buy':r[3]==='sell'));
  const nb=L.filter(r=>r[3]==='buy').length,ns=L.filter(r=>r[3]==='sell').length,ke=new Set(L.map(r=>r[0])).size;
- const N0=200,more=L.length>N0;L=L.slice(0,N0);
+ const N0=Math.max(200,+S.isn||200),more=L.length>N0;L=L.slice(0,N0);
  const it=r=>({action_type:r[3],date:r[1],name:r[2],badges:r[4]?String(r[4]).split('/'):[],nationality:r[5]?'foreign':'local',changes_value:r[6],price_formatted:r[9],current_percentage:r[8],previous_percentage:(()=>{const a=parseFloat(r[8]),b=parseFloat(String(r[7]).replace('+',''));return isNaN(a)||isNaN(b)?'?':(Math.round((a-b)*1e4)/1e4).toString()})(),broker_code:r[10]});
  return hd+ctl+pil+`<div class="g2" style="grid-template-columns:repeat(3,1fr)"><div class="st"><span class="mu">Laporan beli</span><b class="up">${nb}</b></div><div class="st"><span class="mu">Laporan jual</span><b class="dn">${ns}</b></div><div class="st"><span class="mu">Emiten</span><b>${ke}</b></div></div>`+
   (L.length?L.map(r=>kartuTx(it(r),r[0])).join(''):'<div class="card mu">Tidak ada transaksi pada pilihan ini.</div>')+
-  `<div class="mu" style="font-size:12px">${more?'Ditampilkan '+N0+' terbaru. ':''}Sumber: robot Catatan Saham, diperbarui ${esc(String(j.dibuat||'').slice(0,10))}. Estimasi Rp hanya bila harga tercantum di laporan.</div>`}
+  (more?`<button class="btn" data-isn="1" style="width:100%;margin:8px 0">Tampilkan 200 lagi (${N0} dari ${nf(L.length+0)}+ ditampilkan)</button>`:'')+`<div class="mu" style="font-size:12px">${more?'Ditampilkan '+N0+' terbaru. ':''}Sumber: robot Catatan Saham, diperbarui ${esc(String(j.dibuat||'').slice(0,10))}. Estimasi Rp hanya bila harga tercantum di laporan.</div>`}
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.id==='isq'){S.isq=t.value;S.isn=0;if(typeof render==='function')render();return}});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-isn]');if(!b)return;S.isn=(+S.isn||(S.isv==='r'?50:200))+(S.isv==='r'?50:200);if(typeof render==='function')render()});
 document.addEventListener('change',e=>{const t=e.target;if(!t||(t.id!=='isd'&&t.id!=='isz')||!/^\d{4}-\d{2}-\d{2}$/.test(t.value))return;S[t.id]=t.value;if(typeof render==='function')render()});
 /* untuk Tanya AI: siapkan data lalu ringkas jadi teks */
 window.insiderSiap=function(kode){if(!siap())return Promise.resolve();const k=kode?'k|'+kode:'p|hari=7';if(!IS[k]){IS[k]={muat:1};return ambil(kode?encodeURIComponent(kode):'_pasar?hari=7',k)}return IP[k]||Promise.resolve()};

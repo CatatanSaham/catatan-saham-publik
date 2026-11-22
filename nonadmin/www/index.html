@@ -1194,7 +1194,7 @@ function czAct(a){if(KL&&KL.el&&KL.el.isConnected&&KL.act){KL.act(a);return}cons
 const wkOf=d=>wk('20'+d);
 function chart(){const q=(S.cq||'BBCA').toUpperCase(),r=S.cr||'3M',tf=S.ctf||'Daily',on=(k,d=true)=>S[k]===undefined?d:S[k]!==false;
 const tg=(k,l,d)=>`<button class="btn${on(k,d)?' on':''}" data-tg="${k}" aria-pressed="${on(k,d)}">${on(k,d)?'✓ ':''}${l}</button>`;
-const md=S.cmode==='saham'?'saham':S.cmode==='klasik'||S.cmode==='tv'?'tv':'pro',top=`<div class="brand">ANALISIS EMITEN</div><h1>Chart Saham</h1><div class="mu">1D–3M dari data harian; 15m–4h dari data 15 menit (mulai 7 Agustus 2026).</div><input class="sel" id="qc" value="${esc(q)}" placeholder="Cari emiten, mis. BBCA">${chips([['pro','Pro'],['tv','TradingView'],['saham','Chart Saham']],md,'cmode')}`,tail=`<div class="row"><button class="btn" data-ai="${esc(q)}">Analisa AI ${esc(q)} ↗</button><button class="btn" data-go="agambar">Analisa Gambar admin ↗</button></div>`;
+const md=S.cmode==='saham'?'saham':S.cmode==='klasik'||S.cmode==='tv'?'tv':'pro',top=`<div class="brand">ANALISIS EMITEN</div><h1>Chart Saham</h1><div class="mu">1D–3M dari data harian; 15m–4h dari data 15 menit (mulai 7 Agustus 2026).</div><input class="sel" id="qc" value="${esc(q)}" placeholder="Cari emiten, mis. BBCA">${chips([['pro','Pro'],['tv','TradingView'],['saham','Chart Saham']],md,'cmode')}`,tail=`<div class="row"><button class="btn" data-ai="${esc(q)}">Analisa AI ${esc(q)} ↗</button>${window.CS_NONADMIN?'':'<button class="btn" data-go="agambar">Analisa Gambar admin ↗</button>'}</div>`;
 if(md==='pro')return top+chartPro(q,r,tf)+tail;
 /* 20 Nov 2026 (pemilik: pilih "Chart Saham" tapi yang tampil TradingView): render pertama bisa jalan sebelum skrip Chart Saham (blok terakhir) selesai dimuat -> jangan jatuh ke TradingView, tunggu lalu gambar ulang */
 if(md==='saham'&&typeof cstHalaman!=='function'){lwKill();setTimeout(()=>{if(S.p==='chart'&&S.cmode==='saham')render()},250);return top+'<div class="card"><b>Chart Saham</b><div class="mu">Memuat…</div></div>'+tail}
@@ -1202,7 +1202,7 @@ if(md==='saham'){lwKill();return top+cstHalaman(q)+tail}
 lwKill();setTimeout(()=>tvwDraw(q),0);return top+tvwHtml(q)+tail;
 /* Chart Klasik dipensiunkan 11 Nov 2026 (keputusan pemilik): kode lama di bawah tidak dipanggil lagi, disimpan sebagai cadangan. */
 lwKill();setTimeout(()=>klDraw(q,r),0);
-return top+`<div id="chb" class="card">Memuat…</div><div class="row"><button class="btn" data-ai="${esc(q)}">Analisa AI ${esc(q)} ↗</button><button class="btn" data-go="agambar">Analisa Gambar admin ↗</button></div><div class="mu" style="font-size:12px">Chart ini otomatis dari data harga. Analisa Gambar hanya berisi chart yang dianalisis dan diterbitkan admin.</div>
+return top+`<div id="chb" class="card">Memuat…</div><div class="row"><button class="btn" data-ai="${esc(q)}">Analisa AI ${esc(q)} ↗</button>${window.CS_NONADMIN?'':'<button class="btn" data-go="agambar">Analisa Gambar admin ↗</button>'}</div><div class="mu" style="font-size:12px">Chart ini otomatis dari data harga.${window.CS_NONADMIN?'':' Analisa Gambar hanya berisi chart yang dianalisis dan diterbitkan admin.'}</div>
 <div class="cmp">${chips([['Daily','Daily'],['Weekly','Weekly']],/^(Weekly|W)$/.test(tf)?'Weekly':'Daily','ctf')}${chips(['1M','3M','6M','1Y','Semua'].map(x=>[x,x]),r,'cr')}</div>
 <details class="det"><summary>Indikator</summary><div class="row cmp">${tg('ma1','MA5 / MA20')}${tg('ma2','MA100 / MA200',false)}${tg('bb','BBW(20,2)',false)}</div></details>
 <details class="det"><summary>Kontrol chart</summary><div class="cmp"><div class="row"><button class="btn" data-cz="in">＋ Zoom in</button><button class="btn" data-cz="out">－ Zoom out</button><button class="btn" data-cz="old">← Lebih lama</button><button class="btn" data-cz="new">Lebih baru →</button></div><div class="row"><button class="btn" data-cz="up">↑ Harga lebih tinggi</button><button class="btn" data-cz="dn">↓ Harga lebih rendah</button><button class="btn" data-cz="vin">＋ Skala harga</button><button class="btn" data-cz="vout">－ Skala harga</button></div><div class="row">${tg('cpa','Harga otomatis')}<button class="btn" data-cz="last">Ke terbaru ⇥</button><button class="btn on" disabled title="Data chart sudah disesuaikan aksi korporasi">✓ Harga disesuaikan</button><button class="btn" data-cz="reset">Reset / Auto Scale</button></div></div></details>
@@ -3388,7 +3388,7 @@ let body='';
 if(t==='r'){const rg=['21','63','all'].includes(String(S.hr))?String(S.hr):'63',s=rg==='all'?SR:SR.slice(-(+rg)),hi=Math.max(...s.map(r=>r.c)),lo=Math.min(...s.map(r=>r.c)),pcg=s.length>1?(s.at(-1).c/s[0].c-1)*100:null;
 body=`<div class="card">${hubLine(SR,rg==='all'?'all':+rg)}${chips([['21','1 bln'],['63','3 bln'],['all','Semua']],rg,'hr')}<div class="mu" style="font-size:12px;margin-top:4px">Periode ini: ${pcg!=null?`<span class="${cl(pcg)}">${sg(pcg)}%</span> · `:''}tertinggi ${N(hi)} · terendah ${N(lo)} · ${s.length} sesi</div></div>
 <div class="card"><table><tr><td class="mu">Nilai transaksi (${fd(la.d)})</td><td style="text-align:right">${rp(la.a*1e6)}</td></tr><tr><td class="mu">Volume</td><td style="text-align:right">${N(la.v/100)} lot</td></tr><tr><td class="mu">Harga sebelumnya</td><td style="text-align:right">${pv!=null?N(pv):'—'}</td></tr></table></div>
-<div class="row"><button class="btn on" data-go="chart">Buka chart lengkap</button><button class="btn" data-go="agambar">Analisa Gambar</button></div><div class="mu" style="font-size:12px">Chart lengkap berisi candlestick, MA/EMA, RSI, dan MACD. Tombol Kembali membawa Anda ke halaman ini.</div>`}
+<div class="row"><button class="btn on" data-go="chart">Buka chart lengkap</button>${window.CS_NONADMIN?'':'<button class="btn" data-go="agambar">Analisa Gambar</button>'}</div><div class="mu" style="font-size:12px">Chart lengkap berisi candlestick, MA/EMA, RSI, dan MACD. Tombol Kembali membawa Anda ke halaman ini.</div>`}
 else if(t==='b'){const sb=['b','j','s'].includes(S.hbs)?S.hbs:'b';body=chips([['b','Bandarmologi'],['j','Jejak Broker'],['s','Net per Broker']],sb,'hbs')+'<div class="hubin">'+hubStrip(sb==='b'?bdmStock():sb==='j'?jejak():bsaham())+'</div>'}
 else if(t==='a')body=hubStrip(fnb());
 else if(t==='i')body=window.insiderBlk?insiderBlk(c):'';
@@ -4111,6 +4111,10 @@ window.rtBV=function(q,n){q=String(q||'').toUpperCase();n=Math.max(1,+n||15);con
    for(const [kb,a] of agg){const v=Object.values(a.net),pos=v.filter(x=>x>0).sort((x,y)=>y-x).slice(0,5),neg=v.filter(x=>x<0).sort((x,y)=>x-y).slice(0,5);
     map.set(base+kb*60,[pos.reduce((s,x)=>s+x,0)+neg.reduce((s,x)=>s+x,0),a.hk,a.hi])}}
   return{map,tanggal:tgl}}).catch(e=>{delete BVN[k];throw e})};
+
+
+/* 22 Nov 2026: Analisa Gambar khusus admin (editor + Firebase); di Non Admin tombolnya dibuang dan halaman ini hanya memberi tahu. */
+try{P.agambar=()=>'<div class="brand">ANALISIS EMITEN</div><h1>Analisa Gambar</h1><div class="card">Analisa Gambar hanya tersedia di aplikasi admin.</div>'}catch(e){}
 
 })();
 /* ---- Chart TF kecil (15m/30m/1H/4H) di Non Admin ----

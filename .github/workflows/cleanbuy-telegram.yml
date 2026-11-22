@@ -19,7 +19,7 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       # Selalu ambil skrip bot dari main. Saat dipanggil dari push ZIP di apk-data,
       # checkout tanpa ref mengambil apk-data (tidak ada folder bot/) → gagal, lalu
@@ -47,9 +47,21 @@ jobs:
           sparse-checkout: |
             /apk-data/harian/
             /bot-data/cleanbuy-delivery/
+      - name: Tentukan sesi
+        id: sesi
+        run: |
+          zip=$(find data/apk-data/harian -maxdepth 1 -name '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].zip' | sort | tail -1)
+          echo "session=$( [ -n "$zip" ] && basename "$zip" .zip || true )" >> "$GITHUB_OUTPUT"
+      # Running trade kandidat disimpan antar-run (jadwal tiap 30 menit) supaya tidak diambil ulang dari awal. Tidak dicetak ke log.
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/cekdd
+          key: cekdd-${{ steps.sesi.outputs.session }}-${{ github.run_id }}
+          restore-keys: cekdd-${{ steps.sesi.outputs.session }}-
       - name: Hitung dan kirim ke topik Clean buy
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
         run: |
           set -euo pipefail
           # Push ZIP sebelum 18.30 WIB ditangani oleh pemeriksaan cadangan 18.30.
@@ -83,6 +95,25 @@ jobs:
           fi
           node -e 'console.log("Sumber Clean Buy:", require(process.argv[1]).sumber)' "$RUNNER_TEMP/cleanbuy.json"
           node -e 'if (require(process.argv[1]).as_of !== process.argv[2]) process.exit(1)' "$RUNNER_TEMP/cleanbuy.json" "$session"
+          # Tahan dulu, cek HAKA/HAKI kandidat (22 Nov 2026, permintaan pemilik). Data kandidat belum lengkap -> tunggu jadwal
+          # berikutnya; lewat 22.30 WIB kirim apa adanya dengan tulisan "HAKA belum diperiksa". Log hanya jumlah.
+          CEK="$RUNNER_TEMP/cek.json"
+          rm -f "$CEK"
+          if [ -n "${IDX_EDGE_KEY:-}" ]; then
+            tanggal="${session:0:4}-${session:4:2}-${session:6:2}"
+            kode=$(node -e 'const r=require(process.argv[1]);console.log([...new Set(Object.values(r.screens).flatMap(s=>s.rows.map(x=>x[0])))].join(","))' "$RUNNER_TEMP/cleanbuy.json")
+            mkdir -p "$RUNNER_TEMP/cekdd/dd/$session"
+            python3 tools/donedetail/done_edge.py --tanggal "$tanggal" --kode "$kode" --out "$RUNNER_TEMP/cekdd" --maks 12000 --cadangan 3000 --menit 15 || echo "ambil running trade kandidat gagal"
+            python3 tools/donedetail/cek_cleanbuy.py --cleanbuy "$RUNNER_TEMP/cleanbuy.json" --dd "$RUNNER_TEMP/cekdd/dd/$session" --out "$CEK" || echo "cek HAKA gagal"
+          fi
+          if [ ! -s "$CEK" ] || ! node -e 'process.exit(require(process.argv[1]).lengkap ? 0 : 1)' "$CEK"; then
+            if [ "$(TZ=Asia/Jakarta date +%H%M)" -lt 2230 ]; then
+              echo "Sesi $session: data HAKA kandidat belum lengkap; Clean Buy ditahan sampai jadwal berikutnya (batas 22.30 WIB)."
+              exit 0
+            fi
+            echo "Sesi $session: lewat 22.30 WIB, dikirim dengan tanda HAKA belum diperiksa pada saham yang datanya kurang."
+            [ -s "$CEK" ] || printf '{"lengkap":false,"kurang":[],"kode":{}}' > "$CEK"
+          fi
           git -C data config user.name 'github-actions[bot]'
           git -C data config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           mkdir -p "data/$(dirname "$marker")"
@@ -91,7 +122,7 @@ jobs:
           git -C data commit -m "Reserve Clean Buy delivery for $session"
           # APK sering mengirim beberapa berkas ke apk-data bersamaan; tanpa pull dulu push ditolak dan Clean Buy tidak terkirim.
           for i in 1 2 3 4 5; do git -C data pull -q --rebase origin apk-data && git -C data push origin HEAD:apk-data && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); done
-          message_ids=$(node bot/send-cleanbuy.cjs "$RUNNER_TEMP/cleanbuy.json")
+          message_ids=$(node bot/send-cleanbuy.cjs "$RUNNER_TEMP/cleanbuy.json" "$CEK")
           printf '{"status":"sent","message_ids":%s}\n' "$message_ids" > "data/$marker"
           git -C data add "$marker"
           git -C data commit -m "Confirm Clean Buy delivery for $session"

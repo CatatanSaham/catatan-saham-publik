@@ -69,6 +69,8 @@ jobs:
       - name: Hitung dan kirim ke topik Clean buy
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          # Uji kirim ulang hanya ke grup Catatan Saham, tidak ke grup tamu Screening Broksum.
+          TANPA_SALINAN: ${{ inputs.kirim_ulang == 'ya' && '1' || '' }}
         run: |
           set -euo pipefail
           # Push ZIP sebelum 18.30 WIB ditangani oleh pemeriksaan cadangan 18.30.

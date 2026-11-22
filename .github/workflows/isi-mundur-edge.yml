@@ -1,0 +1,57 @@
+# BARU (22 Nov 2026): isi mundur candlestick 1 menit (dan 15 menit) dari IDX Edge, MULAI DARI DEPAN (hari kerja terbaru yang m1/ nya
+# belum ada) lalu ke belakang. Kode: repo privat catatan-saham-mtf tools/m15/m15_edge.py --mundur (harus sudah di main).
+# Jatah diatur dari tombol Run workflow: berapa hari, berapa panggilan, dan cadangan kuota yang tidak boleh disentuh.
+# Satu hari bursa = ±964 panggilan (satu per saham). Hasil ke cabang privat m15-harian. Log publik: hanya jumlah dan tanggal.
+name: Isi mundur 1 & 15 menit (IDX Edge)
+on:
+  workflow_dispatch:
+    inputs:
+      hari:
+        description: "Jumlah hari bursa maksimal di run ini (1 hari = ±964 panggilan)"
+        default: "1"
+      maks_panggilan:
+        description: "Batas total panggilan API di run ini (sesi yang tak cukup jatah tidak dimulai)"
+        default: "1100"
+      cadangan:
+        description: "Berhenti bila sisa kuota harian <= angka ini (sisakan untuk robot lain)"
+        default: "3000"
+permissions:
+  contents: read
+concurrency:
+  group: m15-harian
+  cancel-in-progress: false
+jobs:
+  isi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
+      REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+          sparse-checkout: |
+            tools/backfill
+            tools/m15
+            universe.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Ambil cabang m15-harian
+        run: git clone -q --depth 1 --branch m15-harian "$REPO_PRIVAT" out
+      - name: Isi mundur dari depan
+        run: python main/tools/m15/m15_edge.py --universe main/universe.json --out out --mundur "${{ github.event.inputs.hari }}" --maks "${{ github.event.inputs.maks_panggilan }}" --cadangan "${{ github.event.inputs.cadangan }}"
+      - name: Simpan ke m15-harian (hanya bila berubah)
+        if: always()
+        run: |
+          cd out
+          git config user.name "Robot M15"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "m15-harian isi mundur IDX Edge $(date -u +%Y-%m-%d)"
+          for i in 1 2 3 4 5; do git push -q origin HEAD:m15-harian && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin m15-harian || true; done

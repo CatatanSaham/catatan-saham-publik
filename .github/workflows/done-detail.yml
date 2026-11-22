@@ -5,6 +5,10 @@
 # 19 Nov 2026: di akhir run, ringkas_dd.py (repo privat) membuat rk/ untuk halaman Running Trade + Bandar Volume intraday aplikasi admin.
 name: Running trade + done detail
 on:
+  schedule:
+    # 22 Nov 2026 (permintaan pemilik): otomatis Sen-Jum 16.30 WIB (09.30 UTC), setelah bursa tutup. Hari libur dilewati
+    # lewat cek 1 panggilan. Jalan manual (workflow_dispatch) tetap ada untuk mengisi kekurangan.
+    - cron: '30 9 * * 1-5'
   workflow_dispatch:
     inputs:
       tanggal:
@@ -35,9 +39,22 @@ jobs:
         with: {path: robot, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: broksum-harian, sparse-checkout: harian}
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
+      - name: Tentukan tanggal dan parameter
+        id: par
+        run: |
+          T="${{ github.event.inputs.tanggal }}"; [ -n "$T" ] || T=$(TZ=Asia/Jakarta date +%F)
+          M="${{ github.event.inputs.maks }}"; [ -n "$M" ] || M=25000
+          C="${{ github.event.inputs.cadangan }}"; [ -n "$C" ] || C=3000
+          { echo "tanggal=$T"; echo "maks=$M"; echo "cadangan=$C"; } >> "$GITHUB_OUTPUT"
+      - name: Cek hari bursa (hanya jadwal)
+        id: buka
+        if: github.event_name == 'schedule'
+        run: python main/tools/donedetail/done_edge.py --tanggal "${{ steps.par.outputs.tanggal }}" --out x --cek-buka
       - name: Uji awal (1 panggilan, acuan NICL 18 Nov)
+        if: github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya'
         run: python main/tools/donedetail/done_edge.py --tanggal x --robot x --out x --selftest
       - name: Ambil cabang done-detail (buat baru bila belum ada)
+        if: github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya'
         run: |
           if git ls-remote --exit-code "$REPO_PRIVAT" done-detail >/dev/null; then
             git clone -q --depth 1 --branch done-detail "$REPO_PRIVAT" out
@@ -45,14 +62,15 @@ jobs:
             mkdir out && cd out && git init -q -b done-detail && git remote add origin "$REPO_PRIVAT"
           fi
       - name: Ambil running trade
-        run: python main/tools/donedetail/done_edge.py --tanggal "${{ github.event.inputs.tanggal }}" --robot robot/harian --out out --maks "${{ github.event.inputs.maks }}" --cadangan "${{ github.event.inputs.cadangan }}" --menit 320
+        if: github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya'
+        run: python main/tools/donedetail/done_edge.py --tanggal "${{ steps.par.outputs.tanggal }}" --robot robot/harian --out out --maks "${{ steps.par.outputs.maks }}" --cadangan "${{ steps.par.outputs.cadangan }}" --menit 320
       - name: Simpan ke done-detail (hanya bila berubah)
-        if: always()
+        if: always() && (github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya')
         run: |
           cd out
           git config user.name "Running Trade"
           git config user.email "noreply@github.com"
           git add -A
           git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
-          git commit -q -m "done-detail ${{ github.event.inputs.tanggal }}"
+          git commit -q -m "done-detail ${{ steps.par.outputs.tanggal }}"
           for i in 1 2 3 4 5; do git push -q origin HEAD:done-detail && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin done-detail || true; done

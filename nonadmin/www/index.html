@@ -567,7 +567,7 @@ function lwEma(a,n){const k=2/(n+1),o=[];let p=null;for(let i=0;i<a.length;i++){
 function lwRsi(B,n){const o=B.map(()=>null);if(B.length<=n)return o;let g=0,l=0;for(let i=1;i<=n;i++){const d=B[i].c-B[i-1].c;if(d>0)g+=d;else l-=d}g/=n;l/=n;o[n]=l===0?100:100-100/(1+g/l);for(let i=n+1;i<B.length;i++){const d=B[i].c-B[i-1].c;g=(g*(n-1)+(d>0?d:0))/n;l=(l*(n-1)+(d<0?-d:0))/n;o[i]=l===0?100:100-100/(1+g/l)}return o}
 function lwMacd(B,f=12,s=26,g=9){const c=B.map(b=>b.c),ef=lwEma(c,f),es=lwEma(c,s),m=c.map((_,i)=>i>=s-1?ef[i]-es[i]:null);const v=[];m.forEach((x,i)=>{if(x!=null)v.push([i,x])});const sg=lwEma(v.map(x=>x[1]),g);const S_=c.map(()=>null),H=c.map(()=>null);v.forEach(([i,x],j)=>{if(j>=g-1){S_[i]=sg[j];H[i]=x-sg[j]}});return{m,s:S_,h:H}}
 function lwFsCss(){if(document.getElementById('lwfs-css'))return;const st=document.createElement('style');st.id='lwfs-css';st.textContent=`#lwc{position:relative;width:100%;height:clamp(260px,42svh,380px);min-height:150px;touch-action:pan-y;overflow:hidden}
-#lwwrap .lwsub{display:none;position:relative;width:100%;height:150px;touch-action:pan-y}#lwwrap .lwsep{display:none;position:relative;z-index:7;height:22px;touch-action:none;cursor:ns-resize;border-radius:6px}#lwwrap .lwsep:after{content:'';position:absolute;left:0;right:0;top:10px;height:1px;background:var(--line)}#lwwrap .lwsep.on{background:rgba(47,111,208,.14)}#lwwrap .lwsep.on:after{background:#2f6fd0;height:2px;top:10px}#lwwrap .lwlg{position:absolute;left:6px;top:3px;z-index:3;font-size:11px;pointer-events:none;font-variant-numeric:tabular-nums;max-width:calc(100% - 84px);white-space:nowrap;overflow:hidden}#lwwrap .lwax{position:absolute;top:0;bottom:26px;right:0;width:58px;z-index:5;touch-action:none;cursor:ns-resize}#lwwrap .lwcap{font-size:11px;opacity:.7;margin:6px 4px 0 0;align-self:center}
+#lwwrap .lwsub{display:none;position:relative;width:100%;height:150px;touch-action:pan-y}#lwwrap .lwsep{display:none;position:relative;z-index:7;height:8px;touch-action:none;cursor:ns-resize}#lwwrap .lwsep:before{content:'';position:absolute;left:0;right:0;top:-9px;bottom:-9px}#lwwrap .lwsep:after{content:'';position:absolute;left:0;right:0;top:3px;height:1px;background:var(--line)}#lwwrap .lwsep.on:after{background:#2f6fd0;height:2px;top:3px}#lwwrap .tvcol{overflow:hidden}#lwwrap #lwc,#lwwrap .lwsub{margin-right:-10px;width:calc(100% + 10px)}#lwwrap .lwlg{position:absolute;left:6px;top:3px;z-index:3;font-size:11px;pointer-events:none;font-variant-numeric:tabular-nums;max-width:calc(100% - 84px);white-space:nowrap;overflow:hidden}#lwwrap .lwax{position:absolute;top:0;bottom:26px;right:10px;width:58px;z-index:5;touch-action:none;cursor:ns-resize}#lwwrap .lwcap{font-size:11px;opacity:.7;margin:6px 4px 0 0;align-self:center}
 #lwwrap.lwfs .lwsub{height:22vh;touch-action:none}#lwwrap.lwfs #lwc{touch-action:none}#lwwrap .lwqw{position:relative;flex:1 1 120px;min-width:110px}#lwwrap .lwqw .sel{width:100%;margin:0;padding:6px 10px;font-size:14px;box-sizing:border-box}#lwwrap .lwqw .sgp{position:absolute;left:0;right:0;top:100%;z-index:30;margin:2px 0 0;max-height:46vh}
 #lwwrap .lwbar{display:flex;flex-wrap:wrap;gap:0 12px;align-items:center}#lwwrap .lwbar .row{margin:6px 0 0;gap:6px;flex-wrap:wrap}#lwwrap .lwbar .btn{padding:6px 10px;font-size:13px}
 #lwwrap.lwfs{position:fixed;inset:0;z-index:2147483000;margin:0;border-radius:0;display:flex;flex-direction:column;background:var(--bg,var(--card));padding:calc(8px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
@@ -937,7 +937,7 @@ async function lwDraw(q,r,tf){tf=tvTf(tf);S.lwrr=r;const box=$('#lwc'),hd=$('#lw
  const key=q+'|'+tf+'|'+r;if(!S.lwk||S.lwk!==key){S.lwk=key;S.lwvr=null;S.lwz=1}const Z={z:+S.lwz||1};
  const bvI=!intra||typeof window.rtBV==='function',subOn=on('rsi',false)||on('macd',false)||(bvI&&on('bvol',false))||(!intra&&on('freq',false))||tvxOn(S,on).pn.length>0;
  const fsM=!!S.lwfs,PR=Object.assign({lwr:.22,lwm:.22,lwb:.22,lwf:.2,lwx1:.2,lwx2:.2,lwx3:.2,lwx4:.2},tvLS('cs_pane',{})),XO=tvxOn(S,on),SB=[on('rsi',false)&&'lwr',on('macd',false)&&'lwm',bvI&&on('bvol',false)&&'lwb',!intra&&on('freq',false)&&'lwf',...XO.pn.map((k,i)=>'lwx'+(i+1))].filter(Boolean),TT=Math.round(Math.max(300,Math.min(window.innerHeight*.5,420)));
- const sizeAll=()=>{const base=fsM?window.innerHeight:TT;let rest=TT;SB.forEach(id=>{const e=$('#'+id);if(!e)return;const fr=Math.max(0,Math.min(.8,PR[id])),h=fr<.035?0:Math.max(80,Math.round(base*fr)); /* 19 Nov 2026: panel yang tampil minimal 80px (video pemilik: panel RSI sempat setipis garis sehingga sumbunya tak bisa digeser) */e.style.height=h+'px';e.style.visibility=h?'':'hidden';rest-=h+22});box.style.height=fsM?'':Math.max(90,rest)+'px'};
+ const sizeAll=()=>{const base=fsM?window.innerHeight:TT;let rest=TT;SB.forEach(id=>{const e=$('#'+id);if(!e)return;const fr=Math.max(0,Math.min(.8,PR[id])),h=fr<.035?0:Math.max(80,Math.round(base*fr)); /* 19 Nov 2026: panel yang tampil minimal 80px (video pemilik: panel RSI sempat setipis garis sehingga sumbunya tak bisa digeser) */e.style.height=h+'px';e.style.visibility=h?'':'hidden';rest-=h+8});box.style.height=fsM?'':Math.max(90,rest)+'px'};
  sizeAll();SB.forEach(id=>{const e=$('#'+id);if(!e)return;const sp=document.createElement('div');sp.className='lwsep';sp.style.display='block';sp.setAttribute('role','separator');sp.setAttribute('aria-label','Seret untuk mengatur tinggi panel');e.parentNode.insertBefore(sp,e);let d0=null;
   sp.addEventListener('touchstart',ev=>{ev.preventDefault()},{passive:false});sp.addEventListener('click',()=>{});
   sp.addEventListener('pointerdown',ev=>{d0={y:ev.clientY,h:e.getBoundingClientRect().height};sp.classList.add('on');try{sp.setPointerCapture(ev.pointerId)}catch(_){}ev.preventDefault()});
@@ -5024,6 +5024,36 @@ function cstHalaman(q){if(!CST.blok)setTimeout(()=>csChartSahamBuka(q),0);
  return `<div class="card"><b>Chart Saham</b><div class="mu" style="font-size:13px;margin:4px 0 8px">Chart layar penuh dengan alat gambar lengkap. Ketuk <b>Kembali</b> (tab paling kiri) untuk kembali ke sini.</div><button class="btn on" data-cstb="${esc(q)}">Buka Chart Saham ${esc(q)}</button></div>`}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-cstb]');if(!b)return;CST.blok=false;csChartSahamBuka(b.dataset.cstb)});
 try{const oGo=go;go=function(p){if(p!=='chart')CST.blok=false;return oGo.apply(this,arguments)}}catch(e){}
+</script>
+<script>
+/* ===== Ikon loading saat layar macet / lambat digeser (22 Nov 2026) =====
+   Permintaan pemilik: waktu layar digeser naik-turun tetapi hanya bergerak sedikit atau diam sebentar, tampilkan ikon loading.
+   Cara kerja: (1) PerformanceObserver 'longtask' (>=120 ms) dan (2) pengukur jeda antar-frame (>90 ms) selama jari menyentuh layar
+   atau layar bergulir menandai "macet". Begitu ada tanda macet, ikon muncul dan tetap ada selama masih ada interaksi, lalu hilang
+   sekitar 1,2 detik setelah macet berhenti. Ikon berputar lewat animasi CSS (transform) yang jalan di thread terpisah, jadi tetap
+   berputar walau thread utama sedang sibuk. Batas: macet pertama dalam satu sesi tidak bisa dideteksi sebelum terjadi; ikon
+   muncul tepat setelah macet pertama itu dan langsung terlihat pada macet berikutnya (ikon sudah tampil sebelum layar macet).
+   Tidak mengubah isi halaman, tidak membaca data. */
+(function(){
+ if(window.__lagSp)return;window.__lagSp=1;
+ try{
+  const st=document.createElement('style');
+  st.textContent='#lagsp{position:fixed;left:50%;bottom:86px;margin-left:-18px;width:36px;height:36px;border-radius:50%;background:rgba(10,14,26,.8);z-index:99999;display:none;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,.45)}#lagsp i{position:absolute;left:7px;top:7px;width:16px;height:16px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#8ab4ff;animation:lagspin .8s linear infinite;will-change:transform}@keyframes lagspin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(st);
+  const el=document.createElement('div');el.id='lagsp';el.setAttribute('role','status');el.setAttribute('aria-label','Memuat');el.innerHTML='<i></i>';
+  document.body.appendChild(el);
+  let jank=0,act=0,on=false,raf=0,last=0,tm=0;
+  const now=()=>Date.now();
+  const show=()=>{if(!on){on=true;el.style.display='block'}if(!tm)tm=setInterval(chk,300)};
+  const hide=()=>{if(on){on=false;el.style.display='none'}if(tm){clearInterval(tm);tm=0}};
+  const chk=()=>{const t=now();if(t-jank>1200&&t-act>900)hide()};
+  const mark=()=>{jank=now();show()};
+  const loop=t=>{raf=0;if(now()-act>1500){last=0;return}if(last&&t-last>90)mark();last=t;raf=requestAnimationFrame(loop)};
+  const touch=()=>{act=now();if(now()-jank<4000)show();if(!raf){last=0;raf=requestAnimationFrame(loop)}};
+  ['touchstart','touchmove','scroll','wheel'].forEach(k=>window.addEventListener(k,touch,{passive:true,capture:true}));
+  try{new PerformanceObserver(l=>{for(const e of l.getEntries())if(e.duration>=120&&now()-act<1500)mark()}).observe({type:'longtask'})}catch(e){}
+ }catch(e){}
+})();
 </script>
 <script>
 /* ===== APK Non Admin: pembaruan otomatis (OTA) dari repo PUBLIK catatan-saham-publik (tanpa kunci GitHub) ===== */

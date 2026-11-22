@@ -106,17 +106,17 @@ jobs:
           node -e 'if (require(process.argv[1]).as_of !== process.argv[2]) process.exit(1)' "$RUNNER_TEMP/cleanbuy.json" "$session"
           # Tahan dulu sampai unduhan running trade + done detail sesi ini SELESAI (status.json: saham_selesai >= saham_total),
           # baru dianalisa HAKA/HAKI (22 Nov 2026, permintaan pemilik). Belum selesai -> tunggu jadwal berikutnya;
-          # lewat 22.30 WIB kirim dengan tanda "HAKA belum diperiksa" pada saham yang datanya tidak ada. Log hanya jumlah.
+          # lewat 23.30 WIB kirim dengan tanda "HAKA belum diperiksa" pada saham yang datanya tidak ada. Log hanya jumlah.
           CEK="$RUNNER_TEMP/cek.json"
           DD="dd-data/dd/$session"
           SELESAI=0
           if [ -f "$DD/status.json" ] && node -e 'const s=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.exit(s.saham_total>0&&s.saham_selesai>=s.saham_total?0:1)' "$DD/status.json"; then SELESAI=1; fi
           if [ "$SELESAI" != 1 ]; then
-            if [ "$(TZ=Asia/Jakarta date +%H%M)" -lt 2230 ]; then
-              echo "Sesi $session: unduhan running trade belum selesai; Clean Buy ditahan sampai jadwal berikutnya (batas 22.30 WIB)."
+            if [ "$(TZ=Asia/Jakarta date +%H%M)" -lt 2330 ]; then
+              echo "Sesi $session: unduhan running trade belum selesai; Clean Buy ditahan sampai jadwal berikutnya (batas 23.30 WIB)."
               exit 0
             fi
-            echo "Sesi $session: lewat 22.30 WIB dan unduhan belum selesai; dikirim dengan tanda HAKA belum diperiksa."
+            echo "Sesi $session: lewat 23.30 WIB dan unduhan belum selesai; dikirim dengan tanda HAKA belum diperiksa."
           fi
           python3 tools/donedetail/cek_cleanbuy.py --cleanbuy "$RUNNER_TEMP/cleanbuy.json" --dd "$DD" --out "$CEK" || printf '{"lengkap":false,"kurang":[],"kode":{}}' > "$CEK"
           git -C data config user.name 'github-actions[bot]'

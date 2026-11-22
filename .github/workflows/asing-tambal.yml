@@ -1,0 +1,63 @@
+# BARU (22 Nov 2026): isi mundur otomatis ASING PER BROKER untuk hari yang masih kosong (21 Apr 2026 s.d. kemarin).
+# Sebelumnya robot ini hanya jalan manual atau 10 hari terakhir. Kode sama dengan "Broksum asing per broker":
+# repo privat catatan-saham-mtf tools/backfill/broksum_backfill.py (--flow F). Hari yang sudah ada di cabang privat
+# broksum-asing dilewati, jadi aman diulang; bila semua hari sudah terisi, run selesai cepat tanpa memakai kuota.
+# Kuota IDX Edge 20.000/hari dibagi dengan robot lain: batas run ini 6.000 panggilan dan berhenti bila sisa kuota <= 9.000.
+# Log repo ini publik: skrip hanya mencetak jumlah dan tanggal.
+name: Isi mundur asing per broker
+on:
+  schedule:
+    - cron: "50 17 * * *"   # 00.50 WIB, sesudah kuota harian reset
+  workflow_dispatch:
+    inputs:
+      sampai:
+        description: "Tanggal terlama (YYYY-MM-DD)"
+        default: "2026-04-21"
+      maks:
+        description: "Batas panggilan API run ini"
+        default: "6000"
+      cadangan:
+        description: "Berhenti bila sisa kuota <= angka ini"
+        default: "9000"
+permissions:
+  contents: read
+concurrency:
+  group: broksum-asing
+  cancel-in-progress: false
+jobs:
+  isi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
+      REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+    steps:
+      - uses: actions/checkout@v4
+        with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main, sparse-checkout: "tools/backfill\ntools/asing"}
+      - uses: actions/checkout@v4
+        with: {repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: apk-data, path: data, sparse-checkout: apk-data/harian}
+      - uses: actions/checkout@v4
+        with: {repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: broksum-harian, path: robot, sparse-checkout: harian}
+      - uses: actions/checkout@v4
+        with: {repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: apk-next, path: next, sparse-checkout: apk/www/shards}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Ambil cabang broksum-asing
+        run: git clone -q --depth 1 --branch broksum-asing "$REPO_PRIVAT" out
+      - name: Isi mundur asing per broker (tanggal terbaru dulu, mundur)
+        run: |
+          MULAI=$(TZ=Asia/Jakarta date -d "yesterday" +%Y-%m-%d)
+          python main/tools/backfill/broksum_backfill.py --flow F --folder bfa --harian data/apk-data/harian --robot robot/harian --shards next/apk/www/shards --out out --mulai "$MULAI" --sampai "${{ github.event.inputs.sampai || '2026-04-21' }}" --maks "${{ github.event.inputs.maks || '6000' }}" --cadangan "${{ github.event.inputs.cadangan || '9000' }}"
+      - name: Susun berkas per saham (rentang tanggal tanpa batas di aplikasi)
+        if: always()
+        run: python main/tools/asing/per_saham.py out
+      - name: Simpan ke broksum-asing (hanya bila berubah)
+        if: always()
+        run: |
+          cd out
+          git config user.name "Broksum Asing"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "broksum-asing tambal $(python -c "import json;d=json.load(open('status.json'));print(d['hari_selesai'],'/',d['hari_bursa_total'],'hari')")"
+          for i in 1 2 3 4 5; do git push -q origin HEAD:broksum-asing && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin broksum-asing || true; done

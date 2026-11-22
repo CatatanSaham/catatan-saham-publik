@@ -3129,9 +3129,16 @@ function aicFormulaNama(n,out){if(!n||typeof n!=='object')return out;if(n.k==='v
 function aicFormulaCek(src){src=String(src||'').trim().replace(/\b(harga penutupan|harga|price|penutupan)\b/gi,'close').replace(/\bnilai transaksi\b/gi,'value').replace(/\b(volume|value|close|open|high|low|rsi|and|or|not)\b/gi,x=>x.toLowerCase());if(!src||typeof FSE==='undefined')return null;let ast;try{ast=FSE.parse(src)}catch(e){return{src,err:String(e&&e.message||e)}}
  if(ast.k==='n'||ast.k==='v'||ast.k==='str')return null;const bad=[...new Set(aicFormulaNama(ast,[]))];if(bad.length)return{src,err:'nama tidak dikenal: '+bad.join(', ')};
  if(window.CS_NONADMIN&&/broker/.test(src))return{src,err:'memakai data broker, yang tidak tersedia di aplikasi ini'};return{src}}
+/* 22 Nov 2026: satu blok kode dari AI sering berisi beberapa rumus + baris komentar (#) + baris judul biasa ("Divergen bearish: ...").
+   Dipecah: komentar # dibuang, baris judul (di luar kurung, tanpa pembanding < > = dan tanpa cross_up/cross_down) jadi pemisah, baris kosong di luar kurung juga pemisah. */
+function aicFormulaPecah(b){const out=[];let cur=[],dep=0;const flush=()=>{const s=cur.join('\n').trim();if(s)out.push(s);cur=[];dep=0};
+ for(const l0 of String(b||'').split('\n')){const l=l0.replace(/#.*$/,'').trimEnd();if(!l.trim()){if(dep<=0)flush();continue}
+  if(dep<=0&&!/[<>=]/.test(l)&&!/\bcross_(up|down)\s*\(/.test(l)&&!/^\s*(and|or|not)\b/i.test(l)&&!/\b(and|or)\s*$/i.test(l)){flush();continue}
+  cur.push(l);dep+=(l.match(/\(/g)||[]).length-(l.match(/\)/g)||[]).length}
+ flush();return out}
 /* rumus di jawaban AI: isi blok kode; bila tidak ada blok, baris yang berbentuk rumus */
 function aicFormulaAmbil(t){const out=[],lihat=s=>{const r=aicFormulaCek(s);if(r&&!out.some(x=>x.src===r.src))out.push(r)};t=String(t||'');let ada=false;
- t.replace(/\x60{3}[a-zA-Z]*\n?([\s\S]*?)\x60{3}/g,(_,b)=>{ada=true;lihat(b)});
+ t.replace(/\x60{3}[a-zA-Z]*\n?([\s\S]*?)\x60{3}/g,(_,b)=>{ada=true;aicFormulaPecah(b).forEach(lihat)});
  if(!ada)t.replace(/\x60([^\x60\n]{5,200})\x60/g,(_,b)=>{if(/[<>=]/.test(b)){ada=true;lihat(b)}});
  if(!ada)for(const l of t.split('\n')){const s=l.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').replace(/^[^:\n]{0,60}:\s*(?=[a-z(])/,'').replace(/\x60/g,'').trim();if(/[<>=]/.test(s)&&/^[a-z0-9_ ()<>=!+\-*\/.,"'%\n]+$/i.test(s)&&/\b(close|open|high|low|volume|value|rsi|macd|change|foreign|broker)/.test(s))lihat(s)}
  return out.slice(0,4)}
@@ -3200,7 +3207,7 @@ const AIC_CSS=`
 #aicfoto{display:flex;align-items:center;gap:10px;margin:0 12px;padding:8px;border:1px solid var(--aic-garis);border-radius:14px;background:var(--aic-kartu);font-size:13px;color:var(--aic-mute)}#aicfoto[hidden]{display:none}#aicfoto img{width:52px;height:52px;object-fit:cover;border-radius:10px}
 .aicm img{display:block;max-width:200px;max-height:240px;border-radius:12px;margin-bottom:6px}
 .aicm .aicsb{display:block;margin-top:6px;font-size:12px;opacity:.75}
-.aicfm{display:block;margin:6px 0;padding:8px 10px;border-radius:10px;background:#8a78f51f;border:1px solid var(--aic-garis);font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}.aicfb{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.aicfm{display:block;margin:6px 0;padding:8px 10px;border-radius:10px;background:#8a78f51f;border:1px solid var(--aic-garis);font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}.aicfr{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 #aict{flex:1;min-height:46px;max-height:120px;resize:none;border:1px solid var(--aic-garis);border-radius:23px;background:var(--aic-kartu);color:var(--aic-ink);padding:11px 16px;font:16px system-ui,Roboto,Arial,sans-serif}
 #aict::placeholder{color:var(--aic-mute)}
 #aicw button.aickr{flex:none;width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;border:0;background:var(--aic-jejak);color:#fff;display:grid;place-items:center}
@@ -3289,7 +3296,7 @@ function aicCekAngka(t,data){t=String(t||'').replace(/(\d)[ \u00a0\u202f\u2009](
 function aicJawab(t){return String(t||'').split('\n').filter(l=>!/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l)).map(l=>{if(!/^\s*\|.*\|\s*$/.test(l))return l;const c=l.trim().replace(/^\||\|$/g,'').split('|').map(x=>x.trim()).filter(Boolean);
  if(!c.length)return '';if(c.length===2&&/^(item|kolom|hal|data)$/i.test(c[0].replace(/\*/g,'')))return '';return '• '+c[0]+(c.length>1?': '+c.slice(1).join(' · '):'')}).join('\n').replace(/\n{3,}/g,'\n\n').trim()}
 function aicBub(m){const d=document.createElement('div');d.className='aicm '+m.r;
- if(m.r==='a'&&m.done)d.innerHTML=esc(aicJawab(m.t)).replace(/\x60{3}[a-zA-Z]*\n?([\s\S]*?)\x60{3}\n?/g,'<code class="aicfm">$1</code>').replace(/^#{1,6}\s*(.+)$/gm,'<b>$1</b>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/^[*-] /gm,'• ')+(m.fm&&m.fm.length?'<span class="aicfb">'+m.fm.map((f,i)=>f.err?'<span class="aicsb">⚠️ Rumus dari AI belum bisa dijalankan ('+esc(f.err)+'). Minta AI memperbaikinya.</span>':'<button type="button" data-aic="formula" data-id="'+AIC.msgs.indexOf(m)+':'+i+'">▶ Jalankan'+(m.fm.length>1?' rumus '+(i+1):' rumus ini')+' di Formula Screener</button>').join('')+'</span>':'')+(m.sb?'<span class="aicsb">'+esc(m.sb)+'</span>':'');
+ if(m.r==='a'&&m.done)d.innerHTML=esc(aicJawab(m.t)).replace(/\x60{3}[a-zA-Z]*\n?([\s\S]*?)\x60{3}\n?/g,'<code class="aicfm">$1</code>').replace(/^#{1,6}\s*(.+)$/gm,'<b>$1</b>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/^[*-] /gm,'• ')+(m.fm&&m.fm.length?'<span class="aicfr">'+m.fm.map((f,i)=>f.err?'<span class="aicsb">⚠️ Rumus dari AI belum bisa dijalankan ('+esc(f.err)+'). Minta AI memperbaikinya.</span>':'<button type="button" data-aic="formula" data-id="'+AIC.msgs.indexOf(m)+':'+i+'">▶ Jalankan'+(m.fm.length>1?' rumus '+(i+1):' rumus ini')+' di Formula Screener</button>').join('')+'</span>':'')+(m.sb?'<span class="aicsb">'+esc(m.sb)+'</span>':'');
  else{d.textContent=m.t||(m.r==='a'?'…':'');if(m.img){const i=document.createElement('img');i.src=m.img;i.alt='Foto yang dikirim';d.prepend(i)}}return d}
 function aicList(){const l=$('#aicl');if(!l)return;l.textContent='';
  if(!AIC.msgs.length){const k=document.createElement('div');k.className='aicks';k.innerHTML='<span class="aicbs">'+AIC_RKT+'</span><h2>Mau tahu apa soal '+esc(aicLabel()||'halaman ini')+'?</h2><p>AI membaca halaman yang dibuka, dan bisa mengambil data halaman lain bila disebut (mis. "clean buy", "top gainer", "BBCA"). Bisa juga kirim foto chart.</p><div class="aicsug">'+['Jelaskan halaman ini dengan bahasa sederhana','Sebutkan semua saham di tabel ini','Saham top gainer mana yang juga ada di Clean Buy?','Apa yang paling penting diperhatikan di sini?','Buatkan rumus Formula Screener: saham harga di bawah 50'].map(q=>'<button type="button" data-aic="usul">'+esc(q)+'</button>').join('')+'</div>';l.appendChild(k)}

@@ -6,9 +6,9 @@
 name: Running trade + done detail
 on:
   schedule:
-    # 22 Nov 2026 (permintaan pemilik): otomatis Sen-Jum 16.30 WIB (09.30 UTC), setelah bursa tutup. Hari libur dilewati
+    # 22 Nov 2026 (permintaan pemilik): otomatis Sen-Jum 18.30 WIB (11.30 UTC), setelah broksum harian terbit (daftar saham dari sana). Hari libur dilewati
     # lewat cek 1 panggilan. Jalan manual (workflow_dispatch) tetap ada untuk mengisi kekurangan.
-    - cron: '30 9 * * 1-5'
+    - cron: '30 11 * * 1-5'
   workflow_dispatch:
     inputs:
       tanggal:

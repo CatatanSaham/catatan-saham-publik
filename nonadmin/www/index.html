@@ -4633,9 +4633,9 @@ async function alCek(){if(document.hidden)return;let on=false;try{on=localStorag
 let AL_T=0;function alPoll(){if(AL_T)return;AL_T=setInterval(alCek,60000);setTimeout(alCek,3000)}
 /* harga hampir-live di Chart Pro */
 function alBuka(){const w=new Date(Date.now()+7*36e5),d=w.getUTCDay(),m=w.getUTCHours()*60+w.getUTCMinutes();return d>=1&&d<=5&&m>=535&&m<=965}
-async function alLive(){try{if(typeof LV!=='undefined'&&LV.on&&Date.now()-LV.at<60000)return;const wrap=document.getElementById('lwwrap'),st=(typeof TVD!=='undefined')?TVD.st:null;if(!wrap||!st||!st.alive||document.hidden)return;
+async function alLive(){try{const wrap=document.getElementById('lwwrap'),st=(typeof TVD!=='undefined')?TVD.st:null;if(!wrap||!st||!st.alive||document.hidden)return;if(typeof LV!=='undefined'&&LV.on&&Date.now()-LV.at<60000&&ALR.stLive===st)return;
   const baru=ALR.stLive!==st;if(!baru&&!alBuka())return;if(!baru&&Date.now()-ALR.tick<18000)return;ALR.tick=Date.now();ALR.stLive=st;
-  const h=await alApi('harga/'+encodeURIComponent(st.q));if(!st.alive||TVD.st!==st)return;ALR.live[st.q]=h;
+  const h=await alApi('harga/'+encodeURIComponent(st.q));if(!st.alive||TVD.st!==st)return;ALR.live[st.q]=h;{const lx=(typeof LV!=='undefined'&&LV.on&&LV.px[st.q]&&Date.now()-LV.px[st.q].at<6e4)?LV.px[st.q]:null;if(lx){h.harga=lx.p;h.tunda=0}}
   const el=document.getElementById('lwlive');if(el){const prev=+h.prev,p=+h.harga,pc=prev>0?(p-prev)/prev*100:null,jam=new Date(h.ts+7*36e5).toISOString().slice(11,16);
     el.className='lwlive '+(pc==null?'':pc>=0?'u':'d');el.textContent=(alBuka()?'Live ':'Terakhir ')+alRp(p)+(pc==null?'':' '+(pc>=0?'+':'')+pc.toFixed(2).replace('.',',')+'%')+' · '+jam+(h.tunda?' · telat '+h.tunda+' mnt':'')}
   if(typeof st.live==='function')st.live(h)}catch(e){}}
@@ -4651,7 +4651,7 @@ try{if(localStorage.getItem('cs_alert_poll')==='1')alPoll()}catch(e){}
 const LV={on:false,ws:'',q:'',sig:'',px:{},st:null,last:null,at:0,msg:'',err:'',retry:0,rt:0,lis:false,stop:''};
 const lvList=()=>{try{const a=JSON.parse(localStorage.getItem('cs_lvw')||'[]');return Array.isArray(a)?a.filter(x=>/^[A-Z0-9]{4}$/.test(x)).slice(0,10):[]}catch(e){return[]}};
 const lvListSet=a=>{try{localStorage.setItem('cs_lvw',JSON.stringify(a.slice(0,10)))}catch(e){}};
-const lvP=()=>{const C=window.Capacitor;return C&&C.Plugins&&C.Plugins.CsLive};
+const lvP=()=>{if(window.CS_NONADMIN)return null;/* Non Admin: tanpa kunci live, harga dari server (Yahoo, telat ±15 mnt) lewat alLive */const C=window.Capacitor;return C&&C.Plugins&&C.Plugins.CsLive};
 const lvKey=()=>{try{return localStorage.getItem('cs_edge_key')||''}catch(e){return ''}};
 function lvBuka(){const w=new Date(Date.now()+7*36e5),d=w.getUTCDay(),m=w.getUTCHours()*60+w.getUTCMinutes();return d>=1&&d<=5&&m>=525&&m<=975}
 function lvChip(){const w=document.getElementById('lwwrap');if(!w||!lvP())return null;let c=document.getElementById('lvchip');if(c&&w.contains(c))return c;const top=w.querySelector('.tvtop');if(!top)return null;
@@ -4682,12 +4682,15 @@ function lvPx(code,p,c,ts){if(!(p>0))return;const o=LV.px[code];LV.px[code]={p,c
  if(code===LV.q){LV.last={q:code,p,c,ts};
   const st=(typeof TVD!=='undefined')?TVD.st:null;
   if(st&&st.alive&&st.q===code&&typeof st.live==='function'){const prev=c>-100?p/(1+c/100):0;st.live({harga:p,prev,baru:true});try{ALR.live[code]={harga:p,prev,ts}}catch(e){}}}}
+/* chart yang baru digambar (ganti interval, buka ulang) langsung diberi harga live terakhir; kalau tidak, saham yang jarang transaksi
+   (mis. ARA terkunci) tidak punya tick baru dan candle hari ini tidak pernah muncul */
+function lvTerapkan(){const st=(typeof TVD!=='undefined')?TVD.st:null;if(!st||!st.alive||typeof st.live!=='function'||LV.stIsi===st)return;const x=LV.px[st.q];if(!x||Date.now()-x.at>6e5)return;LV.stIsi=st;const prev=x.c>-100?x.p/(1+x.c/100):0;try{st.live({harga:x.p,prev,baru:true})}catch(e){}}
 function lvFeed(r){if(!LV.need||!LV.sub||!r||!LV.sub.has(r.t)||!(r.p>0))return;lvPx(r.t,r.p,r.pc,Date.now())}
 /* penjaga: sambung/putus mengikuti layar */
 function lvWant(){const w=document.getElementById('lwwrap'),st=(typeof TVD!=='undefined')?TVD.st:null,a=[];LV.q='';
  if(w&&st&&st.alive&&st.q){LV.q=String(st.q).toUpperCase();a.push(LV.q)}
  if(lvwOn())lvList().forEach(c=>{if(!a.includes(c))a.push(c)});return a.slice(0,10)}
-function lvJagaLama(){if(!lvP())return;const W=lvWant(),wrap=document.getElementById('lwwrap');
+function lvJagaLama(){lvTerapkan();if(!lvP())return;const W=lvWant(),wrap=document.getElementById('lwwrap');
  const mau=!!(lvKey()&&W.length&&!document.hidden&&lvBuka()&&!LV.stop);
  if(!mau){if(LV.ws)lvClose();if(wrap)lvLabel();return}
  const sig=W.join(',');
@@ -4695,7 +4698,7 @@ function lvJagaLama(){if(!lvP())return;const W=lvWant(),wrap=document.getElement
  if(!LV.ws){const tunggu=[0,2e3,5e3,1e4,3e4][Math.min(LV.retry,4)];if(Date.now()-(LV.tutup||0)<tunggu)return;LV.tutup=Date.now();LV.sig=sig;lvOpen()}
  lvLabel()}
 /* edisi tanpa Live Trade (Non Admin): tetap pakai soket harga sendiri; edisi admin: harga ikut pipa running trade */
-function lvJaga(){if(typeof ltOpen!=='function')return lvJagaLama();if(!lvP())return;const W=lvWant();
+function lvJaga(){if(typeof ltOpen!=='function')return lvJagaLama();if(!lvP())return;lvTerapkan();const W=lvWant();
  LV.need=!!(lvKey()&&W.length&&!document.hidden&&lvBuka());LV.sub=new Set(W);
  const L=(typeof LT!=='undefined')?LT:{};LV.stop=L.stop||'';LV.err=LV.need?(L.err||''):'';LV.on=LV.need&&!!L.on&&!L.stop;
  lvLabel()}

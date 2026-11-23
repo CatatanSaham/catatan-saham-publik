@@ -6,6 +6,12 @@ on:
     # 18.30 WIB, lalu tiap 30 menit sampai 23.30 WIB (UTC+7)
     - cron: '30 11 * * 1-5'
     - cron: '0,30 12-16 * * 1-5'
+  # 23 Nov 2026: dipicu juga begitu "Running trade + done detail" selesai, supaya Clean Buy + tanda HAKA langsung terkirim
+  # tanpa menunggu jadwal GitHub yang sering telat (jadwal tetap jadi cadangan). Marker sudah-terkirim mencegah pesan ganda;
+  # bila done detail belum lengkap, Clean Buy ditahan seperti biasa.
+  workflow_run:
+    workflows: ["Running trade + done detail"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       dari:
@@ -21,6 +27,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

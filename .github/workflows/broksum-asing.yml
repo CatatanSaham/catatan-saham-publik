@@ -1,3 +1,5 @@
+# 23 Nov 2026: TIDAK lagi otomatis. Asing per broker kini dihitung dari done detail (workflow done-detail.yml, skrip
+# tools/donedetail/dd_ke_bfa.py; cocok 833/833 saham 20 Nov). Workflow ini tinggal manual untuk cadangan.
 # BARU (16 Nov 2026): broksum ASING per broker (flow=F) dari sumber data.
 # Kode: repo privat catatan-saham-mtf tools/backfill/broksum_backfill.py (diambil memakai PRIVAT_TOKEN).
 # Daftar saham per tanggal dari ZIP harian pemilik (cabang privat apk-data). Hasil ke cabang privat `broksum-asing`.
@@ -8,9 +10,6 @@ name: Broksum asing per broker
 on:
   # Langsung setelah robot broksum harian selesai (sore ±18.10 WIB dan susulan pagi 06.30 WIB),
   # supaya asing per broker sejalan dengan broksum harian.
-  workflow_run:
-    workflows: ["Robot broksum harian"]
-    types: [completed]
   workflow_dispatch:
     inputs:
       mode:

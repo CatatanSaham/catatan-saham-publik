@@ -74,3 +74,18 @@ jobs:
           git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
           git commit -q -m "done-detail ${{ steps.par.outputs.tanggal }}"
           for i in 1 2 3 4 5; do git push -q origin HEAD:done-detail && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin done-detail || true; done
+      - name: Asing per broker dari done detail (ganti unduhan broksum asing)
+        if: always() && (github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya')
+        run: |
+          T=$(echo "${{ steps.par.outputs.tanggal }}" | tr -d -)
+          [ -f "out/dd/$T/status.json" ] || { echo "Tidak ada done detail $T."; exit 0; }
+          git clone -q --depth 1 --branch broksum-asing "$REPO_PRIVAT" bfa
+          [ -f "bfa/bfa/bfa_$T.json.gz" ] && { echo "bfa $T sudah ada, dilewati."; exit 0; }
+          python main/tools/donedetail/dd_ke_bfa.py --dd "out/dd/$T" --out bfa/bfa
+          cd bfa
+          git config user.name "Running Trade"
+          git config user.email "noreply@github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
+          git commit -q -m "bfa $T dari done detail"
+          for i in 1 2 3 4 5; do git push -q origin HEAD:broksum-asing && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin broksum-asing || true; done

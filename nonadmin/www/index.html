@@ -4674,21 +4674,30 @@ function lvStatus(o){if(o.s==='open'){LV.on=true;LV.retry=0;LV.err='';const P=lv
 function lvMsg(t){let m;try{m=JSON.parse(t)}catch(e){return}
  if(m.type==='error'){LV.err=m.message||'subscribe ditolak';return}
  if(m.type!=='price'||!m.d)return;
- for(const code in m.d){const x=m.d[code],p=+x[0],c=+x[1];if(!(p>0))continue;const o=LV.px[code];LV.px[code]={p,c,ts:m.ts,at:Date.now(),dir:o?(p>o.p?1:p<o.p?-1:o.dir||0):0,flash:o&&p!==o.p?Date.now():(o&&o.flash)||0};LV.at=Date.now();
-  if(code===LV.q){LV.last={q:code,p,c,ts:m.ts};
-   const st=(typeof TVD!=='undefined')?TVD.st:null;
-   if(st&&st.alive&&st.q===code&&typeof st.live==='function'){const prev=c>-100?p/(1+c/100):0;st.live({harga:p,prev,baru:true});try{ALR.live[code]={harga:p,prev,ts:m.ts}}catch(e){}}}}
+ for(const code in m.d){const x=m.d[code];lvPx(code,+x[0],+x[1],m.ts)}
  lvLabel()}
+/* 23 Nov 2026: harga live tidak lagi lewat soket sendiri (/ws/price). Server hanya mengizinkan 1 koneksi per akun, jadi harga diambil dari
+   aliran running trade (satu pipa, dua keluaran). lvFeed dipanggil ltMsg tiap transaksi; hanya kode yang sedang dipantau yang diproses. */
+function lvPx(code,p,c,ts){if(!(p>0))return;const o=LV.px[code];LV.px[code]={p,c,ts,at:Date.now(),dir:o?(p>o.p?1:p<o.p?-1:o.dir||0):0,flash:o&&p!==o.p?Date.now():(o&&o.flash)||0};LV.at=Date.now();
+ if(code===LV.q){LV.last={q:code,p,c,ts};
+  const st=(typeof TVD!=='undefined')?TVD.st:null;
+  if(st&&st.alive&&st.q===code&&typeof st.live==='function'){const prev=c>-100?p/(1+c/100):0;st.live({harga:p,prev,baru:true});try{ALR.live[code]={harga:p,prev,ts}}catch(e){}}}}
+function lvFeed(r){if(!LV.need||!LV.sub||!r||!LV.sub.has(r.t)||!(r.p>0))return;lvPx(r.t,r.p,r.pc,Date.now())}
 /* penjaga: sambung/putus mengikuti layar */
 function lvWant(){const w=document.getElementById('lwwrap'),st=(typeof TVD!=='undefined')?TVD.st:null,a=[];LV.q='';
  if(w&&st&&st.alive&&st.q){LV.q=String(st.q).toUpperCase();a.push(LV.q)}
  if(lvwOn())lvList().forEach(c=>{if(!a.includes(c))a.push(c)});return a.slice(0,10)}
-function lvJaga(){if(!lvP())return;const W=lvWant(),wrap=document.getElementById('lwwrap');
+function lvJagaLama(){if(!lvP())return;const W=lvWant(),wrap=document.getElementById('lwwrap');
  const mau=!!(lvKey()&&W.length&&!document.hidden&&lvBuka()&&!LV.stop);
  if(!mau){if(LV.ws)lvClose();if(wrap)lvLabel();return}
  const sig=W.join(',');
  if(LV.ws&&LV.sig!==sig){lvClose().then(()=>{LV.tutup=0});return}
  if(!LV.ws){const tunggu=[0,2e3,5e3,1e4,3e4][Math.min(LV.retry,4)];if(Date.now()-(LV.tutup||0)<tunggu)return;LV.tutup=Date.now();LV.sig=sig;lvOpen()}
+ lvLabel()}
+/* edisi tanpa Live Trade (Non Admin): tetap pakai soket harga sendiri; edisi admin: harga ikut pipa running trade */
+function lvJaga(){if(typeof ltOpen!=='function')return lvJagaLama();if(!lvP())return;const W=lvWant();
+ LV.need=!!(lvKey()&&W.length&&!document.hidden&&lvBuka());LV.sub=new Set(W);
+ const L=(typeof LT!=='undefined')?LT:{};LV.stop=L.stop||'';LV.err=LV.need?(L.err||''):'';LV.on=LV.need&&!!L.on&&!L.stop;
  lvLabel()}
 setInterval(lvJaga,1500);document.addEventListener('visibilitychange',lvJaga);
 function lvSheet(){if(!lvP()){try{tvToast('Harga live hanya tersedia di APK.')}catch(e){}return}

@@ -815,8 +815,8 @@ function tvxRpTick(){const rp=S.rp;if(!rp||!document.getElementById('lwwrap')){t
 
 function tvxLt(){const b=document.getElementById('tvlt');if(!b)return;b.querySelectorAll('[data-tvd]').forEach(x=>x.classList.toggle('on',x.dataset.tvd===TVD.tool));const c=b.querySelector('[data-tvo=tool-off]');if(c)c.classList.toggle('on',!TVD.tool)}
 /* ===== Chart Pro: interval 15m–3M, alat gambar, pusat analisis ===== */
-const TVF=[['Menit',[['15','15m'],['30','30m'],['45','45m']]],['Jam',[['60','1h'],['120','2h'],['180','3h'],['240','4h']]],['Hari',[['D','1D'],['W','1W'],['M','1M'],['3M','3M'],['6M','6M'],['12M','12M']]]];
-const TVL={'15':'15m','30':'30m','45':'45m','60':'1h','120':'2h','180':'3h','240':'4h',D:'1D',W:'1W',M:'1M','3M':'3M','6M':'6M','12M':'12M'};
+const TVF=[['Menit',[['1','1m'],['5','5m'],['15','15m'],['30','30m'],['45','45m']]],['Jam',[['60','1h'],['120','2h'],['180','3h'],['240','4h']]],['Hari',[['D','1D'],['W','1W'],['M','1M'],['3M','3M'],['6M','6M'],['12M','12M']]]];
+const TVL={'1':'1m','5':'5m','15':'15m','30':'30m','45':'45m','60':'1h','120':'2h','180':'3h','240':'4h',D:'1D',W:'1W',M:'1M','3M':'3M','6M':'6M','12M':'12M'};
 const tvTf=tf=>({Daily:'D',Weekly:'W'}[tf]||(TVL[tf]?tf:'D'));
 const tvIntra=tf=>/^\d+$/.test(tf);
 const tvLS=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
@@ -857,7 +857,7 @@ async function tvBarsSpec(q,tf){let res;try{res=await tvSpecGet(q,tvIntra(tf)?'1
  let B=[];T.forEach((ts,i)=>{const c=Q.close[i];if(c==null)return;const d=new Date((ts+25200)*1e3).toISOString().slice(0,10);if(B.length&&B[B.length-1].d===d)B.pop();B.push({d,o:r2(Q.open[i]||c),h:r2(Q.high[i]||c),l:r2(Q.low[i]||c),c:r2(c),v:Q.volume[i]||0,miss:false})});
  if(tf==='W')B=tvAggDay(B,d=>wkOf(d.slice(2).replace(/-/g,'')));else if(tf==='M')B=tvAggDay(B,d=>d.slice(0,7));else if(tf==='3M')B=tvAggDay(B,d=>d.slice(0,4)+'Q'+Math.floor((+d.slice(5,7)-1)/3));else if(tf==='6M')B=tvAggDay(B,d=>d.slice(0,4)+'H'+(+d.slice(5,7)<=6?1:2));else if(tf==='12M')B=tvAggDay(B,d=>d.slice(0,4));
  return{B:B.map(b=>({t:Date.UTC(+b.d.slice(0,4),+b.d.slice(5,7)-1,+b.d.slice(8,10))/1000,o:b.o,h:b.h,l:b.l,c:b.c,v:b.v,miss:false})),fill:0,intra:false}}
-async function tvBars(q,tf){if(tvIsSpec(q))return tvBarsSpec(String(q).toUpperCase(),tf);if(tvIntra(tf)){const R=await(typeof window.m15LoadI==='function'?window.m15LoadI:m15Load)(q);return{B:tvAggIntra(R,+tf),fill:0,intra:true}}
+async function tvBars(q,tf){if(tvIsSpec(q))return tvBarsSpec(String(q).toUpperCase(),tf);if(tvIntra(tf)){if(tf==='1'||tf==='5'){/* 23 Nov 2026: data 1 menit dari robot (cabang m15-harian), khusus APK admin */const R=typeof window.m1Load==='function'?await window.m1Load(q):[];return{B:tvAggIntra(R,+tf),fill:0,intra:true}}const R=await(typeof window.m15LoadI==='function'?window.m15LoadI:m15Load)(q);return{B:tvAggIntra(R,+tf),fill:0,intra:true}}
  let rows=await chLoad(q);if(!rows)return null;await opiSiap();if(OPI.d)rows=rows.map(x=>{const o=OPI.d['20'+x[0]]&&OPI.d['20'+x[0]][q];if(!(o>0)||o===x[1])return x;const h=Math.max(x[2]||0,o),l=x[3]>0?Math.min(x[3],o):x[3];return [x[0],o,h,l,...x.slice(4)]})/* Open koreksi robot juga menimpa Open BEI yang salah (hari janggal, mis. 16 Okt) */;const p=lwPrep(rows,'Daily');let B=p.B;
  if(tf==='W')B=tvAggDay(B,d=>wkOf(d.slice(2).replace(/-/g,'')));else if(tf==='M')B=tvAggDay(B,d=>d.slice(0,7));else if(tf==='3M')B=tvAggDay(B,d=>d.slice(0,4)+'Q'+Math.floor((+d.slice(5,7)-1)/3));else if(tf==='6M')B=tvAggDay(B,d=>d.slice(0,4)+'H'+(+d.slice(5,7)<=6?1:2));else if(tf==='12M')B=tvAggDay(B,d=>d.slice(0,4));
  return{B:B.map(b=>({t:Date.UTC(+b.d.slice(0,4),+b.d.slice(5,7)-1,+b.d.slice(8,10))/1000,o:b.o,h:b.h,l:b.l,c:b.c,v:b.v,miss:b.miss})),fill:p.fill,intra:false}}
@@ -929,7 +929,7 @@ function xdMap(B,dates,valf,mode){const T=B.map(b=>b.t),L=T.length,out=new Array
 async function lwDraw(q,r,tf){tf=tvTf(tf);S.lwrr=r;const box=$('#lwc'),hd=$('#lwh'),nt=$('#lwn');if(!box)return;const tk=++RQ.c;let D0,LC;
  try{[D0,LC]=await Promise.all([tvBars(q,tf),lwLib()])}catch(e){if(tk!==RQ.c||!$('#lwc'))return;hd.innerHTML='<b>'+esc(q)+'</b>';box.style.height='auto';box.style.minHeight='0';box.innerHTML=`<div class="note" role="alert">Chart Pro belum bisa dimuat (${esc(e.message||'jaringan')}). Coba lagi, atau pakai chart TradingView.<div class="row"><button class="btn" data-k="cmode" data-v="pro">Coba lagi</button><button class="btn" data-k="cmode" data-v="tv">Pakai TradingView</button></div></div>`;return}
  if(tk!==RQ.c||$('#lwc')!==box)return;lwKill();box.querySelectorAll('.lwax,.tvcv,.tvact').forEach(x=>x.remove());document.querySelectorAll('#lwwrap .lwsep').forEach(x=>x.remove());box.style.height='';box.style.minHeight='';['lwr','lwm','lwb','lwf','lwx1','lwx2','lwx3','lwx4'].forEach(id=>{const e=$('#'+id);if(e){e.innerHTML='';e.style.display='none';e.style.height=''}});
- if(!D0||!D0.B.length){hd.innerHTML=`<b>${esc(q)}</b> <span class="mu">${TVL[tf]}</span><br>${tvIntra(tf)?'Belum ada data 15 menit untuk saham ini.'+(typeof m15Why==='function'?m15Why(q):''):'Kode '+esc(q)+' tidak ada di data chart.'}`;box.style.height='auto';box.style.minHeight='0';return}
+ if(!D0||!D0.B.length){hd.innerHTML=`<b>${esc(q)}</b> <span class="mu">${TVL[tf]}</span><br>${tvIntra(tf)?'Belum ada data '+(tf==='1'||tf==='5'?'1 menit (butuh kunci GitHub di Data Otomatis, khusus APK admin)':'15 menit')+' untuk saham ini.'+(typeof m15Why==='function'?m15Why(q):''):'Kode '+esc(q)+' tidak ada di data chart.'}`;box.style.height='auto';box.style.minHeight='0';return}
  const intra=D0.intra,on=(k,d)=>S[k]===undefined?d:S[k]!==false,ty=S.cty||'candle',B=tvxPrep(D0.B,ty,intra,q+'|'+tf),ink=lwCol('--ink','#2a2415'),mute=lwCol('--mute','#7b6f55'),line=lwCol('--line','#d2bc82'),miss='rgba(128,128,128,.55)';
  const CS=cst(),up=CS.up||lwCol('--up','#1f9d55'),dn=CS.dn||lwCol('--dn','#d64545');const BGc=CS.bg||'transparent';box.style.background=CS.bg||'';
  if(B.length<2){hd.textContent='Data '+q+' terlalu sedikit.';return}
@@ -4119,7 +4119,7 @@ function hkBs(q){const n=[5,10,20].includes(+S.bsh)?+S.bsh:20,key='bs/'+q;
  const mk=a=>({b:a[0],net:a[1],av:a[2],pct:a[3],rp:a[4]}),st=RG?RG.sg.map(mk):R.filter(r=>r.av>cl).sort((a,b)=>a.rp-b.rp).slice(0,5),un=RG?RG.un.map(mk):R.filter(r=>r.av<=cl).sort((a,b)=>b.rp-a.rp).slice(0,5);
  const row=(r,c)=>`<div class="mu"><b>${esc(r.b)}</b> net beli ${hkNf(r.net)} lot · rata-rata ${hkNf(r.av)} · <span class="${c}">${r.pct>=0?'+':''}${r.pct.toFixed(1).replace('.',',')}%</span> (${hkRp(r.rp)})</div>`;
  const jm=s=>{s=+s;const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};
- bg.sort((a,b)=>b[3]-a[3]||b[1].localeCompare(a[1]));
+ bg.sort((a,b)=>b[3]-a[3]||b[0].localeCompare(a[0])||b[1]-a[1]);
  return hd+`<div class="mu">${RG?RG.hari:T.length} hari bursa (${hkTg(RG?RG.d0:T[0])} – ${hkTg(RG?RG.d1:T.at(-1))}) · harga penutupan ${hkTg(RG?RG.d1:T.at(-1))} ${hkNf(cl)}</div>`+
   ring+`<div class="card"><b>Sangkut (net beli, harga rata-rata di atas harga kini)</b>${st.length?st.map(r=>row(r,'dn')).join(''):'<div class="mu">Tidak ada broker besar yang sedang rugi mengambang.</div>'}<div class="mu">Bila harga naik mendekati rata-rata mereka, sering muncul jual impas (area hambatan).</div></div>`+
   `<div class="card"><b>Sudah untung (net beli, harga kini di atas rata-rata)</b>${un.length?un.map(r=>row(r,'up')).join(''):'<div class="mu">Tidak ada.</div>'}<div class="mu">Rata-rata mereka bisa jadi area dukungan; bila harga jatuh ke sana mereka bisa bertahan atau ikut keluar.</div></div>`+
@@ -4158,8 +4158,31 @@ document.addEventListener('change',e=>{const t=e.target;if(!t||t.id!=='hkd')retu
 try{const g=MENU.find(x=>x[0]==='Broker Intelligence');if(g&&!g[1].some(x=>x[0]==='hkn')){const i=g[1].findIndex(x=>x[0]==='bdm');g[1].splice(i<0?g[1].length:i+1,0,['hkn','HAKA HAKI'])}}catch(e){}
 
 
+/* 23 Nov 2026: tab Transaksi Nego (papan nego per tanggal, semua saham) seperti Admin; data dari server /app/api/nego/TGL. Nego tidak dihitung di HAKA dan Bandar Volume. */
+const NGC={},NGJ={D:'Lokal',F:'Asing'},NGPER=50;
+const ngJam=d=>{const p=x=>String(x).padStart(2,'0');return p(Math.floor(d/3600))+':'+p(Math.floor(d/60)%60)+':'+p(d%60)};
+function ngGet(t){const c=NGC[t];if(c&&!(c.err&&Date.now()-c.at>20000))return c;if(c===undefined||c.err)naOnce('ng'+t+(c?Date.now():''),async()=>{try{NGC[t]=await naGet('nego/'+t)}catch(e){NGC[t]={err:e.message||'Data nego tidak bisa dimuat.',at:Date.now()}}});return undefined}
+function hkNego(tabs){
+ const hd='<div class="brand">BROKER INTELLIGENCE</div><h1>HAKA HAKI</h1><div class="mu">Transaksi papan negosiasi dari running trade, semua saham per tanggal bursa. Bukan rekomendasi.</div>'+tabs;
+ const tq=/^\d{8}$/.test(S.ngt||'')?S.ngt:'terbaru',j=ngGet(tq);
+ if(j===undefined)return hd+muat('Memuat transaksi nego…');
+ if(j.err)return hd+'<div class="note">'+esc(j.err)+'</div><div class="row"><button class="btn" data-k="ngt" data-v="">Tanggal terbaru</button></div>';
+ const T=j.tanggal||[],d=j.tgl,iso=x=>x.slice(0,4)+'-'+x.slice(4,6)+'-'+x.slice(6,8);
+ const mn=['0','1','10','100'].includes(S.ngn)?S.ngn:'1',MIN={'0':0,'1':1e9,'10':1e10,'100':1e11}[mn],ur=S.ngs==='k'?'k':'v';
+ let L=(j.baris||[]).map(([k,dt,p,lot,b,s,jn])=>({k,dt,p,lot,b,s,jn,v:p*lot*100})).filter(x=>x.v>=MIN);
+ if(ur==='k')L.sort((a,b)=>a.k.localeCompare(b.k)||b.v-a.v);else L.sort((a,b)=>b.v-a.v);
+ const tot=L.reduce((a,x)=>a+x.v,0),ke=new Set(L.map(x=>x.k)).size,mx=Math.max(0,Math.ceil(L.length/NGPER)-1),pg=Math.min(Math.max(0,+S.ngpg||0),mx);
+ const nav=L.length>NGPER?`<div class="row" style="justify-content:center;gap:8px;margin:10px 0"><button class="btn" data-k="ngpg" data-v="${Math.max(0,pg-1)}"${pg?'':' disabled'}>‹ Sebelumnya</button><span class="mu" style="align-self:center">${pg+1}/${mx+1}</span><button class="btn" data-k="ngpg" data-v="${Math.min(mx,pg+1)}"${pg<mx?'':' disabled'}>Next ›</button></div>`:'';
+ const ctl=`<div class="row" style="gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap"><span class="mu">Tanggal</span><input type="date" id="ngd" value="${iso(d)}" min="${T.length?iso(T[0]):''}" max="${T.length?iso(T.at(-1)):''}" style="font-size:16px;padding:8px 10px"><button class="btn" data-k="ngt" data-v="">Terbaru</button></div>`+
+  `<div class="mu" style="font-size:12px;margin-top:6px">Nilai minimal</div>`+chips([['0','Semua'],['1','≥1 M'],['10','≥10 M'],['100','≥100 M']],mn,'ngn')+chips([['v','Nilai terbesar'],['k','Per saham']],ur,'ngs');
+ const jn=x=>{const a=NGJ[x[0]]||x[0],b=NGJ[x[1]]||x[1];return a===b?a:a+' → '+b};
+ const rows=L.slice(pg*NGPER,(pg+1)*NGPER).map(x=>`<div class="card" style="padding:9px 12px;margin:6px 0"><div style="display:flex;justify-content:space-between;gap:8px"><span><b>${esc(x.k)}</b> <span class="mu" style="font-size:12px">${ngJam(x.dt)}</span></span><b>${hkRp(x.v)}</b></div><div class="mu" style="font-size:13px;margin-top:2px">${hkNf(x.lot)} lot @ ${hkNf(x.p)} · <b>${esc(x.b)}</b> beli dari <b>${esc(x.s)}</b>${x.b===x.s?' (crossing broker sama)':''} · ${esc(jn(String(x.jn||'')))}</div></div>`).join('');
+ return hd+ctl+`<div class="g2" style="grid-template-columns:repeat(3,1fr)"><div class="st"><span class="mu">Transaksi</span><b>${hkNf(L.length)}</b></div><div class="st"><span class="mu">Saham</span><b>${hkNf(ke)}</b></div><div class="st"><span class="mu">Nilai</span><b>${hkRp(tot)}</b></div></div>`+(rows||'<div class="card mu">Tidak ada transaksi nego pada pilihan ini.</div>')+nav+`<div class="mu" style="font-size:12px">${hkTg(d)} · papan negosiasi. Jenis: Lokal/Asing (pembeli → penjual). Transaksi nego tidak dihitung di HAKA dan Bandar Volume. Bukan rekomendasi.</div>`}
+document.addEventListener('change',e=>{const t=e.target;if(!t||t.id!=='ngd')return;const v=String(t.value||'').replace(/-/g,'');if(/^\d{8}$/.test(v)){S.ngt=v;S.ngpg=0;render()}});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-k]');if(b&&['hkv','ngt','ngn','ngs'].includes(b.dataset.k))S.ngpg=0},true);
 /* 23 Nov 2026: tab HAKA HAKI disamakan dengan Admin: Saham di-HAKA | Untung rugi broker (kode + 5/10/20 hari). */
-{const hknAsli=P.hkn;P.hkn=function(){const tab=S.hkv==='b'?'b':'h',tabs=chips([['h','Saham di-HAKA'],['b','Untung rugi broker']],tab,'hkv');
+{const hknAsli=P.hkn;P.hkn=function(){const tab=S.hkv==='b'?'b':S.hkv==='n'?'n':'h',tabs=chips([['h','Saham di-HAKA'],['n','Transaksi Nego'],['b','Untung rugi broker']],tab,'hkv');
+ if(tab==='n')return hkNego(tabs);
  if(tab!=='b'){const x=hknAsli();return typeof x==='string'?x.replace('Bukan rekomendasi.</div>','Bukan rekomendasi.</div>'+tabs):x}
  const hd='<div class="brand">BROKER INTELLIGENCE</div><h1>HAKA HAKI</h1><div class="mu">Dari running trade papan reguler. Bukan rekomendasi.</div>'+tabs,q=String(S.hkq||'').toUpperCase().trim();
  setTimeout(()=>{const b=document.getElementById('hkgo'),i=document.getElementById('hkin');const go=()=>{const v=(i.value||'').toUpperCase().trim();if(/^[A-Z0-9]{4}$/.test(v)){S.hkq=v;render()}};if(b)b.onclick=go;if(i)i.onkeydown=e=>{if(e.key==='Enter')go()}},0);

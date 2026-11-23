@@ -73,6 +73,14 @@ jobs:
           path: dd-data
           sparse-checkout-cone-mode: false
           sparse-checkout: /dd/${{ steps.sesi.outputs.session }}/
+      - uses: actions/checkout@v4
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: broksum-harian
+          path: bfr
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /harian/bf_${{ steps.sesi.outputs.session }}.json.gz
       - name: Hitung dan kirim ke topik Clean buy
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -103,6 +111,8 @@ jobs:
             exit 0
           fi
           unzip -p "$zip" "$session.json" > "$RUNNER_TEMP/cleanbuy-session.json"
+          # 23 Nov 2026: bila APK belum mengunggah broksum sesi ini, pakai broksum robot IDX Edge (cabang broksum-harian).
+          python3 tools/broksum/sesi_dari_robot.py --sesi "$RUNNER_TEMP/cleanbuy-session.json" --bf "bfr/harian/bf_$session.json.gz" || true
           node bot/run-cleanbuy.cjs formula/apk/www/index.html "$RUNNER_TEMP/cleanbuy-session.json" > "$RUNNER_TEMP/cleanbuy.json"
           # Belum ada broksum maupun unggahan Clean Buy untuk sesi ini: tunggu jadwal berikutnya / unggahan admin (tidak dianggap gagal).
           if node -e 'process.exit(require(process.argv[1]).kosong ? 0 : 1)' "$RUNNER_TEMP/cleanbuy.json"; then

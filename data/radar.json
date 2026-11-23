@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-21 00:59 WIB",
- "baru": 1,
+ "upd": "2026-11-23 18:40 WIB",
+ "baru": 6,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -9,19 +9,93 @@
   "CNBC Indonesia: 100",
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 8",
-  "Google Berita: 8",
-  "Google Berita: 19",
-  "Google Berita: 15",
   "Google Berita: 9",
-  "Google Berita: 8",
-  "Google Berita: 24",
-  "Google Berita: 30",
-  "Google Berita: 10",
+  "Google Berita: 3",
+  "Google Berita: 18",
+  "Google Berita: 7",
+  "Google Berita: 4",
+  "Google Berita: 7",
+  "Google Berita: 23",
+  "Google Berita: 26",
+  "Google Berita: 25",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "CDIA Siapkan Buyback Saham Rp1 Triliun hingga Februari 2027",
+   "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE12TmtyVjE0OE85cER2NGhoeDZCaWNTWGxCYnRCbV9CaTBqNEE1d2JCM1dUNHJuWUl6dTJpVk4tM0lWemE0SWltaUMyd0djcFh5VGdjMXNmb3l0OUtfMVVzemRxd0NIV3luaFBKMFotTQ?oc=5",
+   "src": "BeritaJejaring.co.id",
+   "ts": 1795430047,
+   "cat": "Buyback / dividen",
+   "k": [
+    "CDIA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-23 18:40"
+  },
+  {
+   "t": "PPRE Catat Kontrak Baru Rp1,7 Triliun hingga September 2026",
+   "link": "https://www.idxchannel.com/market-news/ppre-catat-kontrak-baru-rp17-triliun-hingga-september-2026",
+   "src": "IDX Channel",
+   "ts": 1795423980,
+   "cat": "Kontrak / proyek",
+   "k": [
+    "PPRE"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-23 18:40"
+  },
+  {
+   "t": "EXCL Buyback Saham Rp1 Triliun, Intip Profil Emiten hingga Kinerja Terbarunya",
+   "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPcFNzZzdfNXh1RFJfQmhUR1c1VFJXbTk0MVhpcGhFY3ZYZjJBZERKWkVtcHEydDJTV0dPZ29KTDdjdVBmT3MxaVdJRUs5TkZXVHhUc0FtSTVTUlpOTzlhcDAwS3RUSWRrWUM0WTFjZk9IaVVBQVpVNE9OMDZ5WDc1RE5acm5yc0FkVG5wbkw3ZEhnQ0lNa0wzdDE2YklJbDdwOFhRMXdtUUZ6bDBPQnZFa1ZTOA?oc=5",
+   "src": "KONTAN",
+   "ts": 1795400116,
+   "cat": "Buyback / dividen",
+   "k": [
+    "EXCL"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-23 18:40"
+  },
+  {
+   "t": "FORU Umumkan Rights Issue Rp27,1 Triliun untuk Ekspansi",
+   "link": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9LcXdROGFiWTJyUnVsamtzRXROb0VCczlHTDQ4S2hxY0o2anRMdWJGdkpQT1RuU21YOVE5aVlyZmdNT1ZKclFoei1nQXhfMk5wUHE0LXQxWElLTEZIYzVGbVI1RmVMQjI5M3M3NHpWMFRPOEE?oc=5",
+   "src": "MediaKompeten",
+   "ts": 1795366980,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "FORU"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-23 18:40"
+  },
+  {
+   "t": "SMGR EXCL dan ELSA Gelar Buyback Saham Rp1,33 Triliun",
+   "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE5QNXVMb2l2Y0taTy11VjFWX3lON0ZtNjMwZ3Qtcjc1QVNyX1JaTjlNc0dMVWRTYVhxUzg2ZUdrTG9zcGVaMjdBRF92VGttSDd0WTRpUnNPYkMwZ3hi?oc=5",
+   "src": "SuaraGarut.ID",
+   "ts": 1795305878,
+   "cat": "Buyback / dividen",
+   "k": [
+    "SMGR",
+    "EXCL",
+    "ELSA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-23 18:40"
+  },
+  {
+   "t": "Penjualan Batu Bara PKPK Capai 1 Juta Ton, Nilai Kontrak Sebedar Rp1,38 Triliun Jadi Sorotan Pasar - Hallobisnis.com",
+   "link": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxOcmFjVFVieTFfMTJIUVRzOXd1RFJTdWI2X2pDWlFxNjcyZDh1dkx0Wm9WaElBa1FsX0RpN3hPMEhUSlpPXzcxTVliTUIwRUZYSFNjSHZMZktLd0lXa1dYQjZWTHJpVm0tVXZHNXgtYWNGX0FqQjUzZjlxREhJMlVFemlBSF9SNnFPcmxNamlrMl9hTDZnUTNKc1AtY3NLVlNqeXZ3V2hoTy1Hem45TFpSZTA0b1gxVzk2N2xZVFpMQzhRdEtDbTJyZmw4ZzNLdUl6ZXBMcXhmaUjSAd4BQVVfeXFMUEo0ZXlpb25SR2hKUjk4WU9oQjJyWFBES3RIYnRvTnotcVltM1ppeFhWX0VPZkRzb3ZqRXFCUUdWNDlhSXRsMi1iN0R5dWJtV3h2R1BpZ25zQXVVUHR6Nkk0ODV1TmUwSkJyUG9oa09VOGN1UGRRRnBfbjVoakd4TkFERFhzNG1jMjZsYnItTGRKdFZ3RXRLTU1wWnNsZ1RhOTl3WURGTkFqcmJKN0hmQjNVUWFtVnJRMEp5aTdjYS1hR1FoQ3hnZU9ENXJwMDM2TlBPcVEwSUgyVlFtbVh3?oc=5",
+   "src": "Hallo Bisnis",
+   "ts": 1795300200,
+   "cat": "Kontrak / proyek",
+   "k": [
+    "PKPK"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-23 18:40"
+  },
   {
    "t": "Emiten BTPN Bakal Go Private dan Delisting",
    "link": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNazJnMDMySkYzeDBkTFlXLUVmYThSRGVpYS1NZHFtU2xvcnN1N3pSYU9JTFc0LVRpdXlvT1JrRjlDUzBpR01lY28tZ2JPaWFJQXRvS3lOVVI2OXhEMXJacklZN3lDUXg0N0hLVEpaajAtUGxucXRVRnRVM0hJR2RYNEpVaGxDcHRxX3lhTUxjSdIBhgFBVV95cUxQWkI3RjZ5bjZiUkdNbEt0MGZYOW5ORnRqd0xMWUZwVHJGaG56VEpjR2VLTDl4NkN4c0FIQTVKVVpnTl9WQjlCSmsyLXJ1alJWMXlrcFdRblBrbWR3RmtCQ0p1dWlfRDEwZldfMGpkTWxIRkJlOFNDaUROWjVLVE9lWFVBWUpYUQ?oc=5",

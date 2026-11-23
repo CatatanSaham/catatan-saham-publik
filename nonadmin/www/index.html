@@ -4020,9 +4020,15 @@ const PUB='https://raw.githubusercontent.com/CatatanSaham/catatan-saham-publik/m
    Bila isi repo berubah → harga harian, kepemilikan, dan pembaruan aplikasi (OTA) diperiksa lewat event 'na-pub'. */
 const PUBR='https://api.github.com/repos/CatatanSaham/catatan-saham-publik/';
 window.naPubJ=async(p,ref)=>{try{const r=await fetch(PUBR+'contents/'+p+'?ref='+encodeURIComponent(ref||'main'),{headers:{Accept:'application/vnd.github.raw'},cache:'no-store'});if(r.ok)return await r.json()}catch(e){}
- return (await fetch('https://raw.githubusercontent.com/CatatanSaham/catatan-saham-publik/main/'+p+'?t='+Date.now(),{cache:'no-store'})).json()};
+ try{const r=await fetch('https://raw.githubusercontent.com/CatatanSaham/catatan-saham-publik/main/'+p+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}catch(e){throw new Error(String(e&&e.message||e).replace(/\s+/g,' ').slice(0,40)+' (raw)')}};
+/* Ambil satu berkas data/ (mis. 'harian/20261120.json'): raw.githubusercontent.com dulu (tanpa batas), bila gagal lewat API GitHub (jalur lain, bisa terbuka walau raw terblokir
+   di jaringan tertentu). Diulang 2 putaran. Galat menyebut sumbernya supaya kelihatan di kepala halaman. */
+async function naFetchJ(path,tries){const u=[PUB+path,PUBR+'contents/data/'+path+'?ref='+encodeURIComponent(window.naRef||'main')];let err=null;
+ for(let t=0;t<(tries||2);t++){for(let i=0;i<2;i++){try{const r=await fetch(u[i],i?{headers:{Accept:'application/vnd.github.raw'},cache:'no-store'}:undefined);if(r.ok)return await r.json();err=new Error('HTTP '+r.status+' ('+(i?'api':'raw')+')')}catch(e){err=new Error(String(e&&e.message||e).replace(/\s+/g,' ').slice(0,40)+' ('+(i?'api':'raw')+')')}}
+  if(t+1<(tries||2))await new Promise(r=>setTimeout(r,800*(t+1)))}
+ throw err}
 let NAS='',NAB=false;async function naPubCek(){if(!navigator.onLine||NAB)return;NAB=true;try{let s='';try{const r=await fetch(PUBR+'commits/main',{headers:{Accept:'application/vnd.github.sha'},cache:'no-store'});if(r.ok)s=(await r.text()).trim()}catch(e){}
- if(s&&s===NAS)return;NAS=s;window.naRef=s||'main';await naHarian();await naMakro();window.dispatchEvent(new CustomEvent('na-pub',{detail:window.naRef}))}finally{NAB=false}}
+ if(s&&s===NAS)return;NAS=s;window.naRef=s||'main';const ok=await naHarian();if(ok===false)NAS='';await naMakro();window.dispatchEvent(new CustomEvent('na-pub',{detail:window.naRef}))}finally{NAB=false}}
 window.naPubCek=naPubCek;setTimeout(naPubCek,600);setInterval(naPubCek,18e4);document.addEventListener('visibilitychange',()=>{if(!document.hidden)naPubCek()});window.addEventListener('online',()=>setTimeout(naPubCek,2000));
 /* Data makro (PDB, inflasi, BI rate): robot menyalin makro.json ke repo publik; admin mengambilnya lewat kunci GitHub,
    Non Admin lewat repo publik. Dipakai hanya bila lebih lengkap daripada yang tertanam di aplikasi (mis. PDB kuartal baru). */
@@ -4037,19 +4043,22 @@ const NRB={rb:null,busy:false,err:''};try{NRB.rb=JSON.parse(localStorage.getItem
 async function naRadar(){if(NRB.busy)return;NRB.busy=true;NRB.err='';try{const m=await window.naPubJ('data/radar.json',window.naRef);if(m&&Array.isArray(m.items)){NRB.rb=m;try{localStorage.setItem('cs_na_radar',JSON.stringify(m))}catch(e){}}}catch(e){NRB.err='Berita robot harian tidak bisa dimuat.'}finally{NRB.busy=false;if(S.p==='radar')render()}}
 window.CSRB={get:()=>NRB.rb,tok:()=>true,busy:()=>NRB.busy,err:()=>NRB.err,load:()=>naRadar()};window.addEventListener('na-pub',()=>naRadar());
 /* Status pembaruan data harian di kepala halaman: kelihatan saat sedang memuat atau gagal (web/HP yang jaringannya bermasalah). */
-function naHdSt(st,e){window.NAU=st;window.NAUe=e?String(e&&e.message||e).replace(/\s+/g,' ').slice(0,60):'';const el=document.querySelector('#hd small');if(el&&st!=='ok')el.textContent=st==='muat'?'⟳ memperbarui data… ⌄':'⚠ gagal memperbarui'+(window.NAUe?' ('+window.NAUe+')':'')+' · ketuk ⟳ ⌄'}
+function naHdSt(st,e){window.NAU=st;window.NAUe=e?String(e&&e.message||e).replace(/\s+/g,' ').slice(0,60):'';const el=document.querySelector('#hd small');if(st==='ok'&&el&&/[⚠⟳]/.test(el.textContent)&&typeof render==='function')setTimeout(render,0);if(el&&st!=='ok')el.textContent=st==='muat'?'⟳ memperbarui data… ⌄':'⚠ gagal memperbarui'+(window.NAUe?' ('+window.NAUe+')':'')+' · ketuk ⟳ ⌄'}
 async function naHarian(){try{const j=await window.naPubJ('data/harian/daftar.json',window.naRef),last=dates.at(-1);
  const baru=(j.tanggal||[]).filter(d=>d>last).slice(-30);
  /* Clean Buy bisa terbit beberapa menit SETELAH harga (robot hitung jalan belakangan): susulkan untuk 15 sesi terakhir yang belum punya (22 Nov 2026: dari 5; paket harian 9-10 Nov terbit tanpa Clean Buy, hasilnya baru ada kemudian). */
  let susul=false;for(const d of (j.tanggal||[]).slice(-15)){if(baru.includes(d)||UDS.saved[d+'_cb1']||!UDS.saved[d+'_rs'])continue;
   try{const r=await fetch(PUB+'cleanbuy/'+d+'.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)continue;const cb=await r.json(),rs=UDS.saved[d+'_rs'],ci=rs.cols.indexOf('Penutupan'),cl={};JSON.parse(rs.rows).forEach(x=>cl[String(x[0]).trim()]=x[ci]);
    for(const k of ['cb1','cb2','cb3','acc','b10'])if(cb[k]&&cb[k].kode){UDS.saved[d+'_'+k]={date:d,key:k,rows:JSON.stringify(cb[k].kode.map(t=>[t,cl[t]||0])),uploadedAt:'publik'};susul=true}}catch(e){}}
- if(!baru.length){naHdSt('ok');if(susul){udApply();render()}return}
- naHdSt('muat');
- for(const d of baru){const h=await (await fetch(PUB+'harian/'+d+'.json')).json();for(const id in h.daily_files)UDS.saved[id]=h.daily_files[id];
-  try{const r=await fetch(PUB+'cleanbuy/'+d+'.json');if(r.ok){const cb=await r.json(),rs=h.daily_files[d+'_rs'],ci=rs.cols.indexOf('Penutupan'),cl={};JSON.parse(rs.rows).forEach(x=>cl[String(x[0]).trim()]=x[ci]);
-   for(const k of ['cb1','cb2','cb3','acc','b10'])if(cb[k]&&cb[k].kode)UDS.saved[d+'_'+k]={date:d,key:k,rows:JSON.stringify(cb[k].kode.map(t=>[t,cl[t]||0])),uploadedAt:'publik'}}}catch(e){}}
- window.NAU='ok';udApply();render()}catch(e){naHdSt('gagal',e)}}
+ if(!baru.length){naHdSt('ok');if(susul){udApply();render()}return true}
+ naHdSt('muat');let gagal=null,n=0;
+ for(const d of baru){try{const h=await naFetchJ('harian/'+d+'.json');for(const id in h.daily_files)UDS.saved[id]=h.daily_files[id];n++;
+  try{const cb=await naFetchJ('cleanbuy/'+d+'.json',1),rs=h.daily_files[d+'_rs'],ci=rs.cols.indexOf('Penutupan'),cl={};JSON.parse(rs.rows).forEach(x=>cl[String(x[0]).trim()]=x[ci]);
+   for(const k of ['cb1','cb2','cb3','acc','b10'])if(cb[k]&&cb[k].kode)UDS.saved[d+'_'+k]={date:d,key:k,rows:JSON.stringify(cb[k].kode.map(t=>[t,cl[t]||0])),uploadedAt:'publik'}}catch(e){}}
+  catch(e){gagal=e;break}}
+ /* hari yang sudah terunduh tetap dipakai walau hari berikutnya gagal (berurutan, tanpa lubang) */
+ if(gagal)naHdSt('gagal',new Error(n+' dari '+baru.length+' hari: '+String(gagal&&gagal.message||gagal)));else window.NAU='ok';
+ if(n){udApply();render()}return !gagal}catch(e){naHdSt('gagal',e);return false}}
 // Izin (pilihan A): tanpa kode. Admin bisa menutup semua / memblokir satu HP dari bot Telegram.
 // Hanya jawaban "ditolak" dari server yang mengunci; server tak terjangkau = aplikasi tetap terbuka.
 const IZ={k:'cs_izin'};

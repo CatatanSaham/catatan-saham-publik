@@ -1,0 +1,88 @@
+# BARU (23 Nov 2026): lengkapi ZIP harian (cabang privat apk-data) dengan broksum robot bila admin belum mengunggah broksum.
+# Masalah: Non Admin, hitung modul otomatis dan Clean Buy publik membaca ZIP harian yang diunggah APK admin. Bila ZIP hanya berisi
+# harga (rs/ri/rb) dan broksum belum diunggah, tanggal itu tertinggal walau robot broksum sudah selesai.
+# Alat: tools/broksum/lengkapi_zip.py (repo privat). Isi unggahan APK tidak pernah ditimpa (hanya bila ZIP belum punya bfm).
+# Penjaga (pemicu.yml) melihat perubahan apk-data/harian lalu memicu Clean Buy Telegram, data bot, hitung modul, data API, terbit publik.
+# Log publik: hanya nama tanggal dan jumlah.
+name: Lengkapi paket harian dari broksum robot
+on:
+  workflow_run:
+    workflows: ["Robot broksum harian"]
+    types: [completed]
+  schedule:
+    - cron: "20 12-16 * * 1-5"   # 19.20–23.20 WIB tiap jam (cadangan bila robot broksum selesai sebelum ZIP harga diunggah)
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lengkapi-zip-broksum
+  cancel-in-progress: false
+jobs:
+  lengkapi:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cek kunci
+        id: k
+        env: {T: "${{ secrets.PRIVAT_TOKEN }}"}
+        run: if [ -z "$T" ]; then echo "PRIVAT_TOKEN belum diisi, lewati."; echo "ada=0" >> $GITHUB_OUTPUT; else echo "ada=1" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.ada == '1'
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: main
+          path: main
+          sparse-checkout: |
+            tools/broksum
+            tools/derive
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.ada == '1'
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: apk-data
+          path: data
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /apk-data/harian/
+      - name: Tanggal yang diperiksa (3 ZIP terakhir)
+        if: steps.k.outputs.ada == '1'
+        id: tgl
+        run: |
+          list=$(find data/apk-data/harian -maxdepth 1 -name '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].zip' | sort | tail -3 | xargs -n1 basename | sed 's/\.zip$//' | tr '\n' ' ')
+          echo "tanggal=$list" >> "$GITHUB_OUTPUT"
+          { echo "pola<<EOF"; for d in $list; do echo "/harian/bf_$d.json.gz"; done; echo "EOF"; } >> "$GITHUB_OUTPUT"
+          echo "ZIP diperiksa: $list"
+      - uses: actions/checkout@v4
+        if: steps.k.outputs.ada == '1' && steps.tgl.outputs.tanggal != ''
+        continue-on-error: true
+        with:
+          repository: CatatanSaham/catatan-saham-mtf
+          token: ${{ secrets.PRIVAT_TOKEN }}
+          ref: broksum-harian
+          path: bfr
+          sparse-checkout-cone-mode: false
+          sparse-checkout: ${{ steps.tgl.outputs.pola }}
+      - uses: actions/setup-python@v5
+        if: steps.k.outputs.ada == '1'
+        with: {python-version: "3.12"}
+      - name: Lengkapi ZIP dengan broksum robot
+        if: steps.k.outputs.ada == '1' && steps.tgl.outputs.tanggal != ''
+        run: |
+          for d in ${{ steps.tgl.outputs.tanggal }}; do
+            python3 main/tools/broksum/lengkapi_zip.py --zip "data/apk-data/harian/$d.zip" --bf "bfr/harian/bf_$d.json.gz" || echo "$d: gagal diproses"
+            # tolak hasil bila tidak lolos validasi (level error) -> kembalikan ZIP semula
+            python3 main/tools/broksum/cek_zip.py "data/apk-data/harian/$d.zip" "data" || true
+          done
+      - name: Simpan ke apk-data (hanya bila berubah)
+        if: steps.k.outputs.ada == '1'
+        run: |
+          cd data
+          git config user.name "Lengkapi Broksum Robot"
+          git config user.email "noreply@github.com"
+          git add -A apk-data/harian
+          git diff --cached --quiet && { echo "Tidak ada ZIP yang perlu dilengkapi."; exit 0; }
+          git diff --cached --name-only
+          git commit -q -m "harian: lengkapi broksum dari robot ($(git diff --cached --name-only | sed 's#.*/##; s/\.zip//' | tr '\n' ' '))"
+          for i in 1 2 3 4 5; do git pull -q --rebase origin apk-data && git push -q origin HEAD:apk-data && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); done

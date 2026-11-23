@@ -4105,7 +4105,7 @@ function hkGet(path){if(path in HKC)return HKC[path];naOnce('hk'+path,async()=>{
 /* Transaksi besar + siapa sangkut (22 Nov 2026): dihitung di aplikasi dari ringkasan harian server (/app/api/bs/KODE, 40 hari, 25 broker teratas per hari). Bukan prediksi/rekomendasi. */
 function hkBs(q){const n=[5,10,20].includes(+S.bsh)?+S.bsh:20,key='bs/'+q;
  if(!(key in HKC)){naOnce('hk'+key,async()=>{try{HKC[key]=await naGet(key)}catch(e){HKC[key]=null}});return muat('Memuat transaksi besar '+q+'…')}
- const j=HKC[key],hd='<h2 style="margin-top:18px">Transaksi besar &amp; siapa sangkut</h2>'+chips([['5','5 hari'],['10','10'],['20','20 (±1 bulan)']],String(n),'bsh');
+ const j=HKC[key],hd='<h2 style="margin-top:18px">Untung rugi broker &amp; transaksi besar</h2>'+chips([['5','5 hari'],['10','10'],['20','20 (±1 bulan)']],String(n),'bsh');
  if(!j||!j.tanggal||!j.tanggal.length)return hd+'<div class="card mu">Belum ada ringkasan transaksi besar untuk '+esc(q)+'.</div>';
  const T=j.tanggal.slice(-n),ag=new Map(),bg=[];let cl=0;
  for(const d of T){const x=j.d[d];if(!x)continue;cl=x.c;for(const r of x.br||[]){let a=ag.get(r[0]);if(!a)ag.set(r[0],a=[0,0,0,0]);a[0]+=r[1];a[1]+=r[2];a[2]+=r[3];a[3]+=r[4]}for(const t of x.big||[])bg.push([d].concat(t))}

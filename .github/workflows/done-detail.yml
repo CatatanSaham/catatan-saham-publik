@@ -8,7 +8,12 @@ on:
   schedule:
     # 22 Nov 2026 (permintaan pemilik): otomatis Sen-Jum 18.30 WIB (11.30 UTC), setelah broksum harian terbit (daftar saham dari sana). Hari libur dilewati
     # lewat cek 1 panggilan. Jalan manual (workflow_dispatch) tetap ada untuk mengisi kekurangan.
-    - cron: '30 11 * * 1-5'
+    # 23 Nov 2026: pemicu utama = "Robot broksum harian" selesai (workflow_run di bawah). Jadwal jadi cadangan 18.30/20.30/22.30 WIB.
+    # Semua pemicu otomatis lewat Gerbang: jalan hanya bila broksum sesi itu sudah ada dan done detail sesi itu belum lengkap.
+    - cron: '30 11,13,15 * * 1-5'
+  workflow_run:
+    workflows: ["Robot broksum harian"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       tanggal:
@@ -42,19 +47,41 @@ jobs:
       - name: Tentukan tanggal dan parameter
         id: par
         run: |
-          T="${{ github.event.inputs.tanggal }}"; [ -n "$T" ] || T=$(TZ=Asia/Jakarta date +%F)
+          T="${{ github.event.inputs.tanggal }}"
+          if [ -z "$T" ]; then
+            # otomatis: sesi = broksum harian terbaru (maks 3 hari lalu), supaya susulan pagi pun memakai tanggal yang benar
+            B=$(ls robot/harian/bf_????????.json.gz 2>/dev/null | sort | tail -1 | sed 's/.*bf_\([0-9]\{8\}\).*/\1/')
+            T=$(TZ=Asia/Jakarta date +%F)
+            if [ -n "$B" ]; then
+              BB="${B:0:4}-${B:4:2}-${B:6:2}"
+              if [ $(( ( $(date -d "$T" +%s) - $(date -d "$BB" +%s) ) / 86400 )) -le 3 ]; then T="$BB"; fi
+            fi
+          fi
           M="${{ github.event.inputs.maks }}"; [ -n "$M" ] || M=25000
           C="${{ github.event.inputs.cadangan }}"; [ -n "$C" ] || C=3000
           { echo "tanggal=$T"; echo "maks=$M"; echo "cadangan=$C"; } >> "$GITHUB_OUTPUT"
-      - name: Cek hari bursa (hanya jadwal)
+      - name: Gerbang (pemicu otomatis)
         id: buka
-        if: github.event_name == 'schedule'
-        run: python main/tools/donedetail/done_edge.py --tanggal "${{ steps.par.outputs.tanggal }}" --out x --cek-buka
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.PRIVAT_TOKEN }}
+        run: |
+          T=$(echo "${{ steps.par.outputs.tanggal }}" | tr -d -)
+          jalan=ya
+          if [ "${{ github.event_name }}" = "workflow_run" ] && [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then jalan=tidak; echo "Robot broksum tidak sukses."; fi
+          if [ ! -f "robot/harian/bf_$T.json.gz" ]; then jalan=tidak; echo "Broksum $T belum ada: tunggu robot broksum."; fi
+          if [ "$jalan" = ya ]; then
+            st=$(gh api "repos/CatatanSaham/catatan-saham-mtf/contents/dd/$T/status.json?ref=done-detail" -H "Accept: application/vnd.github.raw" 2>/dev/null || true)
+            if [ -n "$st" ] && echo "$st" | python3 -c 'import json,sys;s=json.load(sys.stdin);sys.exit(0 if s.get("saham_total",0)>0 and s.get("saham_selesai",0)>=s["saham_total"] else 1)'; then
+              jalan=tidak; echo "Done detail $T sudah lengkap."
+            fi
+          fi
+          echo "jalan=$jalan" >> "$GITHUB_OUTPUT"; echo "Gerbang $T: $jalan"
       - name: Uji awal (1 panggilan, acuan NICL 18 Nov)
-        if: github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya'
+        if: github.event_name == 'workflow_dispatch' || steps.buka.outputs.jalan == 'ya'
         run: python main/tools/donedetail/done_edge.py --tanggal x --robot x --out x --selftest
       - name: Ambil cabang done-detail (buat baru bila belum ada)
-        if: github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya'
+        if: github.event_name == 'workflow_dispatch' || steps.buka.outputs.jalan == 'ya'
         run: |
           if git ls-remote --exit-code "$REPO_PRIVAT" done-detail >/dev/null; then
             git clone -q --depth 1 --branch done-detail "$REPO_PRIVAT" out
@@ -62,10 +89,10 @@ jobs:
             mkdir out && cd out && git init -q -b done-detail && git remote add origin "$REPO_PRIVAT"
           fi
       - name: Ambil running trade
-        if: github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya'
+        if: github.event_name == 'workflow_dispatch' || steps.buka.outputs.jalan == 'ya'
         run: python main/tools/donedetail/done_edge.py --tanggal "${{ steps.par.outputs.tanggal }}" --robot robot/harian --out out --maks "${{ steps.par.outputs.maks }}" --cadangan "${{ steps.par.outputs.cadangan }}" --menit 320
       - name: Simpan ke done-detail (hanya bila berubah)
-        if: always() && (github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya')
+        if: always() && (github.event_name == 'workflow_dispatch' || steps.buka.outputs.jalan == 'ya')
         run: |
           cd out
           git config user.name "Running Trade"
@@ -75,7 +102,7 @@ jobs:
           git commit -q -m "done-detail ${{ steps.par.outputs.tanggal }}"
           for i in 1 2 3 4 5; do git push -q origin HEAD:done-detail && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin done-detail || true; done
       - name: Asing per broker dari done detail (ganti unduhan broksum asing)
-        if: always() && (github.event_name != 'schedule' || steps.buka.outputs.jalan == 'ya')
+        if: always() && (github.event_name == 'workflow_dispatch' || steps.buka.outputs.jalan == 'ya')
         run: |
           T=$(echo "${{ steps.par.outputs.tanggal }}" | tr -d -)
           [ -f "out/dd/$T/status.json" ] || { echo "Tidak ada done detail $T."; exit 0; }

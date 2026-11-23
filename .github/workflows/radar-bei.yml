@@ -12,6 +12,7 @@ on:
         default: false
 permissions:
   contents: write
+  actions: read
 concurrency:
   group: radar-bei
   cancel-in-progress: false
@@ -20,28 +21,52 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Jaga anti ganda
+        id: jaga
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          # Hanya untuk jadwal bawaan GitHub (cadangan; pemicu utama dari Cloudflare Worker, event workflow_dispatch).
+          # Dilewati bila terlalu malam (lewat 19.00 WIB) atau hari ini sudah ada run lain yang sukses.
+          skip=false
+          if [ "$EVENT" = "schedule" ]; then
+            jam=$(TZ=Asia/Jakarta date +%H)
+            if [ "$jam" -ge 19 ] || [ "$jam" -lt 9 ]; then skip=true; fi
+            awal=$(TZ=Asia/Jakarta date +%Y-%m-%dT00:00:00+07:00)
+            awal=$(date -u -d "$awal" +%Y-%m-%dT%H:%M:%SZ)
+            n=$(gh api "repos/${{ github.repository }}/actions/workflows/radar-bei.yml/runs?status=success&created=>=$awal" --jq '.total_count' || echo 0)
+            if [ "${n:-0}" -gt 0 ]; then skip=true; fi
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+          echo "Dilewati: $skip"
+      - if: steps.jaga.outputs.skip != 'true'
+        uses: actions/checkout@v4
         with:
           repository: CatatanSaham/catatan-saham-mtf
           token: ${{ secrets.PRIVAT_TOKEN }}
           ref: main
           path: main
-      - uses: actions/checkout@v4
+      - if: steps.jaga.outputs.skip != 'true'
+        uses: actions/checkout@v4
         with:
           repository: CatatanSaham/catatan-saham-mtf
           token: ${{ secrets.PRIVAT_TOKEN }}
           ref: apk-data
           path: data
-      - uses: actions/setup-python@v5
+      - if: steps.jaga.outputs.skip != 'true'
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Saring berita
+      - if: steps.jaga.outputs.skip != 'true'
+        name: Saring berita
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT: ${{ secrets.TELEGRAM_CHAT }}
           RADAR_TEST: ${{ inputs.tes && '1' || '' }}
         run: python main/radar/radar.py main/universe.json data/apk-data/radar.json
-      - name: Simpan ke cabang apk-data
+      - if: steps.jaga.outputs.skip != 'true'
+        name: Simpan ke cabang apk-data
         run: |
           cd data
           git config user.name "Radar BEI"

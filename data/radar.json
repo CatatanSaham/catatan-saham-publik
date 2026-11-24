@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-23 18:40 WIB",
- "baru": 6,
+ "upd": "2026-11-24 16:37 WIB",
+ "baru": 7,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -10,18 +10,102 @@
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
   "Google Berita: 9",
-  "Google Berita: 3",
-  "Google Berita: 18",
-  "Google Berita: 7",
   "Google Berita: 4",
+  "Google Berita: 15",
+  "Google Berita: 29",
+  "Google Berita: 2",
   "Google Berita: 7",
   "Google Berita: 23",
-  "Google Berita: 26",
-  "Google Berita: 25",
+  "Google Berita: 42",
+  "Google Berita: 36",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "AdhI Karya (ADHI) Hadapi Gugatan PKPU, Begini Penjelasan Manajemen",
+   "link": "https://stockwatch.id/adhi-karya-adhi-hadapi-gugatan-pkpu-begini-penjelasan-manajemen/",
+   "src": "StockWatch",
+   "ts": 1795511497,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "ADHI"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-24 16:37"
+  },
+  {
+   "t": "Wibowo Group Akuisisi 82,5% Saham MBSS Senilai Rp4,2 Triliun",
+   "link": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPeHpTcHF5cGNVYWNmMUs5VmJQUTdNbk01WnVzX05Nd3k2Z0J2Umg3dmstNFoxVjc5MndHX3RLbEhQMFFuSldZRHhUeWdsWENPVmpFYzJjMjdQdkk5eWJ4T2E3MU5HSERPN1dpNFZ1WGNRZXlvc0FZUnNVNWZGM2ktRDZ3X05lS00?oc=5",
+   "src": "Beritakota",
+   "ts": 1795508220,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "MBSS"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-24 16:37"
+  },
+  {
+   "t": "BEI Cabut Suspensi Saham INPS Milik Andry Hakim",
+   "link": "https://news.google.com/rss/articles/CBMibkFVX3lxTE5TQjVNQUhDSGtsQXNBWlJJYjNmSWxzTEMtU25ma3ZhOGlsa2lXOS1taV9wMUgtWm5zelAzT0RzbDRsQ1RTQTJndkhoVTBIOTBhNDZHbzh0TVpOY1VoQlhMQjk0bWpRXzhwNUxSamFB?oc=5",
+   "src": "MediaKompeten",
+   "ts": 1795499406,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "INPS"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-24 16:37"
+  },
+  {
+   "t": "BSI Raup Laba Rp 6,1 Triliun, Mirae Asset Ungkap Prospek Saham BRIS Usai Rights Issue",
+   "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQSnJ0UmFGMEY0MzlqWE04TjZzTHBhVEpGWjdpc0RDRVFjM3I3bTlpTXdfQjVORXhGSnozQ2FzV3VsVFlPaEYyWHktVDRPUF84cW52X01ZQnVHWlZmZDJ5TjctenU0ZVZiaU1KUHRpeHA0NEdBZUlwbWNMWEMzNjlsdU5Bb09QSmk1ME1Ga0UzSDd4VjV4bzBvUDMxOGZpNk51bmZOeFNiWldydzVkN2E3SDluMmF6QTR4bUHSAbMBQVVfeXFMTURzV0ZTSVAtMmphVlR5WWVGRDVMYXJncVowOXpneVpEb0dCVEdjak95QjhPb1ZEZWNQU0RxclRLQjR1eWU0YThMeDFYb045TTRtNWpaZmxrYUFIbGRUXzNTUDJ4RWdJSEVxdDF4TFNvZTdsS2VyVldPUkhwcGttNzVwc3VnRHVCNkVpcjhSVVR3bEFsWW5CMDFfV08xOEQtMTVpWTNQX3BRSnhDNGR0NVhyWWM?oc=5",
+   "src": "kontan.co.id",
+   "ts": 1795487872,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "BRIS"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-24 16:37"
+  },
+  {
+   "t": "Suspensi PPGL Dibuka, Negosiasi Pengembangan Usaha Gagal",
+   "link": "https://news.google.com/rss/articles/CBMihAFBVV95cUxQd1dVVlBWYVZoZmpBa0VSZ1Q0YzhoNE50czN6MFZId2tEQUZUdHZfdW41clR4c2d6cTkxeTlZbVNjRVBJdVhzXzVldzI0THlLY0tkODh2M1VkOHZGSkp1d01HWk0tVTJaX2Jzc3NVdDlkUmFHemQ0a0FyZWE2Rjl4LW5zbmQ?oc=5",
+   "src": "StockWatch.id",
+   "ts": 1795486953,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "PPGL"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-24 16:37"
+  },
+  {
+   "t": "TBIG Akuisisi 100% Saham EDOTCO Indonesia",
+   "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPQmRoMXhhUzZnVWY5a0NoMkFHUnZHQnBlMVZjRmVBMmJmLVdQX0EweUtidHQ1X0tMNzFKMTRZTHU3OENGVURJN1Y0NFd6TEgxekozQUVTaXJEQXowb2djQVdMbklyRVRRNFpyTWtjY3pJS2Y2TGkzM2p3YlJuc2JVSl9MeDdHVXVPREtJeUVwRVB0WGExMlRV0gGcAUFVX3lxTE1BYlF0X2dlNzhzWGVJeENPVk9nbHRsaGVDRm83YTVxeE5UQzFJcllVOEV3YVpFUzF0ZUp2YUpvM1FZQmVzUy1YMm1LcEU2TVYwUXd3TEE5VVo3V29rYzVjakpFWVJiVmc1Wm1HQkZkWEs2UUVTdjJnTURWQzJ0T3hDaUo1ZU13UHdURGRUNVNHTzVXVVhNb2RRUzRjNg?oc=5",
+   "src": "FORTUNE Indonesia",
+   "ts": 1795476060,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "TBIG"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-24 16:37"
+  },
+  {
+   "t": "SMBC Indonesia (BTPN) Pilih Go Private, Ini Alasan dan Dampaknya Bagi Investor",
+   "link": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFA4MmtBbHpubG1WWTBaNVRXLWhBd0pGZ0l0WjdaN0ZkcTF1bzdhWXBQZ0YzakJxaTJWSkdycmtSTkVvUFM1Uno5T1R0ck91ZVlKZGRRMXNsT1lzYzh0SG1fT3FBVzRSdw?oc=5",
+   "src": "TradingView",
+   "ts": 1795474619,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "BTPN"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-24 16:37"
+  },
   {
    "t": "CDIA Siapkan Buyback Saham Rp1 Triliun hingga Februari 2027",
    "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE12TmtyVjE0OE85cER2NGhoeDZCaWNTWGxCYnRCbV9CaTBqNEE1d2JCM1dUNHJuWUl6dTJpVk4tM0lWemE0SWltaUMyd0djcFh5VGdjMXNmb3l0OUtfMVVzemRxd0NIV3luaFBKMFotTQ?oc=5",

@@ -28,3 +28,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PT: ${{ secrets.PRIVAT_TOKEN }}
         run: python3 .robot/pemicu.py
+      - name: Rapikan daftar (hapus run Penjaga lama yang sukses)
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Hanya run Penjaga yang SUKSES dan sudah selesai; run gagal dan run robot lain dibiarkan. Yang terbaru (3) disisakan.
+          WF=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}" --jq .workflow_id)
+          gh api "repos/${{ github.repository }}/actions/workflows/$WF/runs?status=success&per_page=100" --jq '.workflow_runs|sort_by(.created_at)|reverse|.[3:]|.[].id' \
+            | while read -r id; do gh api -X DELETE "repos/${{ github.repository }}/actions/runs/$id" >/dev/null 2>&1 || true; done

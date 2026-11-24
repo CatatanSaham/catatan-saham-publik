@@ -37,6 +37,8 @@ jobs:
     env:
       IDX_EDGE_KEY: ${{ secrets.IDX_EDGE_KEY }}
       REPO_PRIVAT: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-mtf.git
+      # 24 Nov 2026: data done detail dipindah ke repo privat sendiri (cabang main) supaya repo utama tidak membengkak.
+      REPO_DD: https://x-access-token:${{ secrets.PRIVAT_TOKEN }}@github.com/CatatanSaham/catatan-saham-dd.git
     steps:
       - uses: actions/checkout@v4
         with: {path: main, repository: CatatanSaham/catatan-saham-mtf, token: "${{ secrets.PRIVAT_TOKEN }}", ref: main, sparse-checkout: tools/donedetail}
@@ -71,7 +73,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_run" ] && [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then jalan=tidak; echo "Robot broksum tidak sukses."; fi
           if [ ! -f "robot/harian/bf_$T.json.gz" ]; then jalan=tidak; echo "Broksum $T belum ada: tunggu robot broksum."; fi
           if [ "$jalan" = ya ]; then
-            st=$(gh api "repos/CatatanSaham/catatan-saham-mtf/contents/dd/$T/status.json?ref=done-detail" -H "Accept: application/vnd.github.raw" 2>/dev/null || true)
+            st=$(gh api "repos/CatatanSaham/catatan-saham-dd/contents/dd/$T/status.json?ref=main" -H "Accept: application/vnd.github.raw" 2>/dev/null || true)
             if [ -n "$st" ] && echo "$st" | python3 -c 'import json,sys;s=json.load(sys.stdin);sys.exit(0 if s.get("saham_total",0)>0 and s.get("saham_selesai",0)>=s["saham_total"] else 1)'; then
               jalan=tidak; echo "Done detail $T sudah lengkap."
             fi
@@ -83,10 +85,10 @@ jobs:
       - name: Ambil cabang done-detail (buat baru bila belum ada)
         if: github.event_name == 'workflow_dispatch' || steps.buka.outputs.jalan == 'ya'
         run: |
-          if git ls-remote --exit-code "$REPO_PRIVAT" done-detail >/dev/null; then
-            git clone -q --depth 1 --branch done-detail "$REPO_PRIVAT" out
+          if git ls-remote --exit-code "$REPO_DD" main >/dev/null; then
+            git clone -q --depth 1 --branch main "$REPO_DD" out
           else
-            mkdir out && cd out && git init -q -b done-detail && git remote add origin "$REPO_PRIVAT"
+            mkdir out && cd out && git init -q -b main && git remote add origin "$REPO_DD"
           fi
       - name: Ambil running trade
         if: github.event_name == 'workflow_dispatch' || steps.buka.outputs.jalan == 'ya'
@@ -100,7 +102,7 @@ jobs:
           git add -A
           git diff --cached --quiet && { echo "Tidak ada perubahan."; exit 0; }
           git commit -q -m "done-detail ${{ steps.par.outputs.tanggal }}"
-          for i in 1 2 3 4 5; do git push -q origin HEAD:done-detail && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin done-detail || true; done
+          for i in 1 2 3 4 5; do git push -q origin HEAD:main && break; [ "$i" = 5 ] && exit 1; sleep $((i*3)); git pull -q --rebase origin main || true; done
       - name: Asing per broker dari done detail (ganti unduhan broksum asing)
         if: always() && (github.event_name == 'workflow_dispatch' || steps.buka.outputs.jalan == 'ya')
         run: |

@@ -47,7 +47,9 @@ picu = []
 # saat done detail berubah DAN sesi terbaru sudah lengkap. Pantau hanya folder dd/ supaya tulisan robot itu sendiri (rk/) tidak memicu ulang.
 if old and now['dd'] != old.get('dd'):
     if dd_lengkap():
-        picu.append(('ringkas-bs.yml', {}))
+        # Clean Buy Telegram (dengan tanda HAKA) juga dipicu di sini: pemicu workflow_run dan jadwal GitHub sering tidak jalan.
+        # Marker sudah-terkirim di cleanbuy-telegram.yml mencegah pesan ganda.
+        picu += [('ringkas-bs.yml', {}), ('cleanbuy-telegram.yml', {})]
     else:
         now['dd'] = old.get('dd', '')  # belum lengkap: periksa lagi lima menit lagi
 if not old:

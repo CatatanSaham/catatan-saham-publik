@@ -192,6 +192,22 @@ jobs:
                       if not isinstance(rows, list): raise ValueError('Baris screener tidak valid')
                       clean['screens'][key] = {'as_of':date,'label':doc['label'],'cols':doc['cols'],'rows':rows}
                       clean['as_of'] = max(clean['as_of'] or '', date)
+                  # 24 Nov 2026: unggahan file Clean Buy sudah berhenti. Bila hari itu tidak ada file cb*/acc/b10 tetapi ada broksum,
+                  # pakai hasil hitung robot (apk-data/derived/TANGGAL/cleanbuy.json, hanya daftar kode); Close dan Value diambil dari Ringkasan Saham.
+                  if docs.get(date + '_bfm') and not any(docs.get(date + '_' + k) for k in ('cb1','cb2','cb3','acc','b10')):
+                      dpath = Path('apk-data/derived') / date / 'cleanbuy.json'
+                      rsd = docs.get(date + '_rs')
+                      if dpath.exists() and rsd:
+                          dv = json.loads(dpath.read_text(encoding='utf-8'))
+                          rr = json.loads(rsd['rows']) if isinstance(rsd['rows'], str) else rsd['rows']
+                          px = {str(r[0]).strip(): (int(r[5] or 0), r[7] or 0) for r in rr if len(r) > 7}
+                          for key in ('cb1','cb2','cb3','acc','b10'):
+                              sc = dv.get(key)
+                              if not sc or date < (clean['screens'].get(key, {}).get('as_of') or clean.get('as_of') or ''):
+                                  continue
+                              rows = sorted(([k, px[k][0], px[k][1]] for k in sc['kode'] if k in px), key=lambda r: -r[2])
+                              clean['screens'][key] = {'as_of': date, 'label': sc['label'], 'cols': ['Code','Close','Value'], 'rows': rows, 'sumber': 'dihitung dari broksum'}
+                              clean['as_of'] = max(clean['as_of'] or '', date)
                   meta = docs.get(date + '_bfm')
                   if meta:
                       chunks = [docs.get(date + '_bf' + str(i)) for i in range(meta['chunks'])]

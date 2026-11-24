@@ -1,6 +1,6 @@
 """Penjaga: bandingkan isi terakhir repo privat dengan .robot/terakhir.json, picu robot yang perlu.
 Tidak mencetak isi data; hanya sha pendek dan nama robot."""
-import json, os, subprocess, urllib.request
+import base64, json, os, subprocess, urllib.request
 
 P = 'CatatanSaham/catatan-saham-mtf'
 ME = os.environ.get('GITHUB_REPOSITORY', 'CatatanSaham/catatan-saham-publik')
@@ -19,7 +19,19 @@ def akhir(branch, path=None):
     return j[0]['sha'] if j else ''
 
 
+def dd_lengkap():
+    """True bila done detail sesi terbaru sudah 100% (status.json). Hanya membaca; tidak mencetak data."""
+    try:
+        t = sorted(x['name'] for x in api('/contents/dd?ref=done-detail') if x['type'] == 'dir')[-1]
+        st = json.loads(base64.b64decode(api('/contents/dd/' + t + '/status.json?ref=done-detail')['content']))
+        return st.get('saham_total', 0) > 0 and st.get('saham_selesai', 0) >= st['saham_total']
+    except Exception as e:
+        print('cek done detail gagal:', str(e)[:100])
+        return False
+
+
 now = {
+    'dd': akhir('done-detail', 'dd'),
     'harian': akhir('apk-data', 'apk-data/harian'),
     'kepemilikan': akhir('apk-data', 'apk-data/kepemilikan'),
     'apk-next': akhir('apk-next'),
@@ -31,6 +43,13 @@ except Exception:
     old = {}
 
 picu = []
+# 24 Nov 2026: "Ringkas transaksi besar" tidak pernah jalan otomatis (pemicu workflow_run tidak terbukti). Kini dipicu Penjaga
+# saat done detail berubah DAN sesi terbaru sudah lengkap. Pantau hanya folder dd/ supaya tulisan robot itu sendiri (rk/) tidak memicu ulang.
+if old and now['dd'] != old.get('dd'):
+    if dd_lengkap():
+        picu.append(('ringkas-bs.yml', {}))
+    else:
+        now['dd'] = old.get('dd', '')  # belum lengkap: periksa lagi lima menit lagi
 if not old:
     print('Penjaga pertama kali: hanya mencatat keadaan, tidak memicu.')
 else:

@@ -5133,8 +5133,7 @@ const pevUrl=p=>CSW+'/app/api/analisa'+p,pevDev=()=>encodeURIComponent(csDev());
 const PEVB={};
 /* Gambar diambil lewat fetch (header perangkat) lalu dipasang sebagai blob: langsung dimuat saat kartu tampil, dan bila gagal alasannya terlihat. */
 function pevBlob(k){const e=PEVB[k]||(PEVB[k]={u:null,p:null,err:''});if(e.u)return Promise.resolve(e.u);if(e.p)return e.p;e.err='';
- e.p=fetch(pevUrl('/'+k),{headers:{'X-CS-Device':csDev()}}).then(async r=>{if(!r.ok){let m='HTTP '+r.status;try{const j=await r.json();if(j&&j.error)m=j.error+' ('+r.status+')'}catch(x){}throw new Error(m)}
-  const b=await r.blob();if(!b.size)throw new Error('gambar kosong');e.u=URL.createObjectURL(b);return e.u}).catch(er=>{e.err=er.message||'gagal';e.p=null;throw er});return e.p}
+ e.p=pevApi('/'+k+'?b64=1').then(j=>{/* 25 Nov 2026: CapacitorHttp merusak badan biner, jadi gambar dikirim sebagai base64 */const bin=atob(j.b64||''),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);const b=new Blob([u8],{type:j.tipe||'image/jpeg'});if(!b.size)throw new Error('gambar kosong');e.u=URL.createObjectURL(b);return e.u}).catch(er=>{e.err=er.message||'gagal';e.p=null;throw er});return e.p}
 function pevIsi(im){if(!im||im.__pk)return;const k=im.getAttribute('data-pk');if(!k)return;im.__pk=1;const ph=im.parentNode&&im.parentNode.querySelector('[data-pph]');
  const ok=u=>{im.src=u;im.style.opacity=1;if(ph)ph.remove()};
  const jalan=()=>{if(ph){ph.textContent='Memuat gambar…';ph.removeAttribute('data-pev');ph.style.pointerEvents='none'}
@@ -5171,7 +5170,7 @@ function prev(){
  if(!PEV.ind)isi='<div class="card mu">Memuat…</div>';
  else if(!ks.length)isi='<div class="card"><b>Belum ada analisa</b><div class="mu" style="margin-top:6px;line-height:1.6">'+(adm?'Ketik kode emiten di atas lalu tekan Buka untuk menambah analisa pertama.':'Analisa akan muncul di sini setelah admin menambahkannya.')+'</div></div>';
  else if(!lst.length)isi='<div class="card mu">Tidak ada emiten dengan kode itu.</div>';
- else isi=lst.map(k=>{const e=em[k];return `<div class="card" data-pev="buka" data-k="${esc(k)}" style="cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:17px">${esc(k)}</b><span class="mu">${e.n} analisa</span></div><div style="margin-top:6px">${(e.tf||[]).map(t=>`<span class="chip" style="display:inline-block;padding:2px 8px;margin:0 6px 0 0;border:1px solid var(--bd,#2a3550);border-radius:10px;font-size:12px">${esc(t)}</span>`).join('')}</div><div class="mu" style="font-size:12px;margin-top:6px">Diperbarui ${esc((e.upd||'').slice(0,10).split('-').reverse().join('/'))}</div></div>`}).join('');
+ else isi=lst.map(k=>`<div class="card" data-pev="buka" data-k="${esc(k)}" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:14px 16px"><b style="font-size:17px;letter-spacing:.4px">${esc(k)}</b><span class="mu" style="font-size:20px">›</span></div>`).join('');
  return hd+galat+cari+isi}
 
 function pevEmiten(hd,adm){

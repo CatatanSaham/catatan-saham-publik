@@ -5151,7 +5151,7 @@ function prev(){
  pevMuatIndeks();
  const em=(PEV.ind&&PEV.ind.emiten)||{},ks=Object.keys(em).sort(),q=PEV.cari.trim().toUpperCase();
  const lst=ks.filter(k=>!q||k.includes(q));
- const cari=`<div style="display:flex;gap:8px;margin:0 0 10px"><input class="sel" id="pevq" placeholder="${adm?'Cari atau ketik kode emiten baru':'Cari kode emiten'}" maxlength="12" value="${esc(PEV.cari)}" style="margin:0;flex:1;text-transform:uppercase">${adm?'<button class="btn on" data-pev="baru">Buka</button>':''}</div>`;
+ const cari=`<div style="display:flex;gap:8px;margin:0 0 10px;align-items:flex-start"><div style="position:relative;flex:1;min-width:0"><input class="sel" id="pevq" placeholder="${adm?'Cari atau ketik kode emiten baru':'Cari kode emiten'}" maxlength="12" value="${esc(PEV.cari)}" style="margin:0;width:100%;box-sizing:border-box;text-transform:uppercase"></div>${adm?'<button class="btn on" data-pev="baru">Buka</button>':''}</div>`;
  let isi;
  if(!PEV.ind)isi='<div class="card mu">Memuat…</div>';
  else if(!ks.length)isi='<div class="card"><b>Belum ada analisa</b><div class="mu" style="margin-top:6px;line-height:1.6">'+(adm?'Ketik kode emiten di atas lalu tekan Buka untuk menambah analisa pertama.':'Analisa akan muncul di sini setelah admin menambahkannya.')+'</div></div>';

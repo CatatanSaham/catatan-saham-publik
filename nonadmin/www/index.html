@@ -4824,14 +4824,12 @@ function ltCss(){if(document.getElementById('ltcss'))return;const s=document.cre
 .ltt{display:grid;grid-template-columns:22px 56px 1fr 1fr 64px;gap:4px;padding:6px 2px;border-bottom:1px solid var(--line);font-size:13px;font-variant-numeric:tabular-nums;align-items:center}.ltt>:nth-child(n+3){text-align:right}
 .u{color:var(--up,#1f9d55)}.d{color:var(--dn,#d64545)}`;document.head.appendChild(s)}
 function ltTopCard(){return `<div class="card"><div class="lttb" id="lttb">${[['freq','Frekuensi'],['lot','Lot'],['value','Nilai'],['net_buy','Net Buy'],['net_sell','Net Sell']].map(([k,n])=>`<button class="btn${LT.tab===k?' on':''}" data-ltt="${k}">${n}</button>`).join('')}</div><div id="lttop"><div class="mu" style="font-size:12px">Menunggu data Top 5…</div></div></div>`}
-function ltInfoNA(){const k=ltKey();return `<details class="det card" style="margin-top:8px"><summary><b>ℹ️ Mau lihat Live Trade?</b> <span class="mu" style="font-size:12px">ketuk untuk info</span></summary><div class="mu" style="font-size:12.5px;line-height:1.6;margin:8px 0">Data Live Trade diambil langsung dari <a href="https://stock.arjum.com/home" target="_blank" rel="noopener noreferrer" style="color:var(--accent,#4da3ff);font-weight:700;text-decoration:underline">Stock Arjum (IDX Edge) → stock.arjum.com/home</a>. Daftar di sana, ambil API key akun paid milikmu sendiri, lalu tempel lewat tombol ⚡ Kunci. ${k?'<b>Kunci sudah tersimpan di HP ini.</b>':''}</div><div class="row"><a class="btn on" href="https://stock.arjum.com/home" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Buka Stock Arjum</a>${ltP()?'<button class="btn" data-ltk="1">⚡ Isi kunci</button>':''}</div></details>`}
 function ltrade(){ltCss();LT.dirty=true;setTimeout(()=>{ltJaga();ltPaint(true)},0);const f=LT.f,apk=!!ltP();
  const tb=`<div class="ltseg" style="margin:8px 0">${[['trade','Running trade'],['daytrade','Top Gainer/Loser']].map(([k,n])=>`<button class="btn${LT.view===k?' on':''}" data-ltv="${k}">${n}</button>`).join('')}</div>`;
  if(LT.view==='pantau')LT.view='trade';
  if(LT.view==='daytrade'&&typeof dtBody==='function')return `<div class="brand">PASAR</div><h1>Live Trade</h1>`+tb+`<div class="card"><div class="ltst" id="ltst"></div></div>`+ltTopCard()+dtBody();
  return `<div class="brand">PASAR</div><h1>Live Trade</h1>${tb}<div class="mu">Running trade, Top 5, dan Net Buy/Sell real-time (akun paid). Hanya mengalir di jam bursa dan selama halaman ini terbuka.</div>
 ${apk?'':'<div class="note" role="alert">Live Trade hanya tersedia di APK Catatan Saham (perlu koneksi khusus dengan kunci live).</div>'}
-${window.CS_NONADMIN?ltInfoNA():''}
 <div class="card"><div class="ltst" id="ltst"></div></div>
 
 ${lpbCard()}

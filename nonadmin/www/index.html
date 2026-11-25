@@ -221,7 +221,7 @@ const fj=v=>{if(v==null||Number.isNaN(+v))return '—';const a=Math.abs(v),s=v<0
 const hist={};dates.forEach((d,i)=>{const x=D.days[d];x.t.forEach((t,j)=>{(hist[t]??=Array(dates.length).fill(null))[i]=x.c[j]})});
 const cbd={};D.cb.forEach(([d,t,s,p])=>{((cbd[d]??={})[t]??={s:new Set(),p})['s'].add(s)});const cbDates=Object.keys(cbd).sort();
 const S={bb:false,p:'home',d:null,tab:'aktif',ma:'x',src:'Semua'},NAMES={IDXHEALTH:'Kesehatan',IDXPROPERT:'Properti',IDXINFRA:'Infrastruktur',IDXNONCYC:'Konsumen primer',IDXCYCLIC:'Konsumen nonprimer',IDXFINANCE:'Keuangan',IDXBASIC:'Bahan baku',IDXENERGY:'Energi',IDXTRANS:'Transportasi & logistik',IDXINDUST:'Perindustrian',IDXTECHNO:'Teknologi'};
-const MENU=[['Pasar',[['market','Market Overview'],['gainer','Top Gainer & Loser'],['sektor','Heatmap Sektor']]],['Screener',[['cleanbuy','Clean Buy'],['own','Foreign Ownership'],['pmg','Pemegang Saham ≥1% & ≥5%'],['ma','Harga, MA & EMA'],['fsc','Formula Screener'],['fund','Penyaring Fundamental'],['jps','Pemegang Saham (JPS)'],['dup','Screener DuPont'],['siklus','Siklus Ekonomi'],['htp','Harta Terpendam']]],['Broker Intelligence',[['bdet','Broker Detector'],['bbroker','Cari Broker (pilih banyak broker)'],['bdm','Bandarmologi']]],['Analisis Emiten',[['cari','Pencarian'],['saham','Saham'],['profil','Profil Emiten'],['chart','Chart Saham'],['ai','Analisa AI'],['achart','Analisa Chart'],['agambar','Analisa Gambar'],['lap','Infografis 7 Panel']]],['Berita & Katalis',[['radar','Radar Keterbukaan · News']]],['Analisa, Prediksi & Evaluasi',[]],['Komunitas',[['tanya','Tanya Admin'],['support','❤️ Support']]]];
+const MENU=[['Pasar',[['market','Market Overview'],['gainer','Top Gainer & Loser'],['sektor','Heatmap Sektor']]],['Screener',[['cleanbuy','Clean Buy'],['own','Foreign Ownership'],['pmg','Pemegang Saham ≥1% & ≥5%'],['ma','Harga, MA & EMA'],['fsc','Formula Screener'],['fund','Penyaring Fundamental'],['jps','Pemegang Saham (JPS)'],['dup','Screener DuPont'],['siklus','Siklus Ekonomi'],['htp','Harta Terpendam']]],['Broker Intelligence',[['bdet','Broker Detector'],['bbroker','Cari Broker (pilih banyak broker)'],['bdm','Bandarmologi']]],['Analisis Emiten',[['cari','Pencarian'],['profil','Profil Emiten'],['chart','Chart Saham'],['ai','Analisa AI'],['achart','Analisa Chart'],['agambar','Analisa Gambar'],['lap','Infografis 7 Panel'],['prev','Prediksi & Evaluasi']]],['Berita & Katalis',[['radar','Radar Keterbukaan · News']]],['Komunitas',[['tanya','Tanya Admin'],['support','❤️ Support']]]];
 const sel=(list,v,lab=fd)=>'<select class="sel" id="ds">'+list.slice().reverse().map(d=>`<option value="${d}"${d===v?' selected':''}>${lab(d)}</option>`).join('')+'</select>';
 const chips=(arr,cur,key)=>'<div class="row">'+arr.map(([k,l])=>`<button class="btn${k===cur?' on':''}" data-k="${key}" data-v="${k}">${l}</button>`).join('')+'</div>';
 const dayRows=d=>{const x=D.days[d];return x.t.map((t,i)=>({t,c:x.c[i],p:x.p[i],v:x.v[i],a:x.a[i]*1e6,f:x.f[i],g:x.p[i]?(x.c[i]/x.p[i]-1)*100:0}))};
@@ -2100,7 +2100,7 @@ const fsdPilih=r=>r.nh>=-.02&&r.r20>-.20&&r.r5>-.10&&r.r1<.10&&r.vv<3,fsdBuang=r
 
 const ADMP=new Set(['fsd','mm','visit','smart','smb','amb','stealth','awal','dvg','dna','mdna','abot','aint','admin','mtfs','tunda','aud','vzip','pmgu','rencana','riset','akc','pelacak']);
 ADMP.delete('smart');ADMP.delete('awal');
-const HUBH=new Set(['chart','achart','ai','profil','agambar']);const MENUX=()=>{const adm=[];const pub=MENU.map(([g,l])=>[g,l.filter(x=>{if(HUBH.has(x[0]))return false;if(ADMP.has(x[0])){adm.push([x[0],x[1].replace(/ · admin$/,'')]);return false}return true})]).filter(([g,l])=>l.length||g==='Analisa, Prediksi & Evaluasi');if(!AG.admin||!adm.length)return pub;const ut=[],rs=[];for(const x of adm)(ADMU.includes(x[0])?ut:rs).push(x);ut.sort((a,b)=>ADMU.indexOf(a[0])-ADMU.indexOf(b[0]));return [...pub,['Admin',ut,rs]]};
+const HUBH=new Set(['chart','achart','ai','profil','agambar']);const MENUX=()=>{const adm=[];const pub=MENU.map(([g,l])=>[g,l.filter(x=>{if(HUBH.has(x[0]))return false;if(ADMP.has(x[0])){adm.push([x[0],x[1].replace(/ · admin$/,'')]);return false}return true})]).filter(([g,l])=>l.length||g==='Rencana & Evaluasi');if(!AG.admin||!adm.length)return pub;const ut=[],rs=[];for(const x of adm)(ADMU.includes(x[0])?ut:rs).push(x);ut.sort((a,b)=>ADMU.indexOf(a[0])-ADMU.indexOf(b[0]));return [...pub,['Admin',ut,rs]]};
 /* menu admin: 7 menu utama tampil langsung (urutan pemilik 18 Nov 2026), sisanya masuk folder Riset di dalam Admin */
 const ADMU=['vzip','auto','arsip','pmgu','admin','pelacak','visit'];
 /* ===== Bandarmologi: Top 5 Broker Accumulation + NBSA ===== */
@@ -4857,6 +4857,13 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
    else{MCG.err=j.ada?'Perangkat ini sudah punya kunci.':(j.error||'Gagal membuat kunci');if(j.ada)MCG.st=null}
   }).catch(x=>{MCG.err='Tidak bisa menghubungi server: '+x.message}).then(()=>{MCG.buat=false;if(typeof render==='function')render()})}});
 try{P.mcpg=mcpg;const g=MENU.find(x=>x[0]==='Komunitas');if(g)g[1].push(['mcpg','Dapatkan MCP'])}catch(e){}
+</script>
+<script>
+/* ===== Prediksi & Evaluasi (menu Analisis Emiten) — 25 Nov 2026 =====
+   Halaman sementara. Rencana: kumpulan analisa per emiten, tiap emiten punya beberapa time frame (mis. 1W, 1D, 3h), tiap time frame
+   berisi gambar chart yang bisa dibuka layar penuh dan di-zoom, plus catatan prediksi dan evaluasinya. Data belum ada. */
+function prev(){return `<div class="brand">ANALISIS EMITEN</div><h1>Prediksi &amp; Evaluasi</h1><div class="card"><b>Segera hadir</b><div class="mu" style="line-height:1.6;margin-top:6px">Kumpulan analisa per emiten. Tiap emiten punya beberapa time frame, lengkap dengan gambar chart yang bisa dibuka layar penuh dan diperbesar, serta catatan prediksi dan evaluasinya.</div></div>`}
+try{P.prev=prev}catch(e){}
 </script>
 <script>
 /* ===== Obrolan Komunitas (menu Komunitas) =====

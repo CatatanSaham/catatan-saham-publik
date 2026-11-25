@@ -5129,18 +5129,33 @@ try{P.mcpg=mcpg;const g=MENU.find(x=>x[0]==='Komunitas');if(g)g[1].push(['mcpg',
 const PEV={ind:null,dok:null,kode:'',tf:'',err:'',muat:false,cari:'',f:null,simpan:false,pesan:''};
 let pevAdm=()=>false;
 const pevUrl=p=>CSW+'/app/api/analisa'+p,pevDev=()=>encodeURIComponent(csDev());
-const pevImg=k=>pevUrl('/'+k+'?dev='+pevDev());
+
+const PEVB={};
+/* Gambar diambil lewat fetch (header perangkat) lalu dipasang sebagai blob: langsung dimuat saat kartu tampil, dan bila gagal alasannya terlihat. */
+function pevBlob(k){const e=PEVB[k]||(PEVB[k]={u:null,p:null,err:''});if(e.u)return Promise.resolve(e.u);if(e.p)return e.p;e.err='';
+ e.p=fetch(pevUrl('/'+k),{headers:{'X-CS-Device':csDev()}}).then(async r=>{if(!r.ok){let m='HTTP '+r.status;try{const j=await r.json();if(j&&j.error)m=j.error+' ('+r.status+')'}catch(x){}throw new Error(m)}
+  const b=await r.blob();if(!b.size)throw new Error('gambar kosong');e.u=URL.createObjectURL(b);return e.u}).catch(er=>{e.err=er.message||'gagal';e.p=null;throw er});return e.p}
+function pevIsi(im){if(!im||im.__pk)return;const k=im.getAttribute('data-pk');if(!k)return;im.__pk=1;const ph=im.parentNode&&im.parentNode.querySelector('[data-pph]');
+ const ok=u=>{im.src=u;im.style.opacity=1;if(ph)ph.remove()};
+ const jalan=()=>{if(ph){ph.textContent='Memuat gambar…';ph.removeAttribute('data-pev');ph.style.pointerEvents='none'}
+  pevBlob(k).then(ok).catch(er=>{if(ph){ph.textContent='Gambar gagal dimuat: '+er.message+' · ketuk untuk ulangi';ph.setAttribute('data-pev','gulang');ph.style.pointerEvents='auto';ph.__ulang=()=>jalan()}})};jalan()}
+try{new MutationObserver(ms=>{ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.tagName==='IMG'&&n.hasAttribute('data-pk'))pevIsi(n);n.querySelectorAll&&n.querySelectorAll('img[data-pk]').forEach(pevIsi)}))}).observe(document.body,{childList:true,subtree:true})}catch(e){}
+const pevThumb=(k,alt,extra)=>`<div style="position:relative;min-height:140px;background:#0b1020;border-radius:8px;overflow:hidden"><img data-pk="${esc(k)}" alt="${esc(alt)}" ${extra||''} style="width:100%;display:block;opacity:0;transition:opacity .2s;cursor:zoom-in"><div data-pph style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;color:#aab;font-size:12.5px">Memuat gambar…</div></div>`;
 async function pevApi(p,o){o=o||{};const h={'X-CS-Device':csDev()};if(o.json){h['Content-Type']='application/json'}if(o.tipe)h['Content-Type']=o.tipe;if(o.admin)h['X-CS-Admin']=o.admin;
  const r=await fetch(pevUrl(p),{method:o.method||'GET',headers:h,body:o.json?JSON.stringify(o.json):o.body});let j=null;try{j=await r.json()}catch(e){}
  if(!j)throw new Error('server tidak menjawab (HTTP '+r.status+')');if(!j.ok)throw new Error(j.error||'gagal');return j}
 function pevMuatIndeks(paksa){if(PEV.muat||(PEV.ind&&!paksa))return;PEV.muat=true;PEV.err='';
  pevApi('').then(j=>{PEV.ind=j}).catch(e=>{PEV.err=e.message;PEV.ind=PEV.ind||{emiten:{}}}).then(()=>{PEV.muat=false;pevR()})}
 function pevBuka(kode){PEV.kode=kode;PEV.dok=null;PEV.tf='';PEV.err='';PEV.f=null;PEV.muat=true;pevR();
- pevApi('/'+kode).then(j=>{PEV.dok=j;PEV.tf=(j.analisa[0]||{}).tf||''}).catch(e=>{PEV.dok={analisa:[]};if(!/belum ada/i.test(e.message))PEV.err=e.message}).then(()=>{PEV.muat=false;pevR()})}
+ pevApi('/'+kode).then(j=>{PEV.dok=j;PEV.tf=pevTfUrut(j.analisa||[])[0]||'';(j.analisa||[]).forEach(x=>(x.gambar||[]).forEach(g=>{pevBlob(g).catch(()=>{})}))}).catch(e=>{PEV.dok={analisa:[]};if(!/belum ada/i.test(e.message))PEV.err=e.message}).then(()=>{PEV.muat=false;pevR()})}
 const pevR=()=>{if(typeof render==='function')render()};
-const pevTgl=t=>{if(!t)return '';const [y,m,d]=t.split('-');return d+'/'+m+'/'+y};
+
 const pevBias=b=>b==='bullish'?['Bullish','up']:b==='bearish'?['Bearish','dn']:['Netral','mu'];
-function pevTfUrut(a){const u=[];a.forEach(x=>{if(!u.includes(x.tf))u.push(x.tf)});return u}
+const PEV_TF=['4H','1D','1W','1M'];
+function pevTfUrut(a){const u=[];a.forEach(x=>{if(!u.includes(x.tf))u.push(x.tf)});return u.sort((p,q)=>{const i=PEV_TF.indexOf(p),j=PEV_TF.indexOf(q);return (i<0?99:i)-(j<0?99:j)})}
+const pevBln=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const pevTglPanjang=t=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(t||'');return m?(+m[3])+' '+pevBln[+m[2]-1]+' '+m[1]:''};
+const pevBintang=n=>{n=+n||0;let h='';for(let i=1;i<=5;i++)h+=`<span style="color:${i<=n?'#d4a63a':'rgba(128,128,128,.35)'};font-size:18px">★</span>`;return h};
 
 function prev(){
  const hd='<div class="brand">ANALISIS EMITEN</div><h1>Prediksi &amp; Evaluasi</h1>';
@@ -5160,31 +5175,33 @@ function prev(){
  return hd+galat+cari+isi}
 
 function pevEmiten(hd,adm){
- const k=PEV.kode,top=`<div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 10px"><button class="btn" data-pev="kembali">‹ Semua emiten</button>${adm?`<button class="btn on" data-pev="tambah">+ Analisa</button>`:''}</div><h2 style="margin:0 0 8px">${esc(k)}</h2>`;
- if(!PEV.dok)return hd+top+'<div class="card mu">Memuat…</div>';
+ const k=PEV.kode,atas=`<div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 10px"><button class="btn" data-pev="kembali">‹ Semua emiten</button>${adm?`<button class="btn on" data-pev="tambah">+ Analisa</button>`:''}</div>`;
+ if(!PEV.dok)return hd+atas+`<h2 style="margin:0 0 8px">${esc(k)}</h2><div class="card mu">Memuat…</div>`;
  const a=PEV.dok.analisa||[];
- if(!a.length)return hd+top+'<div class="card mu">Belum ada analisa untuk emiten ini.</div>';
+ if(!a.length)return hd+atas+`<h2 style="margin:0 0 8px">${esc(k)}</h2><div class="card mu">Belum ada analisa untuk emiten ini.</div>`;
  const tfs=pevTfUrut(a);if(!tfs.includes(PEV.tf))PEV.tf=tfs[0];
- const tombol=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px">${tfs.map(t=>`<button class="btn${t===PEV.tf?' on':''}" data-pev="tf" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
- const kartu=a.filter(x=>x.tf===PEV.tf).map(x=>{const [bl,bc]=pevBias(x.bias);
-  const gb=(x.gambar||[]).length?`<div style="display:grid;grid-template-columns:${x.gambar.length>1?'1fr 1fr':'1fr'};gap:8px;margin:10px 0">${x.gambar.map((g,i)=>`<div style="position:relative"><img src="${esc(pevImg(g))}" loading="lazy" alt="Chart ${esc(k)} ${esc(x.tf)}" data-pev="zoom" data-id="${esc(x.id)}" data-i="${i}" style="width:100%;border-radius:8px;display:block;cursor:zoom-in;background:#0b1020"><button class="btn" data-pev="zoom" data-id="${esc(x.id)}" data-i="${i}" style="position:absolute;right:6px;bottom:6px;padding:2px 8px;font-size:12px">⤢ Layar penuh</button></div>`).join('')}</div>`:'';
-  const lv=(x.level||[]).length?`<table style="width:100%;border-collapse:collapse;margin:8px 0"><tbody>${x.level.map(l=>`<tr><td style="padding:3px 0" class="mu">${esc(l.n)}</td><td style="padding:3px 0;text-align:right;font-weight:600">${esc(l.h)}</td></tr>`).join('')}</tbody></table>`:'';
-  return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${esc(x.judul||('Analisa '+x.tf))}</b><span class="${bc}" style="font-weight:700">${bl}</span></div>
-   <div class="mu" style="font-size:12px;margin:2px 0 0">${esc(x.tf)}${x.tgl?' · '+pevTgl(x.tgl):''}${x.status?' · '+esc(x.status):''}</div>${gb}
-   ${x.ringkas?`<div style="white-space:pre-wrap;line-height:1.6">${esc(x.ringkas)}</div>`:''}${lv}
-   ${x.evaluasi?`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--bd,#2a3550)"><b>Evaluasi</b><div style="white-space:pre-wrap;line-height:1.6;margin-top:4px">${esc(x.evaluasi)}</div></div>`:''}
-   ${adm?`<div style="display:flex;gap:8px;margin-top:10px"><button class="btn" data-pev="ubah" data-id="${esc(x.id)}">Ubah</button><button class="btn" data-pev="hapus" data-id="${esc(x.id)}">Hapus</button></div>`:''}</div>`}).join('');
- return hd+top+tombol+kartu}
+ const x=a.find(r=>r.tf===PEV.tf)||a[0],[bl,bc]=pevBias(x.bias);
+ const kepala=`<div class="card" style="border-left:4px solid #d4a63a"><div style="font-size:30px;font-weight:800;letter-spacing:.5px">${esc(k)}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${tfs.map(t=>`<button class="btn${t===PEV.tf?' on':''}" data-pev="tf" data-t="${esc(t)}" style="min-width:58px;font-weight:700">${esc(t)}</button>`).join('')}</div></div>`;
+ const pill=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="${bc}" style="font-weight:800;border:1.5px solid currentColor;border-radius:999px;padding:6px 14px">${bl}</span>${x.tgl?`<span class="mu" style="border:1px solid var(--line,#8884);border-radius:999px;padding:6px 14px;font-size:12.5px">DIPERBARUI <b style="color:inherit">${esc(pevTglPanjang(x.tgl))}</b></span>`:''}${x.status?`<span class="mu" style="border:1px solid var(--line,#8884);border-radius:999px;padding:6px 14px;font-size:12.5px">${esc(x.status)}</span>`:''}</div>`;
+ const skor=(x.keyakinan||x.peluang)?`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">${x.keyakinan?`<span style="border:1px solid var(--line,#8884);border-radius:14px;padding:6px 12px"><small class="mu" style="letter-spacing:.8px">KEYAKINAN</small> ${pevBintang(x.keyakinan)}</span>`:''}${x.peluang?`<span style="border:1px solid var(--line,#8884);border-radius:14px;padding:6px 12px"><small class="mu" style="letter-spacing:.8px">PELUANG</small> <b style="color:#d4a63a;font-size:17px">${x.peluang}/5</b></span>`:''}</div>`:'';
+ const ring=`<div class="card">${pill}${(x.judul||x.ringkas)?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line,#8884);line-height:1.7">${x.judul?`<b>${esc(x.judul)}</b><br>`:''}<span style="white-space:pre-wrap">${esc(x.ringkas||'')}</span></div>`:''}${skor}</div>`;
+ const gb=(x.gambar||[]).length?`<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px"><b>● ${esc(k)} · ${esc(x.tf)}</b><button class="btn" data-pev="zoom" data-id="${esc(x.id)}" data-i="0" style="padding:4px 12px">⤢ Layar penuh</button></div>${x.gambar.map((g,i)=>`<div style="padding:0 0 ${i<x.gambar.length-1?8:0}px">${pevThumb(g,'Chart '+k+' '+x.tf,`data-pev="zoom" data-id="${esc(x.id)}" data-i="${i}"`)}</div>`).join('')}</div>`:'';
+ const lv=(x.invalidasi||(x.level||[]).length)?`<div class="card"><div style="font-weight:800;letter-spacing:1px;margin-bottom:8px">| LEVEL KUNCI</div>${x.invalidasi?`<div style="display:flex;justify-content:space-between;align-items:center;border-left:4px solid #d64545;border-radius:10px;padding:12px 14px;background:rgba(214,69,69,.08);margin-bottom:6px"><b class="dn" style="letter-spacing:.8px">INVALIDASI</b><b style="font-size:20px">${esc(x.invalidasi)}</b></div>`:''}${(x.level||[]).map(l=>`<div style="display:flex;justify-content:space-between;align-items:center;border-left:4px solid #d4a63a;border-radius:10px;padding:10px 14px;background:rgba(212,166,58,.08);margin-bottom:6px"><span>${esc(l.n)}</span><b style="font-size:17px">${esc(l.h)}</b></div>`).join('')}</div>`:'';
+ const leng=x.lengkap?`<div class="card"><div style="font-weight:800;letter-spacing:1px;margin-bottom:8px">| ANALISA LENGKAP</div><div style="white-space:pre-wrap;line-height:1.7">${esc(x.lengkap)}</div></div>`:'';
+ const evl=x.evaluasi?`<div class="card"><div style="font-weight:800;letter-spacing:1px;margin-bottom:8px">| EVALUASI</div><div style="white-space:pre-wrap;line-height:1.7">${esc(x.evaluasi)}</div></div>`:'';
+ const ops=adm?`<div style="display:flex;gap:8px;margin:4px 0 10px"><button class="btn" data-pev="ubah" data-id="${esc(x.id)}">Ubah</button><button class="btn" data-pev="hapus" data-id="${esc(x.id)}">Hapus</button></div>`:'';
+ return hd+atas+kepala+ring+gb+lv+leng+evl+ops}
 
 /* ---------- layar penuh + zoom ---------- */
 const PLB={el:null,im:null,list:[],i:0,s:1,x:0,y:0,t:{}};
 function plbTerap(){if(PLB.im)PLB.im.style.transform=`translate(${PLB.x}px,${PLB.y}px) scale(${PLB.s})`}
 function plbBatas(){if(PLB.s<=1){PLB.s=1;PLB.x=0;PLB.y=0}else if(PLB.s>6)PLB.s=6}
-function plbGanti(d){PLB.i=(PLB.i+d+PLB.list.length)%PLB.list.length;PLB.s=1;PLB.x=0;PLB.y=0;PLB.im.src=pevImg(PLB.list[PLB.i]);plbTerap();PLB.el.querySelector('[data-n]').textContent=PLB.list.length>1?(PLB.i+1)+' / '+PLB.list.length:''}
+function plbGanti(d){PLB.i=(PLB.i+d+PLB.list.length)%PLB.list.length;PLB.s=1;PLB.x=0;PLB.y=0;const k=PLB.list[PLB.i],st=PLB.el.querySelector('[data-st]'),im=PLB.im;im.removeAttribute('src');im.style.visibility='hidden';st.style.display='block';st.textContent='Memuat gambar…';plbTerap();PLB.el.querySelector('[data-n]').textContent=PLB.list.length>1?(PLB.i+1)+' / '+PLB.list.length:'';
+ pevBlob(k).then(u=>{if(PLB.list[PLB.i]!==k||PLB.im!==im)return;im.src=u;im.style.visibility='visible';st.style.display='none'}).catch(er=>{if(PLB.list[PLB.i]===k&&PLB.im===im)st.textContent='Gambar gagal dimuat: '+er.message})}
 function plbTutup(){if(PLB.el){PLB.el.remove();PLB.el=null;PLB.im=null}document.body.style.overflow=''}
 function plbBuka(list,i){plbTutup();PLB.list=list;PLB.i=i;PLB.s=1;PLB.x=0;PLB.y=0;
  const el=document.createElement('div');el.style.cssText='position:fixed;inset:0;z-index:99999;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none';
- el.innerHTML=`<img alt="" draggable="false" style="max-width:100%;max-height:100%;transform-origin:center center;user-select:none;-webkit-user-drag:none"><button aria-label="Tutup" style="position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:22px;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:22px">✕</button><div data-n style="position:absolute;top:22px;left:16px;color:#fff;font-size:14px"></div>
+ el.innerHTML=`<img alt="" draggable="false" style="max-width:100%;max-height:100%;transform-origin:center center;user-select:none;-webkit-user-drag:none"><button aria-label="Tutup" style="position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:22px;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:22px">✕</button><div data-n style="position:absolute;top:22px;left:16px;color:#fff;font-size:14px"></div><div data-st style="position:absolute;left:0;right:0;top:50%;text-align:center;color:#ccd;font-size:14px;padding:0 20px"></div>
  ${list.length>1?'<button aria-label="Sebelumnya" data-p="-1" style="position:absolute;left:8px;top:50%;width:44px;height:56px;border:0;border-radius:10px;background:rgba(255,255,255,.18);color:#fff;font-size:26px">‹</button><button aria-label="Berikutnya" data-p="1" style="position:absolute;right:8px;top:50%;width:44px;height:56px;border:0;border-radius:10px;background:rgba(255,255,255,.18);color:#fff;font-size:26px">›</button>':''}
  <div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#aab;font-size:12px">Cubit dua jari atau ketuk dua kali untuk zoom</div>`;
  document.body.appendChild(el);document.body.style.overflow='hidden';PLB.el=el;PLB.im=el.querySelector('img');PLB.t={};plbGanti(0);
@@ -5200,6 +5217,7 @@ function plbBuka(list,i){plbTutup();PLB.list=list;PLB.i=i;PLB.s=1;PLB.x=0;PLB.y=
 document.addEventListener('input',e=>{const t=e.target;if(!t)return;if(t.id==='pevq'){PEV.cari=t.value;return}
  if(PEV.f&&t.dataset&&t.dataset.pf)PEV.f[t.dataset.pf]=t.value});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pev]');if(!b)return;const a=b.getAttribute('data-pev');
+ if(a==='gulang'){const ph=b;if(ph.__ulang){const k=(ph.parentNode.querySelector('img')||{}).getAttribute&&ph.parentNode.querySelector('img').getAttribute('data-pk');if(k&&PEVB[k]){PEVB[k].p=null}ph.__ulang()}return}
  if(a==='buka'){pevBuka(b.getAttribute('data-k'));return}
  if(a==='kembali'){PEV.kode='';PEV.dok=null;PEV.err='';pevMuatIndeks(true);pevR();return}
  if(a==='tf'){PEV.tf=b.getAttribute('data-t');pevR();return}

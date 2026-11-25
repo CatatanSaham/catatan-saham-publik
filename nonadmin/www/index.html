@@ -2108,7 +2108,9 @@ const BM={d:null,busy:false,tried:false,err:'',ix:{},ser:{},wk:null,all:{}};
 const BMP=[1,3,5,10,20];
 async function bmLoad(){if(BM.d||BM.busy||BM.tried)return;BM.busy=true;BM.tried=true;try{BM.d=await (await fetch('shards/bm.json')).json();try{BM.bs=await (await fetch('shards/bs.json')).json()}catch(e){BM.bs=null}vzBM()}catch(e){BM.err='Data bandarmologi belum dapat dimuat.'}finally{BM.busy=false;if(S.p==='bdm'||S.p==='bdk'||S.p==='saham')render();const e=$('#tkbm');if(e&&e.dataset.t)bmMini(e.dataset.t)}}
 function bmWeeks(){if(BM.wk)return BM.wk;const ds=BM.d.dates,g=[];let cur=null;ds.forEach((d,i)=>{const dt=Date.UTC(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6)),wd=(new Date(dt).getUTCDay()+6)%7,key=new Date(dt-wd*864e5).toISOString().slice(0,10);if(!cur||cur.k!==key){cur={k:key,i:[],wd0:wd};g.push(cur)}cur.i.push(i)});if(g.length&&g[0].wd0!==0)g.shift();return BM.wk=g}
-function bmSer(t){if(BM.ser[t])return BM.ser[t];const L=BM.d.t[t];if(!L)return null;const ds=BM.d.dates,nil=[],vol=[],fn=[],fb=[];
+function bmSer(t){/* 25 Nov 2026: lengkapi Beli/Jual hari yang belum punya data beli-jual (dulu hanya 10 hari terakhir saat unggah, sisanya kosong) */
+if(BM.d&&BM.bs&&typeof bsFill==='function'){const sg=BM.d.dates.length+'|'+BM.bs.dates.length;if(BM.bsSg!==sg){BM.bsSg=sg;const have=new Set(BM.bs.dates);for(const d of BM.d.dates)if(!have.has(d))try{bsFill(d)}catch(e){}BM.bsSg=BM.d.dates.length+'|'+BM.bs.dates.length}}
+if(BM.ser[t])return BM.ser[t];const L=BM.d.t[t];if(!L)return null;const ds=BM.d.dates,nil=[],vol=[],fn=[],fb=[];
 ds.forEach(d=>{let ix=BM.ix[d];const day=D.days[d];if(!ix)ix=BM.ix[d]=Object.fromEntries(day.t.map((x,k)=>[x,k]));const k=ix[t];nil.push(k==null?0:day.a[k]*1e6);vol.push(k==null?0:day.v[k]);fn.push(k==null?0:day.f[k]);fb.push(k==null?0:(day.b?(day.b[k]||0)*100:0))});
 let st=0;while(st<ds.length&&!(vol[st]>0))st++;if(st>=ds.length)return BM.ser[t]=null;
 const bsx=BM.bs&&BM.bs.t[t],bsi=BM.bs?Object.fromEntries(BM.bs.dates.map((d,i)=>[d,i])):{},gB=i=>{const j=bsi[ds[i]];return bsx&&j!=null?bsx[2*j]:null},gS=i=>{const j=bsi[ds[i]];return bsx&&j!=null?bsx[2*j+1]:null};
@@ -2125,7 +2127,7 @@ const bmSum=(a,n)=>a.length>=n&&n>0&&!a.slice(-n).includes(null)?a.slice(-n).red
 const BXV=[1,5,10,20];
 
 const bxI=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('id-ID');
-const bxYD=s=>s.slice(2,4)+'/'+s.slice(4,6)+'/'+s.slice(6);
+const bxYD=s=>s.slice(6)+'/'+s.slice(4,6)+'/'+s.slice(0,4);/* hari/bulan/tahun (dulu tahun/bulan/hari: 26/11/19 terbaca 26 Nov) */
 const BXD={};
 function bxDc(id,lab,raw,mode,pxs){
 const n=Math.min(raw.length,30),o=raw.length-n,H=raw.slice(o),Lb=lab.slice(o);let c=0;const C=H.map(v=>c+=v);

@@ -1,5 +1,5 @@
 {
- "upd": "2026-11-24 16:37 WIB",
+ "upd": "2026-11-25 16:37 WIB",
  "baru": 7,
  "sumber": [
   "IDX Channel: 10",
@@ -9,19 +9,101 @@
   "CNBC Indonesia: 100",
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 9",
-  "Google Berita: 4",
-  "Google Berita: 15",
-  "Google Berita: 29",
-  "Google Berita: 2",
+  "Google Berita: 8",
   "Google Berita: 7",
-  "Google Berita: 23",
-  "Google Berita: 42",
-  "Google Berita: 36",
+  "Google Berita: 18",
+  "Google Berita: 35",
+  "Google Berita: 1",
+  "Google Berita: 17",
+  "Google Berita: 50",
+  "Google Berita: 49",
+  "Google Berita: 28",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "ADHI Raih Kontrak Baru Rp1,29 Triliun, Garap 26 Proyek Irigasi Air Tanah di 12 Provinsi",
+   "link": "https://www.idxchannel.com/market-news/adhi-raih-kontrak-baru-rp129-triliun-garap-26-proyek-irigasi-air-tanah-di-12-provinsi",
+   "src": "IDX Channel",
+   "ts": 1795593600,
+   "cat": "Kontrak / proyek",
+   "k": [
+    "ADHI"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-25 16:37"
+  },
+  {
+   "t": "KOTA Siapkan Rights Issue Rp4,8 Triliun untuk Akuisisi",
+   "link": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTFBaSGEwODRFZWx1ZzRjT3R4aU1yT1BsbEJZTlV4OHF2YmFUbUVhc1lPT1NfNWZMMVdmY3ZULU5OMTZSWGE2MEhvUGJQODZCVkJoM0NFd2d3ZlJ1ZHZjMFRyZG9NQVdWcHc?oc=5",
+   "src": "Demokratis.co.id",
+   "ts": 1795578514,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "KOTA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-25 16:37"
+  },
+  {
+   "t": "Saham KOTA Melonjak 11,8 Persen di Tengah Rights Issue Rp 4,95 Triliun",
+   "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFAxZ3R6SlQ1SmpaVTB3VXpFYlE5ZzFTQ01sekhqNG5Jd043WTBhWjBTRkUwS0paUUFJZUQ3cXBUX2ZxR1JUME5DMjlTSEpDQlZZaG1vUE9ES0ZncUQtSk1vS1lqMGowTDV3?oc=5",
+   "src": "Demokratis.co.id",
+   "ts": 1795577789,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "KOTA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-25 16:37"
+  },
+  {
+   "t": "Emiten grup Saratoga akuisisi 100% saham EDOTCO Indonesia",
+   "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPSkFJcHVOeFdyRnZ6dHF4MUJHN3JlUXZKMmhGdG1rejVNMVFyVzVIUllfYno0ZXNScDBReFk0VVZvWHJXVkE5SlQ4WU94R0pfOVhiTGFjbHpmR1RmREFuNzBJU0ZGMEJhWUV1WF9aSGlwSDdDVW91emhRUWJqTDZmWE5VUlF0Q2lMbGViZmRxdjRwQk5VR3NjLURMdDZCd0dmcVE?oc=5",
+   "src": "IDNFinancials",
+   "ts": 1795575600,
+   "cat": "Backdoor / akuisisi",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-25 16:37"
+  },
+  {
+   "t": "CBRE Siapkan Rights Issue 48 Miliar Saham untuk Konversi Utang",
+   "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5hM0J0dFBvY2hxSnFLV1p6SFpKc0Q4M1lBd1gwa0MtRFFaaHlGTVpOLTdJQzZNLWlNOUg1eV80aF9jSVBjMmJzYzdHNzh2VDRGSEZyZDRjZ1NDOWdhM2ZpVUk5dWQ1N3F2?oc=5",
+   "src": "Demokratis.co.id",
+   "ts": 1795573651,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "CBRE"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-25 16:37"
+  },
+  {
+   "t": "Cek Jadwal Cum Date! Dividen ASGR Rp 297/ Saham, Yield 11,56% 4 Kali Bunga Deposito",
+   "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOXzZmSGlpVlZhUDRYVVM0eWhJakYwWkdZN3F6SVlLM0xwMGJ1UktsRWZxR29BdFk1d3h4Y21YeGF6OUczbUdCQi1kSlZZRUQ0Q3lqdUpRYzZlUThJVTA2alJ4NEsydkV6SDQ2SG5LaFVJbXNKWDlIemREd2dWNVFobUVpQ1FLNEhiNDZqQzIyRFF2NS0temNmdHp6NGVLaEQ0cG1yb3Y5NDlfNkp1ajFVcUtxR1LSAawBQVVfeXFMTzhqT0J2dmNNeEtRa1lQcXZQSkVaeE1fMi1Rbk5qdFh5VFVCelZCVW9ZeEVHRXljNWFzaGRqZ3A5ZXFuNnpiLUZNTHBmTklmeTJldjRYYVVYUGhtOXNSYlBLcHpBUld6OGxLUkdHNGVLTVRRbFF0SDlPNkRPZ2FfS25Lc2Fza3RLYmlEUEVIQW0yOEdzblkzVXRrS1kzUjRwYjZ0OTFfT3c0WVloQw?oc=5",
+   "src": "kontan.co.id",
+   "ts": 1795564492,
+   "cat": "Buyback / dividen",
+   "k": [
+    "ASGR"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-25 16:37"
+  },
+  {
+   "t": "Indocement Buyback Saham Rp 750 Miliar, Bos INTP: Harga Kami Undervalue",
+   "link": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOSl93WXVLWnhYVDhtXzZRRlBTd05ISkMtNXRkOHlGa0FlVWlEbWZQd2xjVTFOUUdieFNILV9PbzBlbzN0dzQzMDlJbWxnVW96LTdFWlBuNlljUUlOZFE2RVF6bFVfajF6b0Y2Skc3SXpVbklDTk1OY0xhOVRZUU5HNUliUHMzUjZHcjBDNzBSOFZkblhqZHZWOTl2d040LUVYMzhHcm42Sm5odU9mamd3ZzdEMG5jRGpYczJCc25iTVVVUE9MdzVxTmdB?oc=5",
+   "src": "Kompas.com",
+   "ts": 1795560000,
+   "cat": "Buyback / dividen",
+   "k": [
+    "INTP"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-25 16:37"
+  },
   {
    "t": "AdhI Karya (ADHI) Hadapi Gugatan PKPU, Begini Penjelasan Manajemen",
    "link": "https://stockwatch.id/adhi-karya-adhi-hadapi-gugatan-pkpu-begini-penjelasan-manajemen/",

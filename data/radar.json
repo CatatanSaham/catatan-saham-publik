@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-25 16:37 WIB",
- "baru": 7,
+ "upd": "2026-11-26 16:37 WIB",
+ "baru": 4,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -9,19 +9,45 @@
   "CNBC Indonesia: 100",
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
-  "Google Berita: 8",
+  "Google Berita: 9",
   "Google Berita: 7",
-  "Google Berita: 18",
-  "Google Berita: 35",
+  "Google Berita: 23",
+  "Google Berita: 48",
   "Google Berita: 1",
-  "Google Berita: 17",
-  "Google Berita: 50",
-  "Google Berita: 49",
-  "Google Berita: 28",
+  "Google Berita: 19",
+  "Google Berita: 43",
+  "Google Berita: 46",
+  "Google Berita: 13",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "BEI Suspensi Tiga Saham SMLE ASLI dan WAPO",
+   "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5mcDRsaHpNVVJHM0JtU1dmLXhub3l4SDRCbUczZGJGY2Rab3VaVThGRndXU2NjMEdnRUFZVzlsTlVpQS1FenNobndfYnJ2dmNTT0wwTWh0WVVQNjIzc21nbV9VZ2duTEd2dGlyR0RscUc3RzV5aXYtbFpiNXFHVjQ?oc=5",
+   "src": "MediaKompeten",
+   "ts": 1795626180,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "SMLE",
+    "ASLI",
+    "WAPO"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-26 16:37"
+  },
+  {
+   "t": "AADI Guyur Pemegang Saham Dividen Interim US$500 Juta, Setara 73% Laba!",
+   "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQTWI4eHU4clBDV1NkOEZIaHZXeUJwZklRVlZfZzJoMVowZndONlU2SEVqN3Q4VFIyUy02V1RfeGxVVm1qa0pFc09oOUVDQVU3VkRVcXlmY2dWcEhvQXIzdzNnczhJTm1CbklUYmMxbHRLRWRackxQQVdtd3FMQ2l4MDVLckdrT3hMemhRbGtxOEpjVV9odWluZ29QaVVTdHBlRUtxZnMyc3XSAa4BQVVfeXFMTVhZY3RZZkNrc1B3amNuUFNSS3N4QVFKRFhISTFNTWJJd0FLOEJPMkc5TUluNTJ3RU1QQXhFOFI4NWdveWNhaHJrZlM5eF94Um1QSFMxZEtVbmNxYk9pWHdDMTVyRWVmNzdmakg0LXVYZ1YzVVc5Q3Vkd096NlZMTzJSZ2xUUURxVVRFNVpReTNkSzgzZG84OXdsRU1Cdy1jX2ZsVVVJRHRSblZ1TmV3?oc=5",
+   "src": "Warta Ekonomi",
+   "ts": 1795608240,
+   "cat": "Buyback / dividen",
+   "k": [
+    "AADI"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-26 16:37"
+  },
   {
    "t": "ADHI Raih Kontrak Baru Rp1,29 Triliun, Garap 26 Proyek Irigasi Air Tanah di 12 Provinsi",
    "link": "https://www.idxchannel.com/market-news/adhi-raih-kontrak-baru-rp129-triliun-garap-26-proyek-irigasi-air-tanah-di-12-provinsi",
@@ -59,6 +85,18 @@
    "found": "2026-11-25 16:37"
   },
   {
+   "t": "Usai FORU, Ada Lagi Saham Mau Rights Issue dengan Dilusi Jumbo 90,31%",
+   "link": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPNE51NW9JMktybjU1UWYxTE9TWlpncDJWYjNJTlBqcVpSOW10X1llaEMxeDN3V2dJdFFKLUZtMmtPTUhBdDZkZlZJZDFGTkxMYVlXOEtiZGxKYVd6MlN3ZzBDeWNzUE9nZ0ltRlFMak1TUXRtMTRQMmljQ3dnV0dUdXU4WXBDdHJCMmlOU0RsOWUwN3cxdFBLaUtqZ2ZXM280MzVjNWZIS0g1X0E?oc=5",
+   "src": "Lotus Andalan Sekuritas",
+   "ts": 1795576014,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "FORU"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-26 16:37"
+  },
+  {
    "t": "Emiten grup Saratoga akuisisi 100% saham EDOTCO Indonesia",
    "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPSkFJcHVOeFdyRnZ6dHF4MUJHN3JlUXZKMmhGdG1rejVNMVFyVzVIUllfYno0ZXNScDBReFk0VVZvWHJXVkE5SlQ4WU94R0pfOVhiTGFjbHpmR1RmREFuNzBJU0ZGMEJhWUV1WF9aSGlwSDdDVW91emhRUWJqTDZmWE5VUlF0Q2lMbGViZmRxdjRwQk5VR3NjLURMdDZCd0dmcVE?oc=5",
    "src": "IDNFinancials",
@@ -79,6 +117,18 @@
    ],
    "impact": "Tinggi",
    "found": "2026-11-25 16:37"
+  },
+  {
+   "t": "MEJA Akuisisi 45% Tambang Batu Bara TCP, Siapkan Rights Issue Rp1,1 Triliun - Bisnis.com",
+   "link": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNQVQ1MDVHX3BvTllQNmo5RTBtczFxRXU2M2RrT3h0Y3lnVTRzZTRSRW4wdVhjMnBCSFFWNWpoYlJwcjVia1NYVEZkRERTYXNYQVQwZ3ZZZUVMb2ZvVy14Y3BkWFFPWUpfb1BIeXprZmo5ZThfaUQ2RXQ4WGdGRF9xQ0hnQ1NUWnRGR3dpbm5PZEFZZElPbVpTc19UM1pyTnFUOEFEWUY5cDNHS3BDSVpZNTR5R0tobDBuT2E1OEhHcVg3Zw?oc=5",
+   "src": "Bisnis.com - Market",
+   "ts": 1795573524,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "MEJA"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-26 16:37"
   },
   {
    "t": "Cek Jadwal Cum Date! Dividen ASGR Rp 297/ Saham, Yield 11,56% 4 Kali Bunga Deposito",

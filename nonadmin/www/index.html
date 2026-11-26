@@ -2334,6 +2334,9 @@ function udApply(){let any=false;const by={};for(const id in UDS.saved){const o=
    UDX.done[dt]=1;any=true;if(MDX.rec)mdRecAdd(d6);if(typeof MAD!=='undefined'&&MAD)udMa();try{vzMergeAll()}catch(x){}}catch(e){UDS.msg='Gagal menerapkan data '+dt+': '+(e&&e.message||e)}}
  if(any){UDS.msg='Data harian baru diterapkan ke aplikasi.';render()}return any}
 
+/* 26 Nov 2026: kartu Net beli / Net jual / Seluruh saham (data-ffs) dulu ikut terbuang dari edisi Non Admin sehingga ketukannya tak berefek. Kini di luar blok admin. */
+document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('[data-ffs]');if(!c)return;S.ff=c.dataset.ffs;S.fo=c.dataset.ffo;render();setTimeout(()=>{const l=document.getElementById('fflist');if(l)l.scrollIntoView({behavior:'smooth',block:'start'})},60)});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target&&e.target.dataset&&e.target.dataset.ffs){e.preventDefault();e.target.click()}});
 /* Tombol ‹ Sebelumnya / Berikutnya › (data-fpg) dipakai halaman publik juga (Foreign Ownership, Filter, Skor): harus ikut edisi Non Admin. */
 document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('[data-fpg]');if(!c||c.disabled)return;const pk=c.dataset.fpk||'fpg';S[pk]=(+S[pk]||0)+(+c.dataset.fpg);render();setTimeout(()=>{const l=document.getElementById(pk==='opg'?'owlist':pk==='skp'?'sklist':pk==='kpg'?'kflist':'fflist');if(l)l.scrollIntoView({behavior:'smooth',block:'start'})},60)});
 document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('[data-k="sk"]');if(!c)return;setTimeout(()=>{const l=document.getElementById('sklist');if(l)l.scrollIntoView({behavior:'smooth',block:'start'})},80)});

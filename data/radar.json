@@ -1,6 +1,6 @@
 {
- "upd": "2026-11-26 16:37 WIB",
- "baru": 4,
+ "upd": "2026-11-27 19:21 WIB",
+ "baru": 10,
  "sumber": [
   "IDX Channel: 10",
   "Antara: 20",
@@ -9,19 +9,132 @@
   "CNBC Indonesia: 100",
   "Kontan: gagal (HTTP Error 403: Forbidden)",
   "Bisnis: gagal (HTTP Error 403: Forbidden)",
+  "Google Berita: 14",
+  "Google Berita: 5",
+  "Google Berita: 22",
+  "Google Berita: 47",
   "Google Berita: 9",
-  "Google Berita: 7",
-  "Google Berita: 23",
+  "Google Berita: 20",
+  "Google Berita: 26",
   "Google Berita: 48",
-  "Google Berita: 1",
-  "Google Berita: 19",
-  "Google Berita: 43",
-  "Google Berita: 46",
-  "Google Berita: 13",
+  "Google Berita: 25",
   "BEI: gagal (HTTP Error 403: Forbidden)"
  ],
  "aturan": "Berita aksi korporasi berefek besar: ganti pengendali / tender offer, backdoor / akuisisi, private placement, HMETD / waran / konversi utang, buyback / dividen besar, kontrak / proyek besar, restrukturisasi / suspensi / delisting. Dari judul media; cek keterbukaan BEI.",
  "items": [
+  {
+   "t": "Laporan Free Float Tak Sesuai Aturan, BEI Suspensi Saham AKKU, BAJA, FIRE, KING dan KPIG",
+   "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNSGloQV80R3RfOWlyc3BULVdTTzNBV1JVYnZmcUdvUmhrMkJzT2lIdGlFd21XTUx0NUNKbXBzb1U1MDB1WnFSTy12NVd6d2kwYzZ5dWVwV05OWllRaEJmMmpTRll3WHBoaERjcVZmcl9QbmtZYVNnQVBQdEU0Q05jM3pZRFMzQ0ZNNVZENTc1VERkU2ptT1NzOHhzbVhzR2cxVUItTmljaUFpcTQtT1Eybw?oc=5",
+   "src": "Berita Moneter",
+   "ts": 1795771500,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "AKKU",
+    "BAJA",
+    "FIRE",
+    "KING",
+    "KPIG"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
+  {
+   "t": "WIKA Beton (WTON) Kantongi Kontrak Baru Rp3,47 Triliun hingga Oktober 2026",
+   "link": "https://www.idxchannel.com/market-news/wika-beton-wton-kantongi-kontrak-baru-rp347-triliun-hingga-oktober-2026",
+   "src": "IDX Channel",
+   "ts": 1795767000,
+   "cat": "Kontrak / proyek",
+   "k": [
+    "WIKA",
+    "WTON"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
+  {
+   "t": "Sahamnya Disuspensi Sejak Awal Tahun, FASW Kejar Pemenuhan Free Float",
+   "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNQzVUT1FWa2RtMGY0Y3RGX1RvT3lJaXdtYjk4bjRfZFFRYWRnSk9hVnpVNE05UFB5QkUycUFqOXlDZmxvT2FoNjhuQmVkczRoUl9SOWRsNHVibk9Pbm9qa1BvYU1jX0F0VnpxYVdjRm11X2tkQ3pHRjVqVk9kU3c3YjJQNEdBZXZjXzNDSlk5OW54MHBnRHctdjB0clY?oc=5",
+   "src": "Emitennews.com",
+   "ts": 1795767000,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "FASW"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
+  {
+   "t": "TAPG Bayar Dividen Interim Rp1,39 Triliun Hari Ini",
+   "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxONlpGYXZsT1psanBHelpOMU92Zkc2S2lXN0JOc0RIeS1Ec1lMMGRuazB1Mk1OcFlsUFJQc1FrQUNVNlY0cTlwcHk1V3RUXzJTMTRfQUM3a2FwWFBpNXdEWmVTcUpPb0d6NG1YZHJSTm80T2xCVl9JNVNPWTM0SGVack5BekdvVnJzVmRF?oc=5",
+   "src": "Ajaib",
+   "ts": 1795765763,
+   "cat": "Buyback / dividen",
+   "k": [
+    "TAPG"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
+  {
+   "t": "Saham KPIG Milik Hary Tanoesoedibjo Kena Suspensi BEI, Ini Penyebab dan Aturan yang Dilanggar",
+   "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPdUdMbEw3dHpSbW1tQUlFQThGSWZCWFlaRkJBY080WEdiUWhuT3RLVnYxakZhTXBpcENRVndsYXhYd0R3bUZUU051RVVRelUwU3MwckZxT3hERDI4STZYTEV4YUo4U0NOS2RQM3Nxczdkc21sQUxEOExQOFY0ZkNlalZwUThseWNUcjk1dTlIWllQUDE2WUJ3OTBFZlAxU3NZTEJ6bUdfdzg0T2ZlbnlaMGdxUQ?oc=5",
+   "src": "TOPIK.ID",
+   "ts": 1795756666,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "KPIG"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
+  {
+   "t": "SMBC Indonesia (BTPN) Mau Go Private dan Delisting: Ini Jadwalnya",
+   "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNQXh5MlFEVU5IUGppRVU3b3RtMWRqcW1uVXk3TnlPU0x0WU5tRzhNQ2lCQ1ZJeUEydDVmRVp4ZHdjTWoyS2NMUWdsYkowbFlPSkRMNVNVdUtOWVR6Wl84UlpkVjJZYmw4aVNpUFhuZ0ZFeWNGWDhmeTBldjVHRDh6bFJyT1FZRXYtenhjbE0wVDNOckZrc0NYOGdha3Q?oc=5",
+   "src": "Ajaib",
+   "ts": 1795747106,
+   "cat": "Restrukturisasi / suspensi / delisting",
+   "k": [
+    "BTPN"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
+  {
+   "t": "META Jajaki Penawaran Tender Sukarela Tahap Keempat",
+   "link": "https://news.google.com/rss/articles/CBMiVEFVX3lxTFBLYmx5TnVQQlFUeU9EV0R6Y0ZSbHNZYW5QVlplNGlzV09OTWU5V2dRTmIwZnJEZ0pNb3owNUQyWE1hTFFBTzZvWk4zYjlIRVZUS2RJdw?oc=5",
+   "src": "ChatNews.id",
+   "ts": 1795703765,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [
+    "META"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
+  {
+   "t": "Rights Issue, BSI (BRIS) Mau Terbitkan 6,8 Miliar Saham",
+   "link": "https://www.cnbcindonesia.com/market/20261126094836-17-788595/rights-issue-bsi--bris--mau-terbitkan-68-miliar-saham",
+   "src": "CNBC Indonesia",
+   "ts": 1795662337,
+   "cat": "HMETD / waran / konversi utang",
+   "k": [
+    "BRIS"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
+  {
+   "t": "Tower Bersama (TBIG) Akuisisi 100% EDOTCO, Tambah 800 Menara Telekomunikasi",
+   "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPdTExLWxMQUJfaUVQaGlBWFE4UGFCdDFUSkNzaWE2Tmp1REd3STdSZFhWTkVnOGZzTl9kZll3NGNTTjJMMmlLQUJ4bjU0Z2RwMUVOamJYbk5TeXBZMVlzWWN4Rkxfd2NSVVNvRXBzNk85RnVRNkF3OEtvejhFdkNHYkdvU3JiMWw1ZnRXVGFfUzZ5YXNDNkltSVpqM1B5TldzVkR6U1RXdkExcnQzOFE?oc=5",
+   "src": "Warta Ekonomi",
+   "ts": 1795659840,
+   "cat": "Backdoor / akuisisi",
+   "k": [
+    "TBIG"
+   ],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
+  },
   {
    "t": "BEI Suspensi Tiga Saham SMLE ASLI dan WAPO",
    "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5mcDRsaHpNVVJHM0JtU1dmLXhub3l4SDRCbUczZGJGY2Rab3VaVThGRndXU2NjMEdnRUFZVzlsTlVpQS1FenNobndfYnJ2dmNTT0wwTWh0WVVQNjIzc21nbV9VZ2duTEd2dGlyR0RscUc3RzV5aXYtbFpiNXFHVjQ?oc=5",
@@ -35,6 +148,16 @@
    ],
    "impact": "Tinggi",
    "found": "2026-11-26 16:37"
+  },
+  {
+   "t": "Rosemont luncurkan penawaran tender $2,70/saham untuk Aytu BioPharma",
+   "link": "https://news.google.com/rss/articles/CBMivgFBVV95cUxOa2d5TWx6eVJMc0hXdE84VW53SktzemtxQl9OMVQ2cDdGdnFkSTM5SGtoR1FsWkw3ZHlNUDAyREFVWkFWOFZJc0gxOGsyZXJpRVNyUXFvY3R1akR0VFRPTTRoSEtFVnE1VzRoeGt4VXVUZEJHUlBMQ0RBTDUzZE50Y2hqUDZGMjJtVXVrU1ZxZVJUT2VTWGZJUm85UlRPS0hocjlBZ09PdXhTNFE0Zk4yMFV2SlVRXzIydWhZN1hB?oc=5",
+   "src": "Investing.com Indonesia",
+   "ts": 1795615138,
+   "cat": "Ganti pengendali / tender offer",
+   "k": [],
+   "impact": "Tinggi",
+   "found": "2026-11-27 19:21"
   },
   {
    "t": "AADI Guyur Pemegang Saham Dividen Interim US$500 Juta, Setara 73% Laba!",
